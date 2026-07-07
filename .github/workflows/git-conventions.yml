@@ -1,0 +1,44 @@
+name: Git conventions
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate branch name
+        run: |
+          BRANCH="${{ github.head_ref }}"
+
+          if [[ "$BRANCH" == dependabot/* ]]; then
+            echo "Skipping branch name check for Dependabot."
+            exit 0
+          fi
+
+          PATTERN='^(feature|fix|docs|chore|refactor|ci|test|hotfix)/[a-z0-9][a-z0-9-]*$'
+          if ! echo "$BRANCH" | grep -Eq "$PATTERN"; then
+            echo "::error::Branch name must match <type>/<short-description>"
+            echo "Allowed types: feature, fix, docs, chore, refactor, ci, test, hotfix"
+            echo "Example: feature/boss-attack-patterns"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate commit messages
+        uses: wagoid/commitlint-github-action@v6
