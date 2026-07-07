@@ -75,6 +75,29 @@ function activateMissileSalvo(g: GameData): boolean {
   return true;
 }
 
+function activateDash(g: GameData, moveX: number, moveY: number): boolean {
+  const p = g.player;
+  let dx = moveX;
+  let dy = moveY;
+  if (!dx && !dy) dy = -1;
+
+  const len = Math.hypot(dx, dy) || 1;
+  p.dashVx = (dx / len) * 16;
+  p.dashVy = (dy / len) * 16;
+  p.skillActiveTimer = 0.22;
+  startSkillCooldown(p);
+  sfx.playMenuSelect();
+
+  g.particles.push({
+    x: p.x, y: p.y,
+    vx: -p.dashVx * 0.15, vy: -p.dashVy * 0.15,
+    life: 0.25, maxLife: 0.25,
+    size: 4, color: '#c8f', type: 'trail',
+  });
+
+  return true;
+}
+
 /** True when the player can take damage from bullets or collisions. */
 export function isPlayerVulnerable(p: Player): boolean {
   return p.invincibleTimer <= 0 && p.skillActiveTimer <= 0;
@@ -106,7 +129,7 @@ export function tickSkills(g: GameData, dt: number) {
  * Attempt to activate the current aircraft skill.
  * Returns true when the skill fires (cooldown applied).
  */
-export function tryActivateSkill(g: GameData, _moveX: number, _moveY: number): boolean {
+export function tryActivateSkill(g: GameData, moveX: number, moveY: number): boolean {
   const p = g.player;
   if (p.skillCooldown > 0) return false;
 
@@ -115,6 +138,7 @@ export function tryActivateSkill(g: GameData, _moveX: number, _moveY: number): b
     case 'missile_salvo':
       return activateMissileSalvo(g);
     case 'dash':
+      return activateDash(g, moveX, moveY);
     case 'energy_shield':
       return false;
     default:
