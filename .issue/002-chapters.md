@@ -1,8 +1,8 @@
 # 002 — Chapter System
 
-**Status:** planned  
+**Status:** done  
 **Phase:** 4  
-**Target version:** v0.4.0
+**Target version:** v0.5.0
 
 ## Summary
 
