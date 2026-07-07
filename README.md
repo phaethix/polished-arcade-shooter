@@ -1,26 +1,25 @@
-# 🚀 Sky Blaster — Polished Arcade Shooter
+# Sky Blaster — Polished Arcade Shooter
+
+[![CI](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A fast-paced, juicy vertical shoot-em-up built with React, TypeScript, and Canvas. Features tight controls, satisfying feedback, and endless waves of enemies.
 
-**[▶️ Play Now](https://your-demo-url.com)** *(replace with your deployed URL)*
+---
 
-![Sky Blaster Gameplay](https://via.placeholder.com/800x400?text=Gameplay+Screenshot)
+## Features
+
+- **Dual Input Support** — Keyboard (WASD/Arrows + Z/Space) and touch/mouse drag controls
+- **Juicy Feedback** — Screen shake, particle explosions, shockwave rings, score popups, slow-motion on boss kills
+- **Polished Visuals** — Parallax starfield, nebula clouds, engine flames, bullet glow effects
+- **Persistent High Scores** — Local storage leaderboard with top 10 scores
+- **Procedural Audio** — Web Audio API synthesized sound effects (no external files)
+- **Mobile Optimized** — Responsive design, touch-friendly, 60fps on mobile devices
+- **Endless Mode** — Infinite waves with scaling difficulty and boss fights every 5 waves
 
 ---
 
-## ✨ Features
-
-- 🎮 **Dual Input Support** — Keyboard (WASD/Arrows + Z/Space) and touch/mouse drag controls
-- 💥 **Juicy Feedback** — Screen shake, particle explosions, shockwave rings, score popups, slow-motion on boss kills
-- 🌌 **Polished Visuals** — Parallax starfield, nebula clouds, engine flames, bullet glow effects
-- 📊 **Persistent High Scores** — Local storage leaderboard with top 10 scores
-- 🎵 **Procedural Audio** — Web Audio API synthesized sound effects (no external files)
-- 📱 **Mobile Optimized** — Responsive design, touch-friendly, 60fps on mobile devices
-- ♾️ **Endless Mode** — Infinite waves with scaling difficulty and boss fights every 5 waves
-
----
-
-## 🎯 How to Play
+## How to Play
 
 ### Controls
 
@@ -35,19 +34,19 @@ Survive as long as possible, destroy enemies, collect power-ups, and achieve the
 
 ---
 
-## 💎 Power-Ups
+## Power-Ups
 
 | Icon | Color | Name | Effect |
 |------|-------|------|--------|
-| **S** | 🟠 Orange | **Spread** | +2 bullets per level (max Lv3 = 7 bullets) |
-| **F** | 🟢 Green | **Fire Rate** | Increases shooting speed |
-| **◇** | 🔵 Blue | **Shield** | Blocks 1 hit, lasts 10 seconds |
-| **B** | 🔴 Red | **Bomb** | Clears all enemy bullets, damages all enemies |
-| **+** | 💚 Teal | **Heal** | Restores 1 HP (or +500 score if full) |
+| **S** | Orange | **Spread** | +2 bullets per level (max Lv3 = 7 bullets) |
+| **F** | Green | **Fire Rate** | Increases shooting speed |
+| **◇** | Blue | **Shield** | Blocks 1 hit, lasts 10 seconds |
+| **B** | Red | **Bomb** | Clears all enemy bullets, damages all enemies |
+| **+** | Teal | **Heal** | Restores 1 HP (or +500 score if full) |
 
 ---
 
-## 👾 Enemies
+## Enemies
 
 | Type | Color | Behavior | Points |
 |------|-------|----------|--------|
@@ -58,7 +57,7 @@ Survive as long as possible, destroy enemies, collect power-ups, and achieve the
 
 ---
 
-## 🌊 Wave System
+## Wave System
 
 - **Endless waves** with increasing difficulty
 - Enemy count per wave: `5 + wave × 2`
@@ -68,7 +67,7 @@ Survive as long as possible, destroy enemies, collect power-ups, and achieve the
 
 ---
 
-## 🏆 Scoring System
+## Scoring System
 
 | Action | Points |
 |--------|--------|
@@ -82,7 +81,7 @@ Survive as long as possible, destroy enemies, collect power-ups, and achieve the
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **React 19** — UI framework
 - **TypeScript** — Type safety
@@ -93,33 +92,34 @@ Survive as long as possible, destroy enemies, collect power-ups, and achieve the
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/polished-arcade-shooter.git
+git clone https://github.com/phaethix/polished-arcade-shooter.git
 cd polished-arcade-shooter
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
 ```
+
+### Available scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Build the production bundle |
+| `npm run preview` | Preview the production build locally |
+| `npm run typecheck` | Run TypeScript without emitting files |
 
 ### Project Structure
 
-```
+```text
 src/
 ├── App.tsx           # Main React component with game loop
 ├── game/
@@ -132,17 +132,24 @@ src/
 
 ---
 
-## 📝 License
+## Contributing
 
-MIT License — feel free to use, modify, and distribute.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+- Bug reports: use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml)
+- Feature ideas: use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml)
+- Security issues: see [SECURITY.md](SECURITY.md)
+
+This project follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
-## 🙏 Acknowledgments
+## License
 
-- Inspired by classic shoot-em-ups like Raiden, 1942, and Touhou
-- Built with ❤️ using modern web technologies
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Made with 🎮 by [Your Name]**
+## Acknowledgments
+
+Inspired by classic shoot-em-ups like Raiden, 1942, and Touhou.
