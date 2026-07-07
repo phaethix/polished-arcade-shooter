@@ -44,6 +44,10 @@ export interface Bullet {
   color: string;
   grazed?: boolean;        // player already got graze bonus for this bullet
   homingStrength?: number; // 0..1 turn rate toward target (missiles)
+  weapon?: WeaponId;
+  pierceRemaining?: number;
+  maxTravel?: number;
+  distanceTraveled?: number;
 }
 
 export interface Enemy {
@@ -62,8 +66,9 @@ export interface Enemy {
 export interface PowerUp {
   x: number; y: number;
   width: number; height: number;
-  type: 'spread' | 'speed' | 'shield' | 'bomb' | 'heal';
+  type: 'spread' | 'speed' | 'shield' | 'bomb' | 'heal' | 'weapon';
   vy: number;
+  weaponId?: WeaponId;
 }
 
 export interface Player {
@@ -87,6 +92,8 @@ export interface Player {
   damageBoost: number;
   dashVx: number;
   dashVy: number;
+  weaponId: WeaponId;
+  laserRamp: number;
 }
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
@@ -134,5 +141,6 @@ export interface GameData {
   stars: { x: number; y: number; speed: number; brightness: number }[];
   nebulae: Nebula[];
   selectedAircraft: AircraftId;
+  selectedWeapon: WeaponId;
   gameMode: GameMode;
 }
