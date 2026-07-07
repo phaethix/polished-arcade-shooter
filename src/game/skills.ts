@@ -98,6 +98,17 @@ function activateDash(g: GameData, moveX: number, moveY: number): boolean {
   return true;
 }
 
+function activateEnergyShield(g: GameData): boolean {
+  const p = g.player;
+  p.skillShieldActive = true;
+  p.skillShieldTimer = 3;
+  p.skillAbsorbedHits = 0;
+  p.damageBoost = 0;
+  startSkillCooldown(p);
+  sfx.playPowerUp();
+  return true;
+}
+
 /** True when the player can take damage from bullets or collisions. */
 export function isPlayerVulnerable(p: Player): boolean {
   return p.invincibleTimer <= 0 && p.skillActiveTimer <= 0;
@@ -140,7 +151,7 @@ export function tryActivateSkill(g: GameData, moveX: number, moveY: number): boo
     case 'dash':
       return activateDash(g, moveX, moveY);
     case 'energy_shield':
-      return false;
+      return activateEnergyShield(g);
     default:
       return false;
   }
