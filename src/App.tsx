@@ -114,6 +114,10 @@ export default function App() {
           if (down && g.state === 'playing') inp.bomb = true;
           e.preventDefault(); break;
 
+        case 'KeyC': case 'ShiftLeft': case 'ShiftRight':
+          if (down && g.state === 'playing') inp.skill = true;
+          e.preventDefault(); break;
+
         case 'Escape': case 'KeyP':
           if (down) {
             if (g.state === 'playing') g.state = 'paused';
@@ -170,6 +174,14 @@ export default function App() {
       if (g.state === 'paused') { g.state = 'playing'; return; }
 
       const pt = toGame(cx, cy);
+      if (g.state === 'playing' && pt) {
+        const inSkillZone = pt.y > CANVAS_H - 72 && Math.abs(pt.x - CANVAS_W / 2) < 36;
+        if (inSkillZone) {
+          inp.skill = true;
+          return;
+        }
+      }
+
       if (pt) { inp.touchX = pt.x; inp.touchY = pt.y; inp.prevTouchX = pt.x; inp.prevTouchY = pt.y; }
       inp.touchActive = true;
     };
