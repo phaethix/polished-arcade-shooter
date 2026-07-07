@@ -9,6 +9,28 @@ This document defines the Git workflow for this repository. Following these rule
 - Open a pull request early when possible; avoid long-lived branches that drift from `main`.
 - Delete feature branches after merge.
 
+### Stacked feature branches
+
+For large features, split work into **dependent branches** and merge them in order:
+
+```text
+main
+ └── feature/expansion-foundation    # types, config, menu picker
+      └── feature/skill-framework    # shared skill system
+           └── feature/falcon-missile-salvo
+                └── feature/phantom-dash
+                     └── feature/fortress-energy-shield
+```
+
+Guidelines:
+
+- Branch each slice from the previous slice (not from stale `main`) when work depends on it.
+- Open pull requests **bottom-up** (foundation first, then skills one by one).
+- Keep each branch small enough to review in under 30 minutes.
+- Rebase onto `main` only after upstream PRs merge, or retarget PRs to the previous branch until merge.
+
+Current expansion work uses this pattern under `.issue/roadmap.md`.
+
 ## Branch naming
 
 Use this format:
