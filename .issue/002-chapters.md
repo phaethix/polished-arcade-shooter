@@ -1,0 +1,42 @@
+# 002 — Chapter System
+
+**Status:** planned  
+**Phase:** 4  
+**Target version:** v0.4.0
+
+## Summary
+
+Four visual environments with unique hazards layered on top of the core shooter loop.
+
+## Chapters
+
+| ID | Name | Background | Special mechanic |
+|----|------|------------|------------------|
+| `space` | Deep Space | Stars + nebula | Standard (current) |
+| `asteroid` | Asteroid Belt | Rocky debris field | Dodge falling asteroids |
+| `carrier` | Enemy Carrier | Mechanical interior | Fixed laser turrets |
+| `wormhole` | Wormhole | Distorted space | Random teleport pads |
+
+## Data model (planned)
+
+```typescript
+interface ChapterDefinition {
+  id: ChapterId;
+  name: string;
+  starColors: string[];
+  nebulaColors: string[];
+  hazardType: 'none' | 'asteroid' | 'turret' | 'teleporter';
+}
+```
+
+## Implementation notes
+
+- Chapters affect **background rendering** and **environmental hazards** only in Phase 4
+- Story mode maps stages 1–5 → chapter 1, 6–10 → chapter 2, etc.
+- Endless mode can rotate chapters every 5 waves (future enhancement)
+
+## Acceptance criteria
+
+- Each chapter has a distinct background palette
+- At least one unique hazard type is functional per chapter
+- Story mode progresses through chapters in order
