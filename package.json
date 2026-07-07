@@ -1,12 +1,26 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "polished-arcade-shooter",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Sky Blaster — a polished vertical arcade shooter built with React, TypeScript, and Canvas.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phaethix/polished-arcade-shooter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/phaethix/polished-arcade-shooter/issues"
+  },
+  "homepage": "https://github.com/phaethix/polished-arcade-shooter#readme",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "2.1.1",
