@@ -1,63 +1,60 @@
 import type {
-  AchievementId, AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore,
+  AchievementId, AircraftId, WeaponId, GameData, Player, Enemy, PowerUp,
 } from './types';
-import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
-import { fireWeapon, getWeapon, nextWeapon, drawWeaponLabel, updateBulletTravel, consumePierce } from './weapons';
-import { isPlayerVulnerable, tickSkills, tryActivateSkill, drawSkillIndicator, updateHomingBullets } from './skills';
+import type { InputState } from '../app/input';
+import { createInputState } from '../app/input';
+import {
+  CANVAS_W, CANVAS_H, PLAYER_W, PLAYER_H, COMBO_WINDOW_S, GRAZE_RADIUS,
+} from './core/constants';
+import { boxesOverlap } from './core/collision';
+import { shake, addParticles, addRing, addScorePopup } from './effects';
+import { saveHighScore } from './storage/highscores';
+import { getAircraft, nextAircraft } from './aircraft';
+import { fireWeapon, getWeapon, nextWeapon, updateBulletTravel, consumePierce } from './weapons';
+import { isPlayerVulnerable, tickSkills, tryActivateSkill, updateHomingBullets } from './skills';
 import {
   spawnEnemy, updateEnemies, drawEnemy,
   spawnSplitterChildren, isFrontalShieldBlock, blocksCenterShot,
   isKamikazeBlastHit, kamikazeExplosionRadius,
 } from './enemies';
-import {
-  applyChapterToGame, drawChapterBackground, getChapter,
-} from './chapters';
+import { applyChapterToGame, drawChapterBackground } from './chapters';
 import {
   applyDailyPlayerMods,
-  getDailyModifierLabel, getDailySeed, getEnemiesPerWave, getWaveAnnounce, getWaveLabel,
-  initModeState, isStoryComplete, MODE_INFO, nextGameMode, pickDailyModifier,
+  getEnemiesPerWave,
+  initModeState, isStoryComplete, nextGameMode,
   powerUpsEnabled, syncChapterForMode,
 } from './modes';
 import {
-  ACHIEVEMENTS, addCoins, canAffordUnlock, coinRewardForEnemy,
+  addCoins, coinRewardForEnemy,
   DAILY_COMPLETE_COINS, DAILY_COMPLETE_WAVE, isAircraftUnlocked, isWeaponUnlocked,
-  loadCoins, recordEnemyKill, STORY_STAGE_CLEAR_COINS, tryUnlockAircraft, tryUnlockWeapon,
+  recordEnemyKill, STORY_STAGE_CLEAR_COINS, tryUnlockAircraft, tryUnlockWeapon,
   unlockAchievement,
 } from './progress';
 import {
   drawHazards, handleHazardCollisions, initChapterHazards, updateHazards,
 } from './hazards';
+import { drawMenu } from './render/menu';
+import { drawHUD } from './render/hud';
+import { drawGameOver } from './render/gameover';
+import { drawAchievementToast } from './render/achievement-toast';
+import {
+  drawLaserBeam, drawPlayer, drawBullet, drawPowerUp,
+} from './render/world';
+import {
+  drawParticles, drawFlashOverlay, drawDangerVignette, drawGrazeIndicator,
+  drawComboBanner, drawWaveAnnounce, drawPausedOverlay, drawSlowMotionOverlay,
+} from './render/overlays';
 import * as sfx from './audio';
 
-// ─── Constants ───────────────────────────────────────────────
-const W = 400;
-const H = 700;
-const PW = 32;
-const PH = 36;
-const MAX_P = 600;
-const COMBO_T = 1.5;
-const GRAZE_R = 22;   // graze radius
-
-// ─── High scores ─────────────────────────────────────────────
-const HS_KEY = 'sky_blaster_hs_v2';
-export function loadHighScores(): HighScore[] {
-  try { const r = localStorage.getItem(HS_KEY); if (r) return JSON.parse(r); } catch {/* */}
-  return [];
-}
-export function saveHighScore(score: number, wave: number): HighScore[] {
-  const s = loadHighScores();
-  s.push({ score, wave, date: new Date().toLocaleDateString() });
-  s.sort((a, b) => b.score - a.score);
-  const top = s.slice(0, 10);
-  try { localStorage.setItem(HS_KEY, JSON.stringify(top)); } catch {/* */}
-  return top;
-}
+export type { InputState };
+export { createInputState };
+export { CANVAS_W, CANVAS_H };
 
 // ─── Factories ───────────────────────────────────────────────
 function mkPlayer(aircraftId: AircraftId = 'falcon', weaponId: WeaponId = 'standard'): Player {
   const craft = getAircraft(aircraftId);
   return {
-    x: W / 2, y: H - 80, width: PW, height: PH,
+    x: CANVAS_W / 2, y: CANVAS_H - 80, width: PLAYER_W, height: PLAYER_H,
     speed: craft.speed, shootTimer: 0, shootInterval: 8,
     hp: craft.startHp, maxHp: craft.maxHp, invincibleTimer: 0,
     powerLevel: 0, shieldActive: false, shieldTimer: 0,
@@ -141,7 +138,7 @@ function awardRunCoins(g: GameData, amount: number, x?: number, y?: number) {
   if (amount <= 0) return;
   addCoins(amount);
   g.runCoinsEarned += amount;
-  if (x != null && y != null) addScore(g, x, y, `+${amount}¢`, '#fd4');
+  if (x != null && y != null) addScorePopup(g, x, y, `+${amount}¢`, '#fd4');
 }
 
 function onWaveCleared(g: GameData) {
@@ -206,79 +203,12 @@ export function resetGame(g: GameData) {
   initChapterHazards(g);
 }
 
-// ─── Input ───────────────────────────────────────────────────
-export interface InputState {
-  left: boolean; right: boolean; up: boolean; down: boolean;
-  shoot: boolean; bomb: boolean; skill: boolean;
-  touchX: number | null; touchY: number | null;
-  touchActive: boolean;
-  prevTouchX: number | null; prevTouchY: number | null;
-}
-export function createInputState(): InputState {
-  return { left: false, right: false, up: false, down: false,
-           shoot: false, bomb: false, skill: false,
-           touchX: null, touchY: null, touchActive: false,
-           prevTouchX: null, prevTouchY: null };
-}
-
 // ─── Helpers ─────────────────────────────────────────────────
-function shake(g: GameData, i: number, d: number) {
-  const cur = g.screenShake.intensity * (g.screenShake.timer / (g.screenShake.duration || 1));
-  if (i > cur) g.screenShake = { intensity: i, duration: d, timer: d };
-}
-
-function addP(
-  g: GameData, x: number, y: number, n: number,
-  color: string, spd = 3, type: Particle['type'] = 'explosion',
-  sz: [number, number] = [2, 5],
-) {
-  for (let i = 0; i < n && g.particles.length < MAX_P; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const s = (0.5 + Math.random()) * spd;
-    const l = 0.35 + Math.random() * 0.55;
-    g.particles.push({
-      x: x + (Math.random() - 0.5) * 10,
-      y: y + (Math.random() - 0.5) * 10,
-      vx: Math.cos(a) * s, vy: Math.sin(a) * s,
-      life: l, maxLife: l,
-      size: sz[0] + Math.random() * (sz[1] - sz[0]),
-      color, type,
-    });
-  }
-}
-
-// Shockwave ring
-function addRing(g: GameData, x: number, y: number, color: string, maxR: number) {
-  if (g.particles.length >= MAX_P) return;
-  g.particles.push({
-    x, y, vx: 0, vy: 0,
-    life: 0.4, maxLife: 0.4,
-    size: 2, color, type: 'ring',
-    startSize: maxR,
-  });
-}
-
-// Score popup
-function addScore(g: GameData, x: number, y: number, text: string, color = '#fff') {
-  if (g.particles.length >= MAX_P) return;
-  g.particles.push({
-    x, y, vx: (Math.random() - 0.5) * 0.5, vy: -1.5,
-    life: 0.8, maxLife: 0.8,
-    size: 12, color, type: 'score', text,
-  });
-}
-
-function hit(ax: number, ay: number, aw: number, ah: number,
-             bx: number, by: number, bw: number, bh: number) {
-  return Math.abs(ax - bx) < (aw + bw) / 2 && Math.abs(ay - by) < (ah + bh) / 2;
-}
-
-// ─── Spawners ────────────────────────────────────────────────
 
 function playerShoot(g: GameData) {
   fireWeapon(g);
   const color = getWeapon(g.player.weaponId).bulletColor;
-  addP(g, g.player.x, g.player.y - g.player.height / 2, 3, color, 2, 'spark', [1, 3]);
+  addParticles(g, g.player.x, g.player.y - g.player.height / 2, 3, color, 2, 'spark', [1, 3]);
 }
 
 function tryPowerUp(g: GameData, x: number, y: number) {
@@ -301,7 +231,7 @@ function tryWeaponDrop(g: GameData, x: number, y: number) {
 
 function explodeKamikaze(g: GameData, e: Enemy): void {
   for (const c of ['#f80', '#fa0', '#f40', '#fff']) {
-    addP(g, e.x, e.y, 5, c, 4, 'explosion', [2, 5]);
+    addParticles(g, e.x, e.y, 5, c, 4, 'explosion', [2, 5]);
   }
   addRing(g, e.x, e.y, '#ff884488', kamikazeExplosionRadius());
   shake(g, 6, 10);
@@ -314,14 +244,14 @@ function playerHitFromEnemy(g: GameData): boolean {
   if (p.skillShieldActive) {
     p.skillAbsorbedHits++;
     p.damageBoost = p.skillAbsorbedHits;
-    addP(g, p.x, p.y, 10, '#fd4', 3, 'spark');
+    addParticles(g, p.x, p.y, 10, '#fd4', 3, 'spark');
     sfx.playHit();
     return false;
   }
   if (p.shieldActive) {
     p.shieldActive = false;
     p.shieldTimer = 0;
-    addP(g, p.x, p.y, 15, '#4af', 3, 'spark');
+    addParticles(g, p.x, p.y, 15, '#4af', 3, 'spark');
     sfx.playHit();
     return false;
   }
@@ -333,15 +263,15 @@ function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number) {
   const boss = e.type === 'boss';
   const cols = boss ? ['#f40','#fa0','#f60','#fff','#f20'] : ['#f60','#fa0','#f30','#fff'];
   for (const c of cols)
-    addP(g, x, y, Math.floor((boss ? 50 : 20) / cols.length), c, boss ? 6 : 4, 'explosion', boss ? [3, 8] : [2, 6]);
-  addP(g, x, y, boss ? 15 : 6, '#ff8800', boss ? 4 : 2.5, 'ember', [1, 3]);
+    addParticles(g, x, y, Math.floor((boss ? 50 : 20) / cols.length), c, boss ? 6 : 4, 'explosion', boss ? [3, 8] : [2, 6]);
+  addParticles(g, x, y, boss ? 15 : 6, '#ff8800', boss ? 4 : 2.5, 'ember', [1, 3]);
   addRing(g, x, y, boss ? '#ff6644' : '#ff994488', boss ? 60 : 35);
-  g.combo++; g.comboTimer = COMBO_T;
+  g.combo++; g.comboTimer = COMBO_WINDOW_S;
   if (g.combo > g.maxCombo) g.maxCombo = g.combo;
   if (g.combo > 2) sfx.playCombo();
   const pts = Math.floor(e.scoreValue * (1 + Math.floor(g.combo / 5) * 0.5));
   g.score += pts;
-  addScore(g, x, y - 10, `+${pts}`, g.combo >= 5 ? '#ffdd00' : '#fff');
+  addScorePopup(g, x, y - 10, `+${pts}`, g.combo >= 5 ? '#ffdd00' : '#fff');
   shake(g, boss ? 12 : 4, boss ? 15 : 6);
   if (boss) {
     sfx.playBigExplosion(); g.flashAlpha = 0.4; g.flashColor = '#fff';
@@ -387,18 +317,18 @@ function updateLaserFire(g: GameData, shooting: boolean, dt: number) {
     }
   }
   if (Math.random() > 0.5) {
-    addP(g, p.x + (Math.random() - 0.5) * beamW, p.y - p.height / 2 - Math.random() * 80,
+    addParticles(g, p.x + (Math.random() - 0.5) * beamW, p.y - p.height / 2 - Math.random() * 80,
       1, '#f8f', 1, 'spark', [1, 2]);
   }
 }
 
 function activateBomb(g: GameData) {
   g.bullets = g.bullets.filter(b => b.isPlayer);
-  for (const e of g.enemies) { e.hp -= 3; e.flashTimer = 0.15; addP(g, e.x, e.y, 8, '#fff', 4, 'spark'); }
+  for (const e of g.enemies) { e.hp -= 3; e.flashTimer = 0.15; addParticles(g, e.x, e.y, 8, '#fff', 4, 'spark'); }
   g.flashAlpha = 0.6; g.flashColor = '#fff';
   shake(g, 8, 20);
   sfx.playBigExplosion();
-  addP(g, g.player.x, g.player.y, 40, '#fff', 6, 'explosion', [3, 8]);
+  addParticles(g, g.player.x, g.player.y, 40, '#fff', 6, 'explosion', [3, 8]);
   addRing(g, g.player.x, g.player.y, '#88ddff', 120);
 }
 
@@ -408,8 +338,8 @@ function hurtPlayer(g: GameData) {
   p.hp--; p.invincibleTimer = 2;
   shake(g, 10, 12);
   g.flashAlpha = 0.25; g.flashColor = '#ff2200';
-  addP(g, p.x, p.y, 25, '#f44', 4, 'explosion', [2, 6]);
-  addP(g, p.x, p.y, 10, '#ff8800', 3, 'ember', [1, 3]);
+  addParticles(g, p.x, p.y, 25, '#f44', 4, 'explosion', [2, 6]);
+  addParticles(g, p.x, p.y, 10, '#ff8800', 3, 'ember', [1, 3]);
   sfx.playExplosion();
   if (p.hp <= 0) killPlayer(g);
 }
@@ -417,9 +347,9 @@ function hurtPlayer(g: GameData) {
 function killPlayer(g: GameData) {
   const p = g.player;
   g.state = 'gameover';
-  addP(g, p.x, p.y, 60, '#f60', 6, 'explosion', [3, 8]);
-  addP(g, p.x, p.y, 30, '#fff', 5, 'spark', [2, 5]);
-  addP(g, p.x, p.y, 20, '#ff8800', 4, 'ember', [2, 4]);
+  addParticles(g, p.x, p.y, 60, '#f60', 6, 'explosion', [3, 8]);
+  addParticles(g, p.x, p.y, 30, '#fff', 5, 'spark', [2, 5]);
+  addParticles(g, p.x, p.y, 20, '#ff8800', 4, 'ember', [2, 4]);
   addRing(g, p.x, p.y, '#ff4444', 80);
   shake(g, 15, 30);
   g.flashAlpha = 0.8; g.flashColor = '#fff';
@@ -457,8 +387,8 @@ export function update(g: GameData, input: InputState, dt: number) {
     input.prevTouchX = input.touchX; input.prevTouchY = input.touchY;
   } else { input.prevTouchX = input.prevTouchY = null; }
 
-  p.x = Math.max(p.width / 2, Math.min(W - p.width / 2, p.x));
-  p.y = Math.max(p.height / 2, Math.min(H - p.height / 2, p.y));
+  p.x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, p.x));
+  p.y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, p.y));
 
   // Banking tilt
   const targetTilt = mx * 0.6 + (input.touchActive && input.touchX != null && input.prevTouchX != null
@@ -482,8 +412,8 @@ export function update(g: GameData, input: InputState, dt: number) {
 
   tickSkills(g, dt);
 
-  p.x = Math.max(p.width / 2, Math.min(W - p.width / 2, p.x));
-  p.y = Math.max(p.height / 2, Math.min(H - p.height / 2, p.y));
+  p.x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, p.x));
+  p.y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, p.y));
 
   // Timers
   if (p.invincibleTimer > 0) p.invincibleTimer -= dt;
@@ -492,7 +422,7 @@ export function update(g: GameData, input: InputState, dt: number) {
 
   // Engine trail
   if (Math.random() > 0.3)
-    addP(g, p.x + (Math.random() - 0.5) * 8, p.y + p.height / 2 + 2, 1,
+    addParticles(g, p.x + (Math.random() - 0.5) * 8, p.y + p.height / 2 + 2, 1,
          Math.random() > 0.5 ? '#0af' : '#06f', 1.5, 'trail', [2, 4]);
 
   // ── Waves ──
@@ -535,7 +465,7 @@ export function update(g: GameData, input: InputState, dt: number) {
   }
   updateHomingBullets(g, dt);
   updateBulletTravel(g);
-  g.bullets = g.bullets.filter(b => b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20);
+  g.bullets = g.bullets.filter(b => b.x > -20 && b.x < CANVAS_W + 20 && b.y > -20 && b.y < CANVAS_H + 20);
 
   // ── Graze system (near-miss bonus) ──
   if (isPlayerVulnerable(p)) {
@@ -543,14 +473,14 @@ export function update(g: GameData, input: InputState, dt: number) {
       if (b.isPlayer || b.grazed) continue;
       const dx = b.x - p.x, dy = b.y - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < GRAZE_R && dist > p.width * 0.25) {
+      if (dist < GRAZE_RADIUS && dist > p.width * 0.25) {
         b.grazed = true;
         g.score += 10;
         p.grazeTimer = 0.3;
         p.grazeCount++;
         if (p.grazeCount >= 50) queueAchievement(g, 'graze_king');
         sfx.playGraze();
-        addP(g, p.x + dx * 0.5, p.y + dy * 0.5, 3, '#aaeeff', 1.5, 'spark', [1, 2]);
+        addParticles(g, p.x + dx * 0.5, p.y + dy * 0.5, 3, '#aaeeff', 1.5, 'spark', [1, 2]);
       }
     }
   }
@@ -560,11 +490,11 @@ export function update(g: GameData, input: InputState, dt: number) {
     const b = g.bullets[bi]; if (!b.isPlayer) continue;
     for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
       const e = g.enemies[ei];
-      if (!hit(b.x, b.y, b.width, b.height, e.x, e.y, e.width, e.height)) continue;
+      if (!boxesOverlap(b.x, b.y, b.width, b.height, e.x, e.y, e.width, e.height)) continue;
       if (isFrontalShieldBlock(e, b)) continue;
       e.hp -= b.damage; e.flashTimer = 0.08;
       sfx.playHit();
-      addP(g, b.x, b.y, 4, b.color, 2, 'spark', [1, 3]);
+      addParticles(g, b.x, b.y, 4, b.color, 2, 'spark', [1, 3]);
       if (e.hp <= 0) {
         onEnemyKilled(g, e, e.x, e.y);
         g.enemies.splice(ei, 1);
@@ -582,17 +512,17 @@ export function update(g: GameData, input: InputState, dt: number) {
   if (isPlayerVulnerable(p)) {
     for (let bi = g.bullets.length - 1; bi >= 0; bi--) {
       const b = g.bullets[bi]; if (b.isPlayer) continue;
-      if (!hit(b.x, b.y, b.width, b.height, p.x, p.y, p.width * 0.4, p.height * 0.4)) continue;
+      if (!boxesOverlap(b.x, b.y, b.width, b.height, p.x, p.y, p.width * 0.4, p.height * 0.4)) continue;
       g.bullets.splice(bi, 1);
       if (p.skillShieldActive) {
         p.skillAbsorbedHits++;
         p.damageBoost = p.skillAbsorbedHits;
-        addP(g, p.x, p.y, 12, '#fd4', 3, 'spark', [2, 4]);
+        addParticles(g, p.x, p.y, 12, '#fd4', 3, 'spark', [2, 4]);
         addRing(g, p.x, p.y, '#ffcc44', 25);
         sfx.playHit();
       } else if (p.shieldActive) {
         p.shieldActive = false; p.shieldTimer = 0;
-        addP(g, p.x, p.y, 20, '#4af', 4, 'spark', [2, 5]);
+        addParticles(g, p.x, p.y, 20, '#4af', 4, 'spark', [2, 5]);
         addRing(g, p.x, p.y, '#44aaff', 30);
         sfx.playHit();
       } else { hurtPlayer(g); if (p.hp <= 0) return; }
@@ -603,7 +533,7 @@ export function update(g: GameData, input: InputState, dt: number) {
   if (isPlayerVulnerable(p)) {
     for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
       const e = g.enemies[ei];
-      if (!hit(p.x, p.y, p.width * 0.4, p.height * 0.4, e.x, e.y, e.width, e.height)) continue;
+      if (!boxesOverlap(p.x, p.y, p.width * 0.4, p.height * 0.4, e.x, e.y, e.width, e.height)) continue;
 
       if (e.type === 'kamikaze') {
         explodeKamikaze(g, e);
@@ -626,46 +556,46 @@ export function update(g: GameData, input: InputState, dt: number) {
   // ── Power-ups ──
   for (let i = g.powerUps.length - 1; i >= 0; i--) {
     const pw = g.powerUps[i]; pw.y += pw.vy;
-    if (pw.y > H + 30) { g.powerUps.splice(i, 1); continue; }
-    if (!hit(p.x, p.y, p.width, p.height, pw.x, pw.y, pw.width * 2, pw.height * 2)) continue;
+    if (pw.y > CANVAS_H + 30) { g.powerUps.splice(i, 1); continue; }
+    if (!boxesOverlap(p.x, p.y, p.width, p.height, pw.x, pw.y, pw.width * 2, pw.height * 2)) continue;
     if (!powerUpsEnabled(g)) { g.powerUps.splice(i, 1); continue; }
-    addP(g, pw.x, pw.y, 15, '#4f4', 3, 'spark', [2, 4]);
+    addParticles(g, pw.x, pw.y, 15, '#4f4', 3, 'spark', [2, 4]);
     switch (pw.type) {
       case 'spread': p.powerLevel = Math.min(3, p.powerLevel + 1); sfx.playPowerUp();
-        addScore(g, pw.x, pw.y, 'POWER UP', '#f80'); break;
+        addScorePopup(g, pw.x, pw.y, 'POWER UP', '#f80'); break;
       case 'speed': p.shootInterval = Math.max(3, p.shootInterval - 1); sfx.playPowerUp();
-        addScore(g, pw.x, pw.y, 'FIRE RATE', '#0f8'); break;
+        addScorePopup(g, pw.x, pw.y, 'FIRE RATE', '#0f8'); break;
       case 'shield': p.shieldActive = true; p.shieldTimer = 10; sfx.playPowerUp();
-        addScore(g, pw.x, pw.y, 'SHIELD', '#48f'); break;
+        addScorePopup(g, pw.x, pw.y, 'SHIELD', '#48f'); break;
       case 'bomb': activateBomb(g); break;
       case 'heal':
         if (p.hp < p.maxHp) {
           p.hp = Math.min(p.maxHp, p.hp + 1);
           sfx.playHeal();
-          addP(g, p.x, p.y, 20, '#44ff88', 3, 'spark', [2, 4]);
-          addP(g, p.x, p.y, 10, '#88ffaa', 2, 'explosion', [1, 3]);
+          addParticles(g, p.x, p.y, 20, '#44ff88', 3, 'spark', [2, 4]);
+          addParticles(g, p.x, p.y, 10, '#88ffaa', 2, 'explosion', [1, 3]);
           addRing(g, p.x, p.y, '#44ff88', 30);
           g.flashAlpha = 0.15; g.flashColor = '#44ff88';
-          addScore(g, pw.x, pw.y, '+1 HP', '#4f8');
+          addScorePopup(g, pw.x, pw.y, '+1 HP', '#4f8');
         } else {
           // At full HP, convert to score bonus
           g.score += 500;
           sfx.playPowerUp();
-          addScore(g, pw.x, pw.y, '+500', '#fd4');
+          addScorePopup(g, pw.x, pw.y, '+500', '#fd4');
         }
         break;
       case 'weapon':
         if (pw.weaponId) {
           p.weaponId = pw.weaponId;
           sfx.playPowerUp();
-          addScore(g, pw.x, pw.y, getWeapon(pw.weaponId).shortName, getWeapon(pw.weaponId).hudColor);
+          addScorePopup(g, pw.x, pw.y, getWeapon(pw.weaponId).shortName, getWeapon(pw.weaponId).hudColor);
         }
         break;
     }
     g.powerUps.splice(i, 1);
   }
 
-  g.enemies = g.enemies.filter(e => e.y < H + 60);
+  g.enemies = g.enemies.filter(e => e.y < CANVAS_H + 60);
 
   // Combo decay
   if (g.comboTimer > 0) { g.comboTimer -= dt; if (g.comboTimer <= 0) g.combo = 0; }
@@ -694,15 +624,15 @@ export function update(g: GameData, input: InputState, dt: number) {
   }
 
   // Stars & nebulae
-  for (const s of g.stars) { s.y += s.speed * tm; if (s.y > H) { s.y = -2; s.x = Math.random() * W; } }
-  for (const n of g.nebulae) { n.y += n.speed * tm; if (n.y - n.radius > H) { n.y = -n.radius; n.x = Math.random() * W; } }
+  for (const s of g.stars) { s.y += s.speed * tm; if (s.y > CANVAS_H) { s.y = -2; s.x = Math.random() * CANVAS_W; } }
+  for (const n of g.nebulae) { n.y += n.speed * tm; if (n.y - n.radius > CANVAS_H) { n.y = -n.radius; n.x = Math.random() * CANVAS_W; } }
 }
 
 // Called in non-playing states
 export function updateBackground(g: GameData, dt: number) {
   tickAchievementToast(g, dt);
-  for (const s of g.stars) { s.y += s.speed; if (s.y > H) { s.y = -2; s.x = Math.random() * W; } }
-  for (const n of g.nebulae) { n.y += n.speed; if (n.y - n.radius > H) { n.y = -n.radius; n.x = Math.random() * W; } }
+  for (const s of g.stars) { s.y += s.speed; if (s.y > CANVAS_H) { s.y = -2; s.x = Math.random() * CANVAS_W; } }
+  for (const n of g.nebulae) { n.y += n.speed; if (n.y - n.radius > CANVAS_H) { n.y = -n.radius; n.x = Math.random() * CANVAS_W; } }
   for (let i = g.particles.length - 1; i >= 0; i--) {
     const pt = g.particles[i];
     pt.x += pt.vx; pt.y += pt.vy; pt.life -= dt; pt.vx *= 0.96; pt.vy *= 0.96;
@@ -716,13 +646,16 @@ export function updateBackground(g: GameData, dt: number) {
 // ═════════════════════════ RENDER ════════════════════════════
 
 export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, ch: number) {
-  const scale = Math.min(cw / W, ch / H);
-  const ox = (cw - W * scale) / 2, oy = (ch - H * scale) / 2;
+  const scale = Math.min(cw / CANVAS_W, ch / CANVAS_H);
+  const ox = (cw - CANVAS_W * scale) / 2;
+  const oy = (ch - CANVAS_H * scale) / 2;
 
   ctx.save();
   ctx.clearRect(0, 0, cw, ch);
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch);
-  ctx.translate(ox, oy); ctx.scale(scale, scale);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.translate(ox, oy);
+  ctx.scale(scale, scale);
 
   if (g.screenShake.timer > 0) {
     const a = g.screenShake.intensity * (g.screenShake.timer / g.screenShake.duration);
@@ -730,623 +663,47 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   }
 
   ctx.save();
-  ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+  ctx.beginPath();
+  ctx.rect(0, 0, CANVAS_W, CANVAS_H);
+  ctx.clip();
 
-  // BG
   drawChapterBackground(ctx, g);
 
   if (g.state === 'menu') {
     drawMenu(ctx, g);
     drawAchievementToast(ctx, g);
-    ctx.restore(); ctx.restore();
+    ctx.restore();
+    ctx.restore();
     return;
   }
 
-  // Environmental hazards (behind entities)
   drawHazards(ctx, g);
 
-  // Power-ups
   for (const pw of g.powerUps) drawPowerUp(ctx, pw);
-
-  // Bullets (enemy first so player bullets render on top)
   for (const b of g.bullets) if (!b.isPlayer) drawBullet(ctx, b);
   for (const b of g.bullets) if (b.isPlayer) drawBullet(ctx, b);
-
-  // Enemies
   for (const e of g.enemies) drawEnemy(ctx, g, e, g.frameCount);
 
-  // Player
   if (g.state !== 'gameover') {
     if (g.player.weaponId === 'laser' && g.player.laserRamp > 0) drawLaserBeam(ctx, g);
     drawPlayer(ctx, g);
   }
 
-  // Particles (layered: rings first, then explosions, then sparks/scores on top)
-  ctx.save();
-  // Additive blending for glow effects
-  ctx.globalCompositeOperation = 'lighter';
-  for (const pt of g.particles) {
-    if (pt.type === 'score') continue;
-    const a = Math.max(0, pt.life / pt.maxLife);
-    ctx.globalAlpha = a;
-    ctx.fillStyle = pt.color;
-    if (pt.type === 'ring') {
-      const progress = 1 - a;
-      const r = (pt.startSize ?? 30) * progress;
-      ctx.strokeStyle = pt.color;
-      ctx.lineWidth = Math.max(0.5, 3 * a);
-      ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2); ctx.stroke();
-    } else if (pt.type === 'spark') {
-      ctx.save(); ctx.translate(pt.x, pt.y); ctx.rotate(Math.atan2(pt.vy, pt.vx));
-      ctx.fillRect(-pt.size, -pt.size / 3, pt.size * 2, pt.size * 0.6);
-      ctx.restore();
-    } else if (pt.type === 'ember') {
-      ctx.beginPath(); ctx.arc(pt.x, pt.y, Math.max(0.3, pt.size * a * 0.7), 0, Math.PI * 2); ctx.fill();
-    } else {
-      ctx.beginPath(); ctx.arc(pt.x, pt.y, Math.max(0.5, pt.size * a), 0, Math.PI * 2); ctx.fill();
-    }
-  }
-  ctx.restore();
-
-  // Score popups (normal blending)
-  for (const pt of g.particles) {
-    if (pt.type !== 'score') continue;
-    const a = Math.max(0, pt.life / pt.maxLife);
-    ctx.globalAlpha = a;
-    ctx.fillStyle = pt.color;
-    ctx.font = `bold ${pt.size}px "Segoe UI",Arial,sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText(pt.text ?? '', pt.x, pt.y);
-  }
-  ctx.globalAlpha = 1;
-
-  // Flash overlay
-  if (g.flashAlpha > 0) {
-    ctx.globalAlpha = g.flashAlpha; ctx.fillStyle = g.flashColor;
-    ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  }
-
-  // Danger vignette
-  if (g.dangerAlpha > 0.01) {
-    const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.7);
-    vg.addColorStop(0, 'transparent');
-    vg.addColorStop(1, '#ff000044');
-    ctx.globalAlpha = g.dangerAlpha;
-    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-  }
-
-  // Graze indicator
-  if (g.player.grazeTimer > 0) {
-    ctx.globalAlpha = g.player.grazeTimer / 0.3 * 0.4;
-    ctx.strokeStyle = '#aaeeff'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(g.player.x, g.player.y, GRAZE_R, 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
+  drawParticles(ctx, g);
+  drawFlashOverlay(ctx, g);
+  drawDangerVignette(ctx, g);
+  drawGrazeIndicator(ctx, g);
   drawHUD(ctx, g);
   drawAchievementToast(ctx, g);
-
-  // Combo
-  if (g.combo >= 3) {
-    ctx.globalAlpha = Math.min(1, g.comboTimer);
-    ctx.fillStyle = '#fd0';
-    ctx.font = 'bold 28px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
-    const bx = Math.sin(Date.now() * 0.01) * 3;
-    ctx.fillText(`${g.combo}x COMBO!`, W / 2, 120 + bx);
-    ctx.globalAlpha = 1;
-  }
-
-  // Wave
-  if (g.waveAnnounceTimer > 0 && g.wave > 0) {
-    const t = g.waveAnnounceTimer;
-    let a = 1;
-    if (t > 70) a = (90 - t) / 20; else if (t < 20) a = t / 20;
-    a = Math.max(0, Math.min(1, a));
-    const announce = getWaveAnnounce(g);
-    const chapter = getChapter(g.chapterId);
-    ctx.save(); ctx.globalAlpha = a;
-    ctx.translate(W / 2, H / 2 - 30);
-    ctx.scale(1 + (1 - a) * 0.3, 1 + (1 - a) * 0.3);
-    ctx.font = 'bold 32px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
-    if (announce.boss) { ctx.fillStyle = '#f44'; ctx.shadowColor = '#f00'; ctx.shadowBlur = 20; }
-    else ctx.fillStyle = '#fff';
-    ctx.fillText(announce.main, 0, 0);
-    if (announce.sub) {
-      ctx.font = '14px "Segoe UI",Arial,sans-serif';
-      ctx.fillStyle = chapter.hudColor;
-      ctx.fillText(announce.sub, 0, 24);
-    }
-    ctx.restore();
-  }
-
-  if (g.state === 'paused') {
-    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 40px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('PAUSED', W / 2, H / 2 - 20);
-    ctx.font = '18px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#aac';
-    ctx.fillText('Press ESC or tap to resume', W / 2, H / 2 + 20);
-  }
+  drawComboBanner(ctx, g);
+  drawWaveAnnounce(ctx, g);
+  drawPausedOverlay(ctx, g);
 
   if (g.state === 'gameover') drawGameOver(ctx, g);
   if (g.state === 'gameover' || g.state === 'paused') drawAchievementToast(ctx, g);
 
-  // Slow-mo overlay
-  if (g.slowMotion < 1) {
-    ctx.globalAlpha = 0.08; ctx.fillStyle = '#88aaff';
-    ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  }
-
-  ctx.restore(); ctx.restore();
-}
-
-// ─── Draw helpers ────────────────────────────────────────────
-
-function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData) {
-  const p = g.player;
-  const beamW = 10 + p.powerLevel * 2;
-  const top = Math.max(0, p.y - p.height / 2 - 280);
-  const gr = ctx.createLinearGradient(p.x, p.y - p.height / 2, p.x, top);
-  gr.addColorStop(0, '#fff');
-  gr.addColorStop(0.2, '#f8f');
-  gr.addColorStop(1, '#f0f0');
-  ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
-  ctx.globalAlpha = 0.35 + p.laserRamp * 0.15;
-  ctx.fillStyle = gr;
-  ctx.fillRect(p.x - beamW / 2, top, beamW, p.y - p.height / 2 - top);
-  ctx.strokeStyle = '#fff';
-  ctx.globalAlpha = 0.5;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y - p.height / 2);
-  ctx.lineTo(p.x, top);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
-  const p = g.player;
-  const craft = getAircraft(p.aircraftId);
-  if (p.invincibleTimer > 0 && Math.floor(p.invincibleTimer * 10) % 2 === 0) return;
-  if (p.skillActiveTimer > 0 && Math.floor(p.skillActiveTimer * 20) % 2 === 0) return;
-
-  ctx.save(); ctx.translate(p.x, p.y);
-  ctx.rotate(p.tilt * 0.18); // banking
-
-  // HP-based hull glow ring
-  const hpR = p.hp / p.maxHp;
-  const hpCol = hpR > 0.6 ? '#44ffaa' : hpR > 0.34 ? '#ffaa44' : '#ff4444';
-  ctx.save();
-  ctx.globalAlpha = 0.15 + (1 - hpR) * 0.2;
-  ctx.shadowColor = hpCol; ctx.shadowBlur = 12;
-  ctx.strokeStyle = hpCol; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(0, 2, 20, 0, Math.PI * 2); ctx.stroke();
-  ctx.restore();
-
-  // Shield (power-up)
-  if (p.shieldActive) {
-    ctx.strokeStyle = '#4af'; ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.01) * 0.2;
-    ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.stroke();
-    // Inner glow
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = '#4af';
-    ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-
-  // Skill shield (fortress energy shield)
-  if (p.skillShieldActive) {
-    ctx.strokeStyle = '#fd4'; ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.55 + Math.sin(Date.now() * 0.012) * 0.2;
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const a = Math.PI / 6 + (i * Math.PI) / 3;
-      const px = Math.cos(a) * 26;
-      const py = Math.sin(a) * 26;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  // Engine flame (animated)
-  const flicker = 0.8 + Math.random() * 0.4;
-  const flameH = 10 + Math.sin(Date.now() * 0.02) * 3;
-  const gr2 = ctx.createLinearGradient(0, p.height / 3, 0, p.height / 2 + flameH * flicker);
-  gr2.addColorStop(0, craft.cockpitColor); gr2.addColorStop(0.4, craft.engineColor); gr2.addColorStop(1, 'transparent');
-  ctx.fillStyle = gr2;
-  ctx.beginPath();
-  ctx.moveTo(-5, p.height / 3);
-  ctx.lineTo(0, p.height / 2 + flameH * flicker);
-  ctx.lineTo(5, p.height / 3);
-  ctx.fill();
-  // Outer flame
-  const gr3 = ctx.createLinearGradient(0, p.height / 3, 0, p.height / 2 + flameH * flicker * 0.7);
-  gr3.addColorStop(0, craft.engineColor + '44'); gr3.addColorStop(1, 'transparent');
-  ctx.fillStyle = gr3;
-  ctx.beginPath();
-  ctx.moveTo(-8, p.height / 3);
-  ctx.lineTo(0, p.height / 2 + flameH * flicker * 0.7);
-  ctx.lineTo(8, p.height / 3);
-  ctx.fill();
-
-  // Ship body
-  const gr = ctx.createLinearGradient(0, -p.height / 2, 0, p.height / 2);
-  gr.addColorStop(0, craft.hullTop); gr.addColorStop(0.4, craft.hullMid); gr.addColorStop(1, craft.hullBottom);
-  ctx.fillStyle = gr; ctx.beginPath();
-  ctx.moveTo(0, -p.height / 2);
-  ctx.lineTo(p.width / 2, p.height / 3);
-  ctx.lineTo(p.width / 2 + 4, p.height / 2);
-  ctx.lineTo(p.width / 4, p.height / 4);
-  ctx.lineTo(0, p.height / 3);
-  ctx.lineTo(-p.width / 4, p.height / 4);
-  ctx.lineTo(-p.width / 2 - 4, p.height / 2);
-  ctx.lineTo(-p.width / 2, p.height / 3);
-  ctx.closePath(); ctx.fill();
-
-  // Outline highlight
-  ctx.strokeStyle = craft.hullTop + '33'; ctx.lineWidth = 1; ctx.stroke();
-
-  // Cockpit
-  ctx.fillStyle = craft.cockpitColor; ctx.beginPath();
-  ctx.ellipse(0, -4, 4, 7, 0, 0, Math.PI * 2); ctx.fill();
-  // Cockpit glow
-  ctx.save(); ctx.globalAlpha = 0.3; ctx.shadowColor = craft.cockpitColor; ctx.shadowBlur = 8;
-  ctx.fillStyle = craft.cockpitColor; ctx.beginPath();
-  ctx.ellipse(0, -4, 3, 5, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
-
-  // Wing stripes
-  ctx.strokeStyle = '#66ccff44'; ctx.lineWidth = 1; ctx.beginPath();
-  ctx.moveTo(-4, 0); ctx.lineTo(-p.width / 2 + 2, p.height / 3 - 2);
-  ctx.moveTo(4, 0); ctx.lineTo(p.width / 2 - 2, p.height / 3 - 2);
-  ctx.stroke();
+  drawSlowMotionOverlay(ctx, g);
 
   ctx.restore();
-}
-
-function drawBullet(ctx: CanvasRenderingContext2D, b: Bullet) {
-  ctx.save(); ctx.translate(b.x, b.y);
-  if (b.isPlayer) {
-    const gr = ctx.createLinearGradient(0, -b.height / 2, 0, b.height / 2);
-    gr.addColorStop(0, '#fff'); gr.addColorStop(0.3, b.color); gr.addColorStop(1, '#036');
-    ctx.fillStyle = gr; ctx.fillRect(-b.width / 2, -b.height / 2, b.width, b.height);
-    // Glow
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    ctx.globalAlpha = 0.35; ctx.fillStyle = b.color;
-    ctx.fillRect(-b.width * 1.2, -b.height / 2, b.width * 2.4, b.height);
-    ctx.restore();
-  } else {
-    // Enemy bullet with glow
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.3;
-    ctx.fillStyle = b.color; ctx.beginPath();
-    ctx.arc(0, 0, b.width / 2 + 3, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    ctx.fillStyle = b.color; ctx.beginPath();
-    ctx.arc(0, 0, b.width / 2 + 1, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.beginPath();
-    ctx.arc(0, 0, b.width / 4, 0, Math.PI * 2); ctx.fill();
-  }
   ctx.restore();
 }
-
-function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
-  ctx.save(); ctx.translate(pw.x, pw.y);
-  const pulse = 1 + Math.sin(Date.now() * 0.008) * 0.15;
-  ctx.scale(pulse, pulse);
-  const col: Record<string, string> = { spread: '#f80', speed: '#0f8', shield: '#48f', bomb: '#f44', heal: '#4f8', weapon: '#fd4' };
-  const ico: Record<string, string> = { spread: 'S', speed: 'F', shield: '◇', bomb: 'B', heal: '+', weapon: 'W' };
-  const c = pw.type === 'weapon' && pw.weaponId ? getWeapon(pw.weaponId).hudColor : (col[pw.type] ?? '#fff');
-  // Outer glow
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.15;
-  ctx.fillStyle = c; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
-  // BG circle
-  ctx.fillStyle = c; ctx.globalAlpha = 0.25;
-  ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
-  ctx.globalAlpha = 1; ctx.strokeStyle = c; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.stroke();
-  // Icon
-  ctx.fillStyle = '#fff';
-  if (pw.type === 'heal') {
-    // Draw a cross
-    ctx.fillRect(-6, -2, 12, 4);
-    ctx.fillRect(-2, -6, 4, 12);
-  } else if (pw.type === 'weapon' && pw.weaponId) {
-    ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(getWeapon(pw.weaponId).shortName, 0, 1);
-  } else {
-    ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(ico[pw.type] ?? '?', 0, 1);
-  }
-  ctx.restore();
-}
-
-function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
-  const p = g.player;
-
-  // Score
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(g.score.toLocaleString(), 10, 30);
-
-  // Wave & chapter
-  ctx.font = '14px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#aac';
-  ctx.fillText(getWaveLabel(g), 10, 50);
-  const chapter = getChapter(g.chapterId);
-  ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillStyle = chapter.hudColor;
-  ctx.fillText(chapter.name, 10, 64);
-  if (g.gameMode === 'daily' && g.dailyModifier) {
-    ctx.fillStyle = '#da8';
-    ctx.fillText(getDailyModifierLabel(g.dailyModifier), 10, 78);
-  }
-
-  // ── Player HP bar (top-right, segmented) ──
-  const barX = W - 10;
-  const barY = 14;
-  const segW = 14;
-  const segH = 8;
-  const segGap = 3;
-  const totalW = p.maxHp * segW + (p.maxHp - 1) * segGap;
-
-  for (let i = 0; i < p.maxHp; i++) {
-    const sx = barX - totalW + i * (segW + segGap);
-    const filled = i < p.hp;
-
-    // Background segment
-    ctx.fillStyle = '#1a1a2e';
-    ctx.beginPath();
-    ctx.roundRect(sx, barY, segW, segH, 2);
-    ctx.fill();
-
-    if (filled) {
-      // Color shifts with HP ratio
-      const hpR = p.hp / p.maxHp;
-      const col = hpR > 0.6 ? '#44ffaa' : hpR > 0.34 ? '#ffaa44' : '#ff4455';
-      ctx.fillStyle = col;
-      ctx.beginPath();
-      ctx.roundRect(sx, barY, segW, segH, 2);
-      ctx.fill();
-
-      // Shine highlight on top half
-      ctx.save();
-      ctx.globalAlpha = 0.3;
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.roundRect(sx + 1, barY, segW - 2, segH / 2, [2, 2, 0, 0]);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // Border
-    ctx.strokeStyle = filled ? '#ffffff30' : '#ffffff10';
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    ctx.roundRect(sx, barY, segW, segH, 2);
-    ctx.stroke();
-  }
-
-  // HP label
-  ctx.textAlign = 'right';
-  ctx.font = '9px "Segoe UI",Arial,sans-serif';
-  ctx.fillStyle = '#889';
-  ctx.fillText('HP', barX - totalW - 5, barY + segH - 1);
-
-  // Power level
-  const statusY = barY + segH + 10;
-  ctx.textAlign = 'right';
-  if (p.powerLevel > 0) {
-    ctx.font = '11px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#4df';
-    ctx.fillText('PWR ' + '▮'.repeat(p.powerLevel) + '▯'.repeat(3 - p.powerLevel), W - 10, statusY);
-  }
-  if (p.shieldActive) {
-    ctx.fillStyle = '#48f'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('SHIELD', W - 10, statusY + (p.powerLevel > 0 ? 14 : 0));
-  }
-
-  // Graze counter (bottom left, subtle)
-  if (p.grazeCount > 0) {
-    ctx.textAlign = 'left'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-    ctx.fillStyle = '#8ac'; ctx.globalAlpha = 0.6;
-    ctx.fillText(`GRAZE ×${p.grazeCount}`, 10, H - 12);
-    ctx.globalAlpha = 1;
-  }
-
-  drawSkillIndicator(ctx, p, W / 2, H - 36);
-  drawWeaponLabel(ctx, p.weaponId, 10, H - 36);
-}
-
-function drawAchievementToast(ctx: CanvasRenderingContext2D, g: GameData) {
-  if (!g.achievementToast) return;
-  const def = ACHIEVEMENTS[g.achievementToast.id];
-  const fadeIn = Math.min(1, (3.5 - g.achievementToast.timer) / 0.4);
-  const fadeOut = Math.min(1, g.achievementToast.timer / 0.5);
-  const a = Math.min(fadeIn, fadeOut);
-  const boxW = 300;
-  const boxH = 50;
-  const x = (W - boxW) / 2;
-  const y = 78;
-
-  ctx.save();
-  ctx.globalAlpha = a;
-  ctx.fillStyle = 'rgba(8,12,24,0.85)';
-  ctx.strokeStyle = '#fd4';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.roundRect(x, y, boxW, boxH, 8);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#fd4';
-  ctx.font = 'bold 11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('ACHIEVEMENT UNLOCKED', W / 2, y + 16);
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(def.name, W / 2, y + 36);
-  ctx.restore();
-}
-
-function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
-  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(0, 0, W, H);
-  ctx.textAlign = 'center';
-
-  ctx.save(); ctx.shadowColor = '#0af'; ctx.shadowBlur = 40;
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 42px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SKY BLASTER', W / 2, 130); ctx.restore();
-
-  ctx.fillStyle = '#6bf'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SPACE SHOOTER', W / 2, 156);
-
-  ctx.textAlign = 'right';
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`¢ ${loadCoins().toLocaleString()}`, W - 12, 28);
-  ctx.textAlign = 'center';
-
-  const mode = MODE_INFO[g.gameMode];
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT MODE', W / 2, 182);
-  ctx.fillStyle = '#8df'; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`▲  ${mode.name.toUpperCase()}  ▼`, W / 2, 206);
-  ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(mode.tagline, W / 2, 222);
-  if (g.gameMode === 'daily') {
-    ctx.fillStyle = '#da8';
-    ctx.fillText(`Today: ${getDailyModifierLabel(pickDailyModifier(getDailySeed()))}`, W / 2, 236);
-  }
-
-  const craft = AIRCRAFT[g.selectedAircraft];
-  const weapon = getWeapon(g.selectedWeapon);
-  const craftUnlocked = isAircraftUnlocked(g.selectedAircraft);
-  const weaponUnlocked = isWeaponUnlocked(g.selectedWeapon);
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT AIRCRAFT', W / 2, 262);
-  ctx.fillStyle = craftUnlocked ? craft.hullTop : '#888';
-  ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${craft.name.toUpperCase()}${craftUnlocked ? '' : ' 🔒'}  ▶`, W / 2, 286);
-  ctx.fillStyle = '#aac'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(craft.tagline, W / 2, 302);
-  if (!craftUnlocked) {
-    ctx.fillStyle = canAffordUnlock(craft.coinCost) ? '#8f8' : '#f88';
-    ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`${craft.coinCost} coins — press U to unlock`, W / 2, 316);
-  } else {
-    ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(
-      `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
-      W / 2, 316,
-    );
-  }
-
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT WEAPON', W / 2, 340);
-  ctx.fillStyle = weaponUnlocked ? weapon.hudColor : '#888';
-  ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${weapon.name.toUpperCase()}${weaponUnlocked ? '' : ' 🔒'}  ▶`, W / 2, 362);
-  if (!weaponUnlocked) {
-    ctx.fillStyle = canAffordUnlock(weapon.coinCost) ? '#8f8' : '#f88';
-    ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`${weapon.coinCost} coins — press U to unlock`, W / 2, 376);
-  } else {
-    ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(weapon.tagline, W / 2, 376);
-  }
-
-  const ready = canStartGame(g);
-  ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
-  ctx.fillStyle = ready ? '#fff' : '#f88';
-  ctx.font = `${ready ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
-  ctx.fillText(ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START', W / 2, 402);
-  ctx.globalAlpha = 1;
-
-  const lines: [string, string][] = [
-    ['↑ / ↓', 'Choose mode'],
-    ['← / →', 'Choose aircraft'],
-    ['[ / ]', 'Choose weapon'],
-    ['U', 'Unlock selection'],
-    ['SPACE / Z', 'Shoot / Start'],
-    ['X / B', 'Bomb'],
-  ];
-  const controlsTop = 424;
-  const controlsStep = 15;
-  lines.forEach(([k, v], i) => {
-    const y = controlsTop + i * controlsStep;
-    ctx.fillStyle = '#aac'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, y);
-    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, y);
-  });
-
-  const sc = loadHighScores();
-  if (sc.length) {
-    const scoresTop = controlsTop + lines.length * controlsStep + 18;
-    ctx.strokeStyle = '#ffffff22';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(40, scoresTop - 10);
-    ctx.lineTo(W - 40, scoresTop - 10);
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('HIGH SCORES', W / 2, scoresTop);
-    ctx.font = '10px "Segoe UI",monospace';
-    sc.slice(0, 3).forEach((s, i) => {
-      ctx.fillStyle = i === 0 ? '#fd4' : '#aac';
-      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, scoresTop + 16 + i * 15);
-    });
-  }
-}
-
-function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
-  ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, W, H);
-  ctx.textAlign = 'center';
-
-  if (g.modeVictory) {
-    ctx.save(); ctx.shadowColor = '#4f8'; ctx.shadowBlur = 25;
-    ctx.fillStyle = '#4f8'; ctx.font = 'bold 40px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('MISSION COMPLETE', W / 2, 195); ctx.restore();
-    ctx.fillStyle = '#aac'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('All four chapters cleared', W / 2, 230);
-  } else {
-    ctx.save(); ctx.shadowColor = '#f44'; ctx.shadowBlur = 25;
-    ctx.fillStyle = '#f44'; ctx.font = 'bold 44px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('GAME OVER', W / 2, 195); ctx.restore();
-  }
-
-  ctx.fillStyle = '#fff'; ctx.font = '24px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`Score: ${g.score.toLocaleString()}`, W / 2, g.modeVictory ? 270 : 255);
-
-  ctx.fillStyle = '#aac'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
-  const progressLabel = g.gameMode === 'story' ? `Stage ${g.wave}` : `Wave ${g.wave}`;
-  ctx.fillText(`${progressLabel}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`, W / 2, g.modeVictory ? 300 : 285);
-
-  if (g.runCoinsEarned > 0) {
-    ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`+${g.runCoinsEarned} coins earned`, W / 2, g.modeVictory ? 328 : 313);
-  }
-
-  const sc = loadHighScores();
-  if (sc.length && sc[0].score === g.score && !g.modeVictory) {
-    ctx.fillStyle = '#fd4'; ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('★ NEW HIGH SCORE! ★', W / 2, 325);
-  }
-
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('HIGH SCORES', W / 2, 370);
-  ctx.font = '12px "Segoe UI",monospace';
-  sc.slice(0, 5).forEach((s, i) => {
-    ctx.fillStyle = s.score === g.score ? '#fd4' : '#aac';
-    ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, 392 + i * 20);
-  });
-
-  ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
-  ctx.fillStyle = '#fff'; ctx.font = '20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE to restart', W / 2, 540);
-  ctx.globalAlpha = 1;
-}
-
-export { W as CANVAS_W, H as CANVAS_H };
