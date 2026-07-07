@@ -43,6 +43,7 @@ export interface Bullet {
   isPlayer: boolean;
   color: string;
   grazed?: boolean;        // player already got graze bonus for this bullet
+  homingStrength?: number; // 0..1 turn rate toward target (missiles)
 }
 
 export interface Enemy {
@@ -80,6 +81,12 @@ export interface Player {
   aircraftId: AircraftId;
   skillCooldown: number;
   skillActiveTimer: number;
+  skillShieldActive: boolean;
+  skillShieldTimer: number;
+  skillAbsorbedHits: number;
+  damageBoost: number;
+  dashVx: number;
+  dashVy: number;
 }
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
