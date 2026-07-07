@@ -3,6 +3,7 @@ import {
   createGameData,
   createInputState,
   resetGame,
+  cycleAircraftSelection,
   update,
   updateBackground,
   render,
@@ -78,8 +79,22 @@ export default function App() {
       const g = gameRef.current;
 
       switch (e.code) {
-        case 'ArrowLeft': case 'KeyA': inp.left = down; e.preventDefault(); break;
-        case 'ArrowRight': case 'KeyD': inp.right = down; e.preventDefault(); break;
+        case 'ArrowLeft': case 'KeyA':
+          if (g.state === 'menu' && down) {
+            cycleAircraftSelection(g, -1);
+            playMenuSelect();
+            e.preventDefault();
+            break;
+          }
+          inp.left = down; e.preventDefault(); break;
+        case 'ArrowRight': case 'KeyD':
+          if (g.state === 'menu' && down) {
+            cycleAircraftSelection(g, 1);
+            playMenuSelect();
+            e.preventDefault();
+            break;
+          }
+          inp.right = down; e.preventDefault(); break;
         case 'ArrowUp': case 'KeyW': inp.up = down; e.preventDefault(); break;
         case 'ArrowDown': case 'KeyS': inp.down = down; e.preventDefault(); break;
 
@@ -135,7 +150,23 @@ export default function App() {
       const g = gameRef.current;
       const inp = inputRef.current;
 
-      if (g.state === 'menu' || g.state === 'gameover') { playMenuSelect(); resetGame(g); return; }
+      if (g.state === 'menu') {
+        const pt = toGame(cx, cy);
+        if (pt) {
+          if (pt.x < CANVAS_W / 3) {
+            cycleAircraftSelection(g, -1);
+            playMenuSelect();
+          } else if (pt.x > (CANVAS_W * 2) / 3) {
+            cycleAircraftSelection(g, 1);
+            playMenuSelect();
+          } else {
+            playMenuSelect();
+            resetGame(g);
+          }
+        }
+        return;
+      }
+      if (g.state === 'gameover') { playMenuSelect(); resetGame(g); return; }
       if (g.state === 'paused') { g.state = 'playing'; return; }
 
       const pt = toGame(cx, cy);
