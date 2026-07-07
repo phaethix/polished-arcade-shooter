@@ -23,25 +23,39 @@ export function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
 
   ctx.fillStyle = '#aac'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
   const progressLabel = g.gameMode === 'story' ? `Stage ${g.wave}` : `Wave ${g.wave}`;
-  ctx.fillText(`${progressLabel}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`, CANVAS_W / 2, g.modeVictory ? 300 : 285);
+  ctx.fillText(
+    `${progressLabel}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`,
+    CANVAS_W / 2,
+    g.modeVictory ? 300 : 285,
+  );
+
+  let y = g.modeVictory ? 328 : 313;
 
   if (g.runCoinsEarned > 0) {
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`+${g.runCoinsEarned} coins earned`, CANVAS_W / 2, g.modeVictory ? 328 : 313);
+    ctx.fillText(`+${g.runCoinsEarned} coins earned`, CANVAS_W / 2, y);
+    y += 24;
   }
 
   const sc = loadHighScores();
-  if (sc.length && sc[0].score === g.score && !g.modeVictory) {
+  const isNewHighScore = sc.length > 0 && sc[0].score === g.score && !g.modeVictory;
+  if (isNewHighScore) {
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('★ NEW HIGH SCORE! ★', CANVAS_W / 2, 325);
+    ctx.fillText('★ NEW HIGH SCORE! ★', CANVAS_W / 2, y);
+    y += 28;
   }
 
+  const highScoresTop = Math.max(y + 14, 370);
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('HIGH SCORES', CANVAS_W / 2, 370);
+  ctx.fillText('HIGH SCORES', CANVAS_W / 2, highScoresTop);
   ctx.font = '12px "Segoe UI",monospace';
   sc.slice(0, 5).forEach((s, i) => {
     ctx.fillStyle = s.score === g.score ? '#fd4' : '#aac';
-    ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, CANVAS_W / 2, 392 + i * 20);
+    ctx.fillText(
+      `${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`,
+      CANVAS_W / 2,
+      highScoresTop + 22 + i * 20,
+    );
   });
 
   ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
