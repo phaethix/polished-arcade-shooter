@@ -105,7 +105,8 @@ export function drawWaveAnnounce(ctx: CanvasRenderingContext2D, g: GameData) {
   }
 }
 
-export function drawPausedOverlay(ctx: CanvasRenderingContext2D, _g: GameData) {
+export function drawPausedOverlay(ctx: CanvasRenderingContext2D, g: GameData) {
+  if (g.state !== 'paused') return;
   ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
   ctx.fillStyle = '#fff'; ctx.font = 'bold 40px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
   ctx.fillText('PAUSED', CANVAS_W / 2, CANVAS_H / 2 - 20);
