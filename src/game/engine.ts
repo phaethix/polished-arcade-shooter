@@ -693,11 +693,13 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   drawFlashOverlay(ctx, g);
   drawDangerVignette(ctx, g);
   drawGrazeIndicator(ctx, g);
-  drawHUD(ctx, g);
+  if (g.state === 'playing' || g.state === 'paused') {
+    drawHUD(ctx, g);
+    drawComboBanner(ctx, g);
+    drawWaveAnnounce(ctx, g);
+  }
   drawAchievementToast(ctx, g);
-  drawComboBanner(ctx, g);
-  drawWaveAnnounce(ctx, g);
-  drawPausedOverlay(ctx, g);
+  if (g.state === 'paused') drawPausedOverlay(ctx, g);
 
   if (g.state === 'gameover') drawGameOver(ctx, g);
   if (g.state === 'gameover' || g.state === 'paused') drawAchievementToast(ctx, g);
