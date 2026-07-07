@@ -72,6 +72,16 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | 6.4 | Achievement tracking | done |
 | 6.5 | Achievement notifications | done |
 
+## Post-expansion — Architecture
+
+| # | Item | Status |
+|---|------|--------|
+| 7.1 | Split `engine.ts` into `core/`, `render/`, `storage/`, `effects` | done |
+| 7.2 | Move input to `app/` layer | done |
+| 7.3 | Architecture guide + whitepaper | done |
+
+**Status:** Phases 1–6 and post-expansion architecture work are **complete**. The game is feature-complete against the original expansion plan. Further work is optional — see *Supplementary ideas* below.
+
 ## Supplementary ideas (backlog)
 
 - **Difficulty tiers** — Easy / Normal / Hard affecting enemy density and bullet speed
@@ -90,3 +100,4 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | v0.5.0 | Chapters + environments |
 | v0.6.0 | Boss rush, daily challenge, game modes |
 | v0.7.0 | Coins, unlocks, achievements |
+| v0.7.1 | Architecture refactor (layered modules, docs) |

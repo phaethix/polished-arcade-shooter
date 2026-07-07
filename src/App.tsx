@@ -1,7 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import {
   createGameData,
-  createInputState,
   resetGame,
   canStartGame,
   tryUnlockSelectedAircraft,
@@ -12,11 +11,10 @@ import {
   update,
   updateBackground,
   render,
-  CANVAS_W,
-  CANVAS_H,
 } from './game/engine';
+import { createInputState, type InputState } from './app/input';
+import { CANVAS_W, CANVAS_H } from './game/core/constants';
 import { resumeAudio, playMenuSelect } from './game/audio';
-import type { InputState } from './game/engine';
 import type { GameData } from './game/types';
 
 export default function App() {
