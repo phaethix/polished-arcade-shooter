@@ -1,9 +1,12 @@
 # Sky Blaster — Polished Arcade Shooter
 
 [![CI](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml)
+[![Deploy](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A fast-paced, juicy vertical shoot-em-up built with React, TypeScript, and Canvas. Features tight controls, satisfying feedback, and endless waves of enemies.
+
+**[▶ Play online](https://phaethix.github.io/polished-arcade-shooter/)** — no install required, runs in your browser.
 
 ---
 
