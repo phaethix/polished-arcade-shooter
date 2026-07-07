@@ -1,0 +1,101 @@
+export interface Vec2 { x: number; y: number; }
+
+export interface Particle {
+  x: number; y: number;
+  vx: number; vy: number;
+  life: number; maxLife: number;
+  size: number; color: string;
+  type: 'explosion' | 'trail' | 'spark' | 'star' | 'ring' | 'ember' | 'score';
+  text?: string;           // for score popups
+  startSize?: number;      // for rings (expands from 0 to startSize)
+}
+
+export interface Bullet {
+  x: number; y: number;
+  vx: number; vy: number;
+  width: number; height: number;
+  damage: number;
+  isPlayer: boolean;
+  color: string;
+  grazed?: boolean;        // player already got graze bonus for this bullet
+}
+
+export interface Enemy {
+  x: number; y: number;
+  width: number; height: number;
+  hp: number; maxHp: number;
+  speed: number;
+  type: 'basic' | 'fast' | 'tank' | 'boss';
+  shootTimer: number; shootInterval: number;
+  movePattern: 'straight' | 'sine' | 'zigzag';
+  movePhase: number;
+  scoreValue: number;
+  flashTimer: number;
+}
+
+export interface PowerUp {
+  x: number; y: number;
+  width: number; height: number;
+  type: 'spread' | 'speed' | 'shield' | 'bomb' | 'heal';
+  vy: number;
+}
+
+export interface Player {
+  x: number; y: number;
+  width: number; height: number;
+  speed: number;
+  shootTimer: number; shootInterval: number;
+  hp: number; maxHp: number;
+  invincibleTimer: number;
+  powerLevel: number;
+  shieldActive: boolean; shieldTimer: number;
+  tilt: number;            // visual banking -1..1
+  grazeTimer: number;      // visual feedback
+  grazeCount: number;      // total grazes this game
+}
+
+export type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
+
+export interface HighScore {
+  score: number; date: string; wave: number;
+}
+
+export interface ScreenShake {
+  intensity: number; duration: number; timer: number;
+}
+
+export interface Nebula {
+  x: number; y: number;
+  radius: number;
+  color: string;
+  speed: number;
+  alpha: number;
+}
+
+export interface GameData {
+  player: Player;
+  bullets: Bullet[];
+  enemies: Enemy[];
+  particles: Particle[];
+  powerUps: PowerUp[];
+  score: number;
+  wave: number;
+  waveTimer: number;
+  waveDelay: number;
+  enemiesSpawned: number;
+  enemiesPerWave: number;
+  state: GameState;
+  screenShake: ScreenShake;
+  combo: number;
+  comboTimer: number;
+  maxCombo: number;
+  flashAlpha: number;
+  flashColor: string;
+  waveAnnounceTimer: number;
+  dangerAlpha: number;       // edge-of-screen red pulse when hp low
+  slowMotion: number;        // 0..1 time scale for bullet-time effect
+  slowMotionTimer: number;
+  frameCount: number;
+  stars: { x: number; y: number; speed: number; brightness: number }[];
+  nebulae: Nebula[];
+}
