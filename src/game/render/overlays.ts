@@ -71,14 +71,13 @@ export function drawGrazeIndicator(ctx: CanvasRenderingContext2D, g: GameData) {
 }
 
 export function drawComboBanner(ctx: CanvasRenderingContext2D, g: GameData) {
-  if (g.combo >= 3) {
-    ctx.globalAlpha = Math.min(1, g.comboTimer);
-    ctx.fillStyle = '#fd0';
-    ctx.font = 'bold 28px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
-    const bx = Math.sin(Date.now() * 0.01) * 3;
-    ctx.fillText(`${g.combo}x COMBO!`, CANVAS_W / 2, 120 + bx);
-    ctx.globalAlpha = 1;
-  }
+  if (g.state !== 'playing' || g.combo < 3) return;
+  ctx.globalAlpha = Math.min(1, g.comboTimer);
+  ctx.fillStyle = '#fd0';
+  ctx.font = 'bold 28px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
+  const bx = Math.sin(Date.now() * 0.01) * 3;
+  ctx.fillText(`${g.combo}x COMBO!`, CANVAS_W / 2, 120 + bx);
+  ctx.globalAlpha = 1;
 }
 
 export function drawWaveAnnounce(ctx: CanvasRenderingContext2D, g: GameData) {
