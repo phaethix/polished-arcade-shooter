@@ -1,7 +1,8 @@
 import type {
-  AircraftId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore, Nebula
+  AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore, Nebula
 } from './types';
 import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
+import { fireWeapon, getWeapon, nextWeapon, drawWeaponLabel, updateBulletTravel, consumePierce } from './weapons';
 import { isPlayerVulnerable, tickSkills, tryActivateSkill, drawSkillIndicator, updateHomingBullets } from './skills';
 import * as sfx from './audio';
 
@@ -10,7 +11,6 @@ const W = 400;
 const H = 700;
 const PW = 32;
 const PH = 36;
-const BSPD = 12;
 const MAX_P = 600;
 const COMBO_T = 1.5;
 const GRAZE_R = 22;   // graze radius
@@ -31,7 +31,7 @@ export function saveHighScore(score: number, wave: number): HighScore[] {
 }
 
 // ─── Factories ───────────────────────────────────────────────
-function mkPlayer(aircraftId: AircraftId = 'falcon'): Player {
+function mkPlayer(aircraftId: AircraftId = 'falcon', weaponId: WeaponId = 'standard'): Player {
   const craft = getAircraft(aircraftId);
   return {
     x: W / 2, y: H - 80, width: PW, height: PH,
@@ -43,6 +43,7 @@ function mkPlayer(aircraftId: AircraftId = 'falcon'): Player {
     skillCooldown: 0, skillActiveTimer: 0,
     skillShieldActive: false, skillShieldTimer: 0, skillAbsorbedHits: 0,
     damageBoost: 0, dashVx: 0, dashVy: 0,
+    weaponId, laserRamp: 0,
   };
 }
 
@@ -85,19 +86,26 @@ export function createGameData(): GameData {
     stars: mkStars(),
     nebulae: mkNebulae(),
     selectedAircraft: 'falcon',
+    selectedWeapon: 'standard',
     gameMode: 'endless',
   };
 }
 
 export function cycleAircraftSelection(g: GameData, direction: -1 | 1) {
   g.selectedAircraft = nextAircraft(g.selectedAircraft, direction);
-  g.player = mkPlayer(g.selectedAircraft);
+  g.player = mkPlayer(g.selectedAircraft, g.selectedWeapon);
+}
+
+export function cycleWeaponSelection(g: GameData, direction: -1 | 1) {
+  g.selectedWeapon = nextWeapon(g.selectedWeapon, direction);
+  g.player.weaponId = g.selectedWeapon;
 }
 
 export function resetGame(g: GameData) {
   const aircraft = g.selectedAircraft;
+  const weapon = g.selectedWeapon;
   Object.assign(g, {
-    player: mkPlayer(aircraft),
+    player: mkPlayer(aircraft, weapon),
     bullets: [], enemies: [], particles: [], powerUps: [],
     score: 0, wave: 1,
     waveTimer: 25, waveDelay: 90,
@@ -225,23 +233,9 @@ function spawnEnemy(g: GameData) {
 }
 
 function playerShoot(g: GameData) {
-  const p = g.player; const l = p.powerLevel;
-  const bulletColor = getAircraft(p.aircraftId).bulletColor;
-  const damage = 1 + p.damageBoost;
-  p.damageBoost = 0;
-  sfx.playShoot();
-  g.bullets.push({ x: p.x, y: p.y - p.height / 2 - 5, vx: 0, vy: -BSPD,
-    width: 4, height: 14, damage, isPlayer: true, color: bulletColor });
-  if (l >= 1) for (const d of [-10, 10])
-    g.bullets.push({ x: p.x + d, y: p.y - p.height / 2, vx: 0, vy: -BSPD,
-      width: 3, height: 12, damage, isPlayer: true, color: bulletColor });
-  if (l >= 2) for (const d of [-1, 1])
-    g.bullets.push({ x: p.x + d * 8, y: p.y - p.height / 2, vx: d * 2, vy: -BSPD,
-      width: 3, height: 10, damage, isPlayer: true, color: bulletColor });
-  if (l >= 3) for (const d of [-1, 1])
-    g.bullets.push({ x: p.x + d * 5, y: p.y - p.height / 2, vx: d * 3.5, vy: -BSPD * 0.9,
-      width: 3, height: 10, damage, isPlayer: true, color: bulletColor });
-  addP(g, p.x, p.y - p.height / 2, 3, bulletColor, 2, 'spark', [1, 3]);
+  fireWeapon(g);
+  const color = getWeapon(g.player.weaponId).bulletColor;
+  addP(g, g.player.x, g.player.y - g.player.height / 2, 3, color, 2, 'spark', [1, 3]);
 }
 
 function enemyShoot(g: GameData, e: Enemy) {
@@ -268,6 +262,67 @@ function tryPowerUp(g: GameData, x: number, y: number) {
   let r = Math.random(); let t: PowerUp['type'] = 'spread';
   for (let i = 0; i < types.length; i++) { r -= wts[i]; if (r <= 0) { t = types[i]; break; } }
   g.powerUps.push({ x, y, width: 20, height: 20, type: t, vy: 1.5 });
+}
+
+function tryWeaponDrop(g: GameData, x: number, y: number) {
+  if (Math.random() > 0.07) return;
+  const alts: WeaponId[] = ['armor_piercing', 'shotgun', 'laser', 'homing'];
+  const weaponId = alts[Math.floor(Math.random() * alts.length)];
+  g.powerUps.push({ x, y, width: 22, height: 22, type: 'weapon', weaponId, vy: 1.4 });
+}
+
+function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number) {
+  const boss = e.type === 'boss';
+  const cols = boss ? ['#f40','#fa0','#f60','#fff','#f20'] : ['#f60','#fa0','#f30','#fff'];
+  for (const c of cols)
+    addP(g, x, y, Math.floor((boss ? 50 : 20) / cols.length), c, boss ? 6 : 4, 'explosion', boss ? [3, 8] : [2, 6]);
+  addP(g, x, y, boss ? 15 : 6, '#ff8800', boss ? 4 : 2.5, 'ember', [1, 3]);
+  addRing(g, x, y, boss ? '#ff6644' : '#ff994488', boss ? 60 : 35);
+  g.combo++; g.comboTimer = COMBO_T;
+  if (g.combo > g.maxCombo) g.maxCombo = g.combo;
+  if (g.combo > 2) sfx.playCombo();
+  const pts = Math.floor(e.scoreValue * (1 + Math.floor(g.combo / 5) * 0.5));
+  g.score += pts;
+  addScore(g, x, y - 10, `+${pts}`, g.combo >= 5 ? '#ffdd00' : '#fff');
+  shake(g, boss ? 12 : 4, boss ? 15 : 6);
+  if (boss) {
+    sfx.playBigExplosion(); g.flashAlpha = 0.4; g.flashColor = '#fff';
+    g.slowMotion = 0.3; g.slowMotionTimer = 0.6;
+  } else sfx.playExplosion();
+  tryPowerUp(g, x, y);
+  tryWeaponDrop(g, x, y);
+}
+
+function updateLaserFire(g: GameData, shooting: boolean, dt: number) {
+  const p = g.player;
+  if (p.weaponId !== 'laser') {
+    p.laserRamp = Math.max(0, p.laserRamp - dt * 4);
+    return;
+  }
+  if (!shooting) {
+    p.laserRamp = Math.max(0, p.laserRamp - dt * 4);
+    return;
+  }
+  p.laserRamp = Math.min(3, p.laserRamp + dt * 2.5);
+  const dps = 0.35 + p.laserRamp * 0.45;
+  const damage = dps * dt * 60;
+  const beamW = 10 + p.powerLevel * 2;
+
+  for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
+    const e = g.enemies[ei];
+    if (Math.abs(e.x - p.x) > (e.width + beamW) / 2) continue;
+    if (e.y >= p.y - p.height / 2 || e.y < 0) continue;
+    e.hp -= damage;
+    e.flashTimer = 0.05;
+    if (e.hp <= 0) {
+      onEnemyKilled(g, e, e.x, e.y);
+      g.enemies.splice(ei, 1);
+    }
+  }
+  if (Math.random() > 0.5) {
+    addP(g, p.x + (Math.random() - 0.5) * beamW, p.y - p.height / 2 - Math.random() * 80,
+      1, '#f8f', 1, 'spark', [1, 2]);
+  }
 }
 
 function activateBomb(g: GameData) {
@@ -342,7 +397,10 @@ export function update(g: GameData, input: InputState, dt: number) {
   p.tilt += (targetTilt - p.tilt) * 0.15;
 
   // Shooting
-  if (input.shoot || input.touchActive) {
+  const shooting = input.shoot || input.touchActive;
+  if (p.weaponId === 'laser') {
+    updateLaserFire(g, shooting, dt);
+  } else if (shooting) {
     p.shootTimer--; if (p.shootTimer <= 0) { playerShoot(g); p.shootTimer = p.shootInterval; }
   } else p.shootTimer = Math.min(p.shootTimer, 3);
 
@@ -403,6 +461,7 @@ export function update(g: GameData, input: InputState, dt: number) {
         life: 0.12, maxLife: 0.12, size: 2, color: '#0ff8', type: 'trail' });
   }
   updateHomingBullets(g, dt);
+  updateBulletTravel(g);
   g.bullets = g.bullets.filter(b => b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20);
 
   // ── Graze system (near-miss bonus) ──
@@ -429,33 +488,17 @@ export function update(g: GameData, input: InputState, dt: number) {
       const e = g.enemies[ei];
       if (!hit(b.x, b.y, b.width, b.height, e.x, e.y, e.width, e.height)) continue;
       e.hp -= b.damage; e.flashTimer = 0.08;
-      g.bullets.splice(bi, 1);
       sfx.playHit();
-      addP(g, b.x, b.y, 4, '#0ff', 2, 'spark', [1, 3]);
+      addP(g, b.x, b.y, 4, b.color, 2, 'spark', [1, 3]);
       if (e.hp <= 0) {
-        const boss = e.type === 'boss';
-        const cols = boss ? ['#f40','#fa0','#f60','#fff','#f20'] : ['#f60','#fa0','#f30','#fff'];
-        for (const c of cols)
-          addP(g, e.x, e.y, Math.floor((boss ? 50 : 20) / cols.length), c, boss ? 6 : 4, 'explosion', boss ? [3, 8] : [2, 6]);
-        // Embers linger longer
-        addP(g, e.x, e.y, boss ? 15 : 6, '#ff8800', boss ? 4 : 2.5, 'ember', [1, 3]);
-        // Shockwave ring
-        addRing(g, e.x, e.y, boss ? '#ff6644' : '#ff994488', boss ? 60 : 35);
-        // Combo
-        g.combo++; g.comboTimer = COMBO_T;
-        if (g.combo > g.maxCombo) g.maxCombo = g.combo;
-        if (g.combo > 2) sfx.playCombo();
-        const pts = Math.floor(e.scoreValue * (1 + Math.floor(g.combo / 5) * 0.5));
-        g.score += pts;
-        addScore(g, e.x, e.y - 10, `+${pts}`, g.combo >= 5 ? '#ffdd00' : '#fff');
-        shake(g, boss ? 12 : 4, boss ? 15 : 6);
-        if (boss) {
-          sfx.playBigExplosion(); g.flashAlpha = 0.4; g.flashColor = '#fff';
-          g.slowMotion = 0.3; g.slowMotionTimer = 0.6;
-        } else sfx.playExplosion();
-        tryPowerUp(g, e.x, e.y);
+        onEnemyKilled(g, e, e.x, e.y);
         g.enemies.splice(ei, 1);
       }
+      if ((b.pierceRemaining ?? 0) > 0) {
+        consumePierce(b);
+        continue;
+      }
+      g.bullets.splice(bi, 1);
       break;
     }
   }
@@ -527,6 +570,13 @@ export function update(g: GameData, input: InputState, dt: number) {
           g.score += 500;
           sfx.playPowerUp();
           addScore(g, pw.x, pw.y, '+500', '#fd4');
+        }
+        break;
+      case 'weapon':
+        if (pw.weaponId) {
+          p.weaponId = pw.weaponId;
+          sfx.playPowerUp();
+          addScore(g, pw.x, pw.y, getWeapon(pw.weaponId).shortName, getWeapon(pw.weaponId).hudColor);
         }
         break;
     }
@@ -640,7 +690,10 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   for (const e of g.enemies) drawEnemy(ctx, e, g.frameCount);
 
   // Player
-  if (g.state !== 'gameover') drawPlayer(ctx, g);
+  if (g.state !== 'gameover') {
+    if (g.player.weaponId === 'laser' && g.player.laserRamp > 0) drawLaserBeam(ctx, g);
+    drawPlayer(ctx, g);
+  }
 
   // Particles (layered: rings first, then explosions, then sparks/scores on top)
   ctx.save();
@@ -754,6 +807,29 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
 }
 
 // ─── Draw helpers ────────────────────────────────────────────
+
+function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData) {
+  const p = g.player;
+  const beamW = 10 + p.powerLevel * 2;
+  const top = Math.max(0, p.y - p.height / 2 - 280);
+  const gr = ctx.createLinearGradient(p.x, p.y - p.height / 2, p.x, top);
+  gr.addColorStop(0, '#fff');
+  gr.addColorStop(0.2, '#f8f');
+  gr.addColorStop(1, '#f0f0');
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = 0.35 + p.laserRamp * 0.15;
+  ctx.fillStyle = gr;
+  ctx.fillRect(p.x - beamW / 2, top, beamW, p.y - p.height / 2 - top);
+  ctx.strokeStyle = '#fff';
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y - p.height / 2);
+  ctx.lineTo(p.x, top);
+  ctx.stroke();
+  ctx.restore();
+}
 
 function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   const p = g.player;
@@ -941,9 +1017,9 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
   ctx.save(); ctx.translate(pw.x, pw.y);
   const pulse = 1 + Math.sin(Date.now() * 0.008) * 0.15;
   ctx.scale(pulse, pulse);
-  const col: Record<string, string> = { spread: '#f80', speed: '#0f8', shield: '#48f', bomb: '#f44', heal: '#4f8' };
-  const ico: Record<string, string> = { spread: 'S', speed: 'F', shield: '◇', bomb: 'B', heal: '+' };
-  const c = col[pw.type] ?? '#fff';
+  const col: Record<string, string> = { spread: '#f80', speed: '#0f8', shield: '#48f', bomb: '#f44', heal: '#4f8', weapon: '#fd4' };
+  const ico: Record<string, string> = { spread: 'S', speed: 'F', shield: '◇', bomb: 'B', heal: '+', weapon: 'W' };
+  const c = pw.type === 'weapon' && pw.weaponId ? getWeapon(pw.weaponId).hudColor : (col[pw.type] ?? '#fff');
   // Outer glow
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.15;
   ctx.fillStyle = c; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
@@ -959,6 +1035,9 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
     // Draw a cross
     ctx.fillRect(-6, -2, 12, 4);
     ctx.fillRect(-2, -6, 4, 12);
+  } else if (pw.type === 'weapon' && pw.weaponId) {
+    ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(getWeapon(pw.weaponId).shortName, 0, 1);
   } else {
     ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(ico[pw.type] ?? '?', 0, 1);
@@ -1050,6 +1129,7 @@ function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
   }
 
   drawSkillIndicator(ctx, p, W / 2, H - 36);
+  drawWeaponLabel(ctx, p.weaponId, 10, H - 36);
 }
 
 function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
@@ -1064,25 +1144,34 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fillText('SPACE SHOOTER', W / 2, 180);
 
   const craft = AIRCRAFT[g.selectedAircraft];
+  const weapon = getWeapon(g.selectedWeapon);
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT AIRCRAFT', W / 2, 225);
+  ctx.fillText('SELECT AIRCRAFT', W / 2, 215);
   ctx.fillStyle = craft.hullTop; ctx.font = 'bold 22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 255);
+  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 245);
   ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(craft.tagline, W / 2, 275);
+  ctx.fillText(craft.tagline, W / 2, 265);
   ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
   ctx.fillText(
     `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
-    W / 2, 293,
+    W / 2, 283,
   );
+
+  ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SELECT WEAPON', W / 2, 315);
+  ctx.fillStyle = weapon.hudColor; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${weapon.name.toUpperCase()}  ▶`, W / 2, 342);
+  ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(weapon.tagline, W / 2, 360);
 
   ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
   ctx.fillStyle = '#fff'; ctx.font = '22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE', W / 2, 330);
+  ctx.fillText('TAP or PRESS SPACE', W / 2, 395);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
     ['← / →', 'Choose aircraft'],
+    ['[ / ]', 'Choose weapon'],
     ['Arrow / WASD', 'Move'],
     ['SPACE / Z', 'Shoot'],
     ['X / B', 'Bomb'],
@@ -1092,19 +1181,19 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   ];
   lines.forEach(([k, v], i) => {
     ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, 385 + i * 20);
-    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, 385 + i * 20);
+    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, 430 + i * 20);
+    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, 430 + i * 20);
   });
 
   const sc = loadHighScores();
   if (sc.length) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('HIGH SCORES', W / 2, 540);
+    ctx.fillText('HIGH SCORES', W / 2, 580);
     ctx.font = '12px "Segoe UI",monospace';
     sc.slice(0, 5).forEach((s, i) => {
       ctx.fillStyle = i === 0 ? '#fd4' : '#aac';
-      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, 562 + i * 20);
+      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, 602 + i * 20);
     });
   }
 }
