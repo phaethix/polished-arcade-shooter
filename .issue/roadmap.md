@@ -8,7 +8,7 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 - **Ship vertically in thin slices** — each slice should be playable
 - **Endless mode stays working** — new modes extend, not replace, the current loop
 
-## Phase 1 — Aircraft foundation (current)
+## Phase 1 — Aircraft foundation
 
 | # | Item | Status |
 |---|------|--------|
@@ -21,16 +21,16 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | 1.7 | Phantom — dash skill | done |
 | 1.8 | Fortress — energy shield skill | done |
 
-## Phase 2 — Weapons
+## Phase 2 — Weapons (current)
 
 | # | Item | Status |
 |---|------|--------|
-| 2.1 | Weapon type definitions + config | planned |
-| 2.2 | Weapon switching (in-run pickup or menu) | planned |
-| 2.3 | Armor-piercing bullets | planned |
-| 2.4 | Shotgun spread pattern | planned |
-| 2.5 | Laser beam (sustained DPS) | planned |
-| 2.6 | Homing missiles | planned |
+| 2.1 | Weapon type definitions + config | done |
+| 2.2 | Weapon switching (in-run pickup or menu) | done |
+| 2.3 | Armor-piercing bullets | done |
+| 2.4 | Shotgun spread pattern | done |
+| 2.5 | Laser beam (sustained DPS) | done |
+| 2.6 | Homing missiles | done |
 
 ## Phase 3 — New enemies
 
