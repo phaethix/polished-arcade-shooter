@@ -2,7 +2,7 @@ import type {
   AircraftId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore, Nebula
 } from './types';
 import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
-import { isPlayerVulnerable, tickSkills, tryActivateSkill, drawSkillIndicator } from './skills';
+import { isPlayerVulnerable, tickSkills, tryActivateSkill, drawSkillIndicator, updateHomingBullets } from './skills';
 import * as sfx from './audio';
 
 // ─── Constants ───────────────────────────────────────────────
@@ -399,6 +399,7 @@ export function update(g: GameData, input: InputState, dt: number) {
       g.particles.push({ x: b.x, y: b.y + 4, vx: (Math.random() - 0.5) * 0.5, vy: Math.random(),
         life: 0.12, maxLife: 0.12, size: 2, color: '#0ff8', type: 'trail' });
   }
+  updateHomingBullets(g, dt);
   g.bullets = g.bullets.filter(b => b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20);
 
   // ── Graze system (near-miss bonus) ──
