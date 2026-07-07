@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/phaethix/polished-arcade-shooter/issues"
   },
-  "homepage": "https://github.com/phaethix/polished-arcade-shooter#readme",
+  "homepage": "https://phaethix.github.io/polished-arcade-shooter/",
   "type": "module",
   "engines": {
     "node": ">=18"
@@ -19,6 +19,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:pages": "vite build --mode pages",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "commitlint": "commitlint --edit",
