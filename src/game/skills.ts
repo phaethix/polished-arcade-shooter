@@ -1,5 +1,79 @@
-import type { GameData, Player } from './types';
+import type { GameData, Player, Enemy } from './types';
 import { getAircraft } from './aircraft';
+import * as sfx from './audio';
+
+const MISSILE_COUNT = 5;
+const MISSILE_SPEED = 9;
+
+function nearestEnemies(g: GameData, count: number): Enemy[] {
+  const p = g.player;
+  return [...g.enemies]
+    .sort((a, b) => {
+      const da = (a.x - p.x) ** 2 + (a.y - p.y) ** 2;
+      const db = (b.x - p.x) ** 2 + (b.y - p.y) ** 2;
+      return da - db;
+    })
+    .slice(0, count);
+}
+
+export function updateHomingBullets(g: GameData, dt: number) {
+  for (const b of g.bullets) {
+    if (!b.isPlayer || !b.homingStrength) continue;
+
+    let target: Enemy | null = null;
+    let bestDist = Infinity;
+    for (const e of g.enemies) {
+      const dx = e.x - b.x;
+      const dy = e.y - b.y;
+      const dist = dx * dx + dy * dy;
+      if (dist < bestDist) {
+        bestDist = dist;
+        target = e;
+      }
+    }
+    if (!target) continue;
+
+    const dx = target.x - b.x;
+    const dy = target.y - b.y;
+    const current = Math.atan2(b.vy, b.vx);
+    let desired = Math.atan2(dy, dx);
+    let delta = desired - current;
+    while (delta > Math.PI) delta -= Math.PI * 2;
+    while (delta < -Math.PI) delta += Math.PI * 2;
+
+    const turn = b.homingStrength * dt * 4;
+    const next = current + Math.max(-turn, Math.min(turn, delta));
+    const speed = Math.hypot(b.vx, b.vy) || MISSILE_SPEED;
+    b.vx = Math.cos(next) * speed;
+    b.vy = Math.sin(next) * speed;
+  }
+}
+
+function activateMissileSalvo(g: GameData): boolean {
+  const p = g.player;
+  const targets = nearestEnemies(g, MISSILE_COUNT);
+
+  for (let i = 0; i < MISSILE_COUNT; i++) {
+    const spread = (i - (MISSILE_COUNT - 1) / 2) * 0.18;
+    const angle = -Math.PI / 2 + spread;
+    g.bullets.push({
+      x: p.x + Math.cos(angle) * 6,
+      y: p.y - p.height / 2,
+      vx: Math.cos(angle) * MISSILE_SPEED,
+      vy: Math.sin(angle) * MISSILE_SPEED,
+      width: 5,
+      height: 10,
+      damage: 2,
+      isPlayer: true,
+      color: '#f84',
+      homingStrength: targets.length ? 0.12 : 0.04,
+    });
+  }
+
+  startSkillCooldown(p);
+  sfx.playPowerUp();
+  return true;
+}
 
 /** True when the player can take damage from bullets or collisions. */
 export function isPlayerVulnerable(p: Player): boolean {
@@ -39,6 +113,7 @@ export function tryActivateSkill(g: GameData, _moveX: number, _moveY: number): b
   const craft = getAircraft(p.aircraftId);
   switch (craft.skill) {
     case 'missile_salvo':
+      return activateMissileSalvo(g);
     case 'dash':
     case 'energy_shield':
       return false;
