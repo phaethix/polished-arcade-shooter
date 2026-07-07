@@ -1,5 +1,5 @@
 import type {
-  AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore, Nebula
+  AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore
 } from './types';
 import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
 import { fireWeapon, getWeapon, nextWeapon, drawWeaponLabel, updateBulletTravel, consumePierce } from './weapons';
@@ -9,6 +9,13 @@ import {
   spawnSplitterChildren, isFrontalShieldBlock, blocksCenterShot,
   isKamikazeBlastHit, kamikazeExplosionRadius,
 } from './enemies';
+import {
+  applyChapterToGame, drawChapterBackground, getChapter,
+  getChapterForWave, syncChapterForWave,
+} from './chapters';
+import {
+  drawHazards, handleHazardCollisions, initChapterHazards, updateHazards,
+} from './hazards';
 import * as sfx from './audio';
 
 // ─── Constants ───────────────────────────────────────────────
@@ -52,29 +59,8 @@ function mkPlayer(aircraftId: AircraftId = 'falcon', weaponId: WeaponId = 'stand
   };
 }
 
-function mkStars() {
-  const a: GameData['stars'] = [];
-  for (let i = 0; i < 100; i++)
-    a.push({ x: Math.random() * W, y: Math.random() * H,
-             speed: 0.3 + Math.random() * 2.2,
-             brightness: 0.2 + Math.random() * 0.8 });
-  return a;
-}
-
-function mkNebulae(): Nebula[] {
-  const cols = ['#1a0030','#001830','#0a1828','#180a28','#002018'];
-  const a: Nebula[] = [];
-  for (let i = 0; i < 6; i++)
-    a.push({ x: Math.random() * W, y: Math.random() * H,
-             radius: 60 + Math.random() * 100,
-             color: cols[Math.floor(Math.random() * cols.length)],
-             speed: 0.15 + Math.random() * 0.3,
-             alpha: 0.15 + Math.random() * 0.2 });
-  return a;
-}
-
 export function createGameData(): GameData {
-  return {
+  const g: GameData = {
     player: mkPlayer('falcon'),
     bullets: [], enemies: [], particles: [], powerUps: [],
     score: 0, wave: 0,
@@ -88,13 +74,18 @@ export function createGameData(): GameData {
     dangerAlpha: 0,
     slowMotion: 1, slowMotionTimer: 0,
     frameCount: 0,
-    stars: mkStars(),
-    nebulae: mkNebulae(),
+    stars: [],
+    nebulae: [],
+    chapterId: 'space',
+    hazards: [],
+    hazardSpawnTimer: 0,
     selectedAircraft: 'falcon',
     selectedWeapon: 'standard',
     specialSpawns: { sniper: false, healer: false },
     gameMode: 'endless',
   };
+  applyChapterToGame(g, 'space');
+  return g;
 }
 
 export function cycleAircraftSelection(g: GameData, direction: -1 | 1) {
@@ -110,6 +101,7 @@ export function cycleWeaponSelection(g: GameData, direction: -1 | 1) {
 export function resetGame(g: GameData) {
   const aircraft = g.selectedAircraft;
   const weapon = g.selectedWeapon;
+  const chapterId = getChapterForWave(1);
   Object.assign(g, {
     player: mkPlayer(aircraft, weapon),
     bullets: [], enemies: [], particles: [], powerUps: [],
@@ -124,8 +116,11 @@ export function resetGame(g: GameData) {
     frameCount: 0,
     screenShake: { intensity: 0, duration: 0, timer: 0 },
     specialSpawns: { sniper: false, healer: false },
+    hazardSpawnTimer: 0,
     state: 'playing' as const,
   });
+  applyChapterToGame(g, chapterId);
+  initChapterHazards(g);
 }
 
 // ─── Input ───────────────────────────────────────────────────
@@ -411,8 +406,11 @@ export function update(g: GameData, input: InputState, dt: number) {
   g.waveTimer--;
   if (g.enemiesSpawned >= g.enemiesPerWave && g.enemies.length === 0) {
     if (g.waveTimer <= 0) {
+      const prevChapter = g.chapterId;
       g.wave++; g.enemiesSpawned = 0;
       g.specialSpawns = { sniper: false, healer: false };
+      syncChapterForWave(g);
+      if (g.chapterId !== prevChapter) initChapterHazards(g);
       g.enemiesPerWave = (g.wave % 5 === 0 && g.wave >= 5) ? 1 : 5 + g.wave * 2;
       g.waveTimer = g.waveDelay; g.waveAnnounceTimer = 90;
     }
@@ -422,6 +420,7 @@ export function update(g: GameData, input: InputState, dt: number) {
 
   // ── Enemies ──
   updateEnemies(g, dt, tm);
+  updateHazards(g, dt, tm);
 
   // ── Bullets ──
   for (const b of g.bullets) {
@@ -516,6 +515,9 @@ export function update(g: GameData, input: InputState, dt: number) {
       break;
     }
   }
+
+  const hazardHit = handleHazardCollisions(g, isPlayerVulnerable, () => hurtPlayer(g));
+  if (hazardHit.playerDied) return;
 
   // ── Power-ups ──
   for (let i = g.powerUps.length - 1; i >= 0; i--) {
@@ -625,34 +627,12 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
 
   // BG
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#060614'); bg.addColorStop(0.5, '#0a0e22'); bg.addColorStop(1, '#060614');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-
-  // Nebulae
-  for (const n of g.nebulae) {
-    const gr = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
-    gr.addColorStop(0, n.color); gr.addColorStop(1, 'transparent');
-    ctx.globalAlpha = n.alpha; ctx.fillStyle = gr;
-    ctx.fillRect(n.x - n.radius, n.y - n.radius, n.radius * 2, n.radius * 2);
-  }
-  ctx.globalAlpha = 1;
-
-  // Stars
-  for (const s of g.stars) {
-    ctx.globalAlpha = s.brightness;
-    ctx.fillStyle = s.speed > 1.8 ? '#ccddff' : '#fff';
-    const sz = s.speed > 1.5 ? 2 : 1;
-    ctx.fillRect(s.x, s.y, sz, sz);
-    // Speed streaks for fast stars
-    if (s.speed > 1.8) {
-      ctx.globalAlpha = s.brightness * 0.3;
-      ctx.fillRect(s.x, s.y - s.speed * 1.5, 1, s.speed * 1.5);
-    }
-  }
-  ctx.globalAlpha = 1;
+  drawChapterBackground(ctx, g);
 
   if (g.state === 'menu') { drawMenu(ctx, g); ctx.restore(); ctx.restore(); return; }
+
+  // Environmental hazards (behind entities)
+  drawHazards(ctx, g);
 
   // Power-ups
   for (const pw of g.powerUps) drawPowerUp(ctx, pw);
@@ -752,6 +732,7 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
     if (t > 70) a = (90 - t) / 20; else if (t < 20) a = t / 20;
     a = Math.max(0, Math.min(1, a));
     const boss = g.wave % 5 === 0 && g.wave >= 5;
+    const chapter = getChapter(g.chapterId);
     ctx.save(); ctx.globalAlpha = a;
     ctx.translate(W / 2, H / 2 - 30);
     ctx.scale(1 + (1 - a) * 0.3, 1 + (1 - a) * 0.3);
@@ -759,6 +740,11 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
     if (boss) { ctx.fillStyle = '#f44'; ctx.shadowColor = '#f00'; ctx.shadowBlur = 20; }
     else ctx.fillStyle = '#fff';
     ctx.fillText(boss ? `⚠ BOSS WAVE ${g.wave} ⚠` : `WAVE ${g.wave}`, 0, 0);
+    if (!boss && g.wave > 1) {
+      ctx.font = '14px "Segoe UI",Arial,sans-serif';
+      ctx.fillStyle = chapter.hudColor;
+      ctx.fillText(chapter.name.toUpperCase(), 0, 24);
+    }
     ctx.restore();
   }
 
@@ -974,9 +960,13 @@ function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.textAlign = 'left';
   ctx.fillText(g.score.toLocaleString(), 10, 30);
 
-  // Wave
+  // Wave & chapter
   ctx.font = '14px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#aac';
   ctx.fillText(`WAVE ${g.wave}`, 10, 50);
+  const chapter = getChapter(g.chapterId);
+  ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillStyle = chapter.hudColor;
+  ctx.fillText(chapter.name, 10, 64);
 
   // ── Player HP bar (top-right, segmented) ──
   const barX = W - 10;
