@@ -2,8 +2,13 @@ import type { GameData } from '../types';
 import { CANVAS_W, CANVAS_H } from '../core/constants';
 import { loadHighScores } from '../storage/highscores';
 
+/** Advance baseline after a line (canvas fillText y is the baseline, not the top). */
+function lineStep(y: number, fontSize: number, gap = 14): number {
+  return y + fontSize + gap;
+}
+
 export function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
-  ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
   ctx.textAlign = 'center';
 
   if (g.modeVictory) {
@@ -29,23 +34,23 @@ export function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
     g.modeVictory ? 300 : 285,
   );
 
-  let y = g.modeVictory ? 328 : 313;
+  let y = g.modeVictory ? 328 : 310;
+  const sc = loadHighScores();
+  const isNewHighScore = sc.length > 0 && sc[0].score === g.score && !g.modeVictory;
 
   if (g.runCoinsEarned > 0) {
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`+${g.runCoinsEarned} coins earned`, CANVAS_W / 2, y);
-    y += 24;
+    ctx.fillText(`+${g.runCoinsEarned.toLocaleString()} coins earned`, CANVAS_W / 2, y);
+    y = lineStep(y, 15);
   }
 
-  const sc = loadHighScores();
-  const isNewHighScore = sc.length > 0 && sc[0].score === g.score && !g.modeVictory;
   if (isNewHighScore) {
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
     ctx.fillText('★ NEW HIGH SCORE! ★', CANVAS_W / 2, y);
-    y += 28;
+    y = lineStep(y, 18);
   }
 
-  const highScoresTop = Math.max(y + 14, 370);
+  const highScoresTop = Math.max(y + 18, 372);
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
   ctx.fillText('HIGH SCORES', CANVAS_W / 2, highScoresTop);
   ctx.font = '12px "Segoe UI",monospace';
