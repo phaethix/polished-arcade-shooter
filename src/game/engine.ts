@@ -1067,27 +1067,27 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   const craft = AIRCRAFT[g.selectedAircraft];
   const weapon = getWeapon(g.selectedWeapon);
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT AIRCRAFT', W / 2, 215);
+  ctx.fillText('SELECT AIRCRAFT', W / 2, 208);
   ctx.fillStyle = craft.hullTop; ctx.font = 'bold 22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 245);
+  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 236);
   ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(craft.tagline, W / 2, 265);
+  ctx.fillText(craft.tagline, W / 2, 254);
   ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
   ctx.fillText(
     `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
-    W / 2, 283,
+    W / 2, 270,
   );
 
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT WEAPON', W / 2, 315);
+  ctx.fillText('SELECT WEAPON', W / 2, 298);
   ctx.fillStyle = weapon.hudColor; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${weapon.name.toUpperCase()}  ▶`, W / 2, 342);
+  ctx.fillText(`◀  ${weapon.name.toUpperCase()}  ▶`, W / 2, 324);
   ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(weapon.tagline, W / 2, 360);
+  ctx.fillText(weapon.tagline, W / 2, 340);
 
   ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
   ctx.fillStyle = '#fff'; ctx.font = '22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE', W / 2, 395);
+  ctx.fillText('TAP or PRESS SPACE', W / 2, 368);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
@@ -1100,21 +1100,32 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
     ['ESC / P', 'Pause'],
     ['Touch & Drag', 'Move + Auto-fire'],
   ];
+  const controlsTop = 392;
+  const controlsStep = 17;
   lines.forEach(([k, v], i) => {
+    const y = controlsTop + i * controlsStep;
     ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, 430 + i * 20);
-    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, 430 + i * 20);
+    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, y);
+    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, y);
   });
 
   const sc = loadHighScores();
   if (sc.length) {
+    const scoresTop = controlsTop + (lines.length - 1) * controlsStep + 28;
+    ctx.strokeStyle = '#ffffff22';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, scoresTop - 14);
+    ctx.lineTo(W - 40, scoresTop - 14);
+    ctx.stroke();
+
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('HIGH SCORES', W / 2, 580);
-    ctx.font = '12px "Segoe UI",monospace';
-    sc.slice(0, 5).forEach((s, i) => {
+    ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
+    ctx.fillText('HIGH SCORES', W / 2, scoresTop);
+    ctx.font = '11px "Segoe UI",monospace';
+    sc.slice(0, 3).forEach((s, i) => {
       ctx.fillStyle = i === 0 ? '#fd4' : '#aac';
-      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, 602 + i * 20);
+      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, scoresTop + 18 + i * 17);
     });
   }
 }
