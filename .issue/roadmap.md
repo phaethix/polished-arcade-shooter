@@ -42,7 +42,7 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | 3.4 | Kamikaze (rush + explode) | done |
 | 3.5 | Healer (aura heal nearby enemies) | done |
 
-## Phase 4 — Chapters & environments (current)
+## Phase 4 — Chapters & environments
 
 | # | Item | Status |
 |---|------|--------|
@@ -56,13 +56,13 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 
 | # | Item | Status |
 |---|------|--------|
-| 5.1 | Mode selection on menu | planned |
-| 5.2 | Story mode (4 chapters × 5 stages) | planned |
-| 5.3 | Endless mode (existing, polished) | planned |
-| 5.4 | Boss rush | planned |
-| 5.5 | Daily challenge (seeded modifiers) | planned |
+| 5.1 | Mode selection on menu | done |
+| 5.2 | Story mode (4 chapters × 5 stages) | done |
+| 5.3 | Endless mode (existing, polished) | done |
+| 5.4 | Boss rush | done |
+| 5.5 | Daily challenge (seeded modifiers) | done |
 
-## Phase 6 — Meta progression
+## Phase 6 — Meta progression (current)
 
 | # | Item | Status |
 |---|------|--------|
@@ -87,4 +87,5 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | v0.2.0 | Aircraft selection + 3 skills |
 | v0.3.0 | Weapons + 2 new enemy types |
 | v0.4.0 | Chapters + story mode skeleton |
-| v0.5.0 | Boss rush, daily challenge, achievements |
+| v0.5.0 | Chapters + environments |
+| v0.6.0 | Boss rush, daily challenge, achievements |

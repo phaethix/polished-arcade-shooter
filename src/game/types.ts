@@ -17,6 +17,12 @@ export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
 
 export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily';
 
+export type DailyModifier =
+  | 'double_speed'
+  | 'no_powerups'
+  | 'single_hp'
+  | 'kamikaze_only';
+
 export type AchievementId =
   | 'first_blood'
   | 'combo_master'
@@ -170,4 +176,7 @@ export interface GameData {
   selectedWeapon: WeaponId;
   specialSpawns: { sniper: boolean; healer: boolean };
   gameMode: GameMode;
+  dailySeed: number;
+  dailyModifier: DailyModifier | null;
+  modeVictory: boolean;
 }

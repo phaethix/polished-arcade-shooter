@@ -5,6 +5,7 @@ import {
   resetGame,
   cycleAircraftSelection,
   cycleWeaponSelection,
+  cycleGameModeSelection,
   update,
   updateBackground,
   render,
@@ -80,6 +81,22 @@ export default function App() {
       const g = gameRef.current;
 
       switch (e.code) {
+        case 'ArrowUp': case 'KeyW':
+          if (g.state === 'menu' && down) {
+            cycleGameModeSelection(g, -1);
+            playMenuSelect();
+            e.preventDefault();
+            break;
+          }
+          inp.up = down; e.preventDefault(); break;
+        case 'ArrowDown': case 'KeyS':
+          if (g.state === 'menu' && down) {
+            cycleGameModeSelection(g, 1);
+            playMenuSelect();
+            e.preventDefault();
+            break;
+          }
+          inp.down = down; e.preventDefault(); break;
         case 'ArrowLeft': case 'KeyA':
           if (g.state === 'menu' && down) {
             cycleAircraftSelection(g, -1);
@@ -96,8 +113,6 @@ export default function App() {
             break;
           }
           inp.right = down; e.preventDefault(); break;
-        case 'ArrowUp': case 'KeyW': inp.up = down; e.preventDefault(); break;
-        case 'ArrowDown': case 'KeyS': inp.down = down; e.preventDefault(); break;
 
         case 'Space': case 'KeyZ':
           e.preventDefault();
@@ -173,7 +188,15 @@ export default function App() {
       if (g.state === 'menu') {
         const pt = toGame(cx, cy);
         if (pt) {
-          if (pt.y < 300) {
+          if (pt.y >= 170 && pt.y < 248) {
+            if (pt.y < 206) {
+              cycleGameModeSelection(g, -1);
+              playMenuSelect();
+            } else {
+              cycleGameModeSelection(g, 1);
+              playMenuSelect();
+            }
+          } else if (pt.y >= 248 && pt.y < 328) {
             if (pt.x < CANVAS_W / 3) {
               cycleAircraftSelection(g, -1);
               playMenuSelect();
@@ -181,7 +204,7 @@ export default function App() {
               cycleAircraftSelection(g, 1);
               playMenuSelect();
             }
-          } else if (pt.y < 380) {
+          } else if (pt.y >= 328 && pt.y < 388) {
             if (pt.x < CANVAS_W / 3) {
               cycleWeaponSelection(g, -1);
               playMenuSelect();
@@ -189,7 +212,7 @@ export default function App() {
               cycleWeaponSelection(g, 1);
               playMenuSelect();
             }
-          } else if (pt.x > CANVAS_W / 3 && pt.x < (CANVAS_W * 2) / 3) {
+          } else if (pt.y >= 388 && pt.y < 420 && pt.x > CANVAS_W / 3 && pt.x < (CANVAS_W * 2) / 3) {
             playMenuSelect();
             resetGame(g);
           }

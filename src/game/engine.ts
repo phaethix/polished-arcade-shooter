@@ -1,5 +1,5 @@
 import type {
-  AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore
+  AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore,
 } from './types';
 import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
 import { fireWeapon, getWeapon, nextWeapon, drawWeaponLabel, updateBulletTravel, consumePierce } from './weapons';
@@ -11,8 +11,13 @@ import {
 } from './enemies';
 import {
   applyChapterToGame, drawChapterBackground, getChapter,
-  getChapterForWave, syncChapterForWave,
 } from './chapters';
+import {
+  applyDailyPlayerMods,
+  getDailyModifierLabel, getDailySeed, getEnemiesPerWave, getWaveAnnounce, getWaveLabel,
+  initModeState, isStoryComplete, MODE_INFO, nextGameMode, pickDailyModifier,
+  powerUpsEnabled, syncChapterForMode,
+} from './modes';
 import {
   drawHazards, handleHazardCollisions, initChapterHazards, updateHazards,
 } from './hazards';
@@ -83,6 +88,9 @@ export function createGameData(): GameData {
     selectedWeapon: 'standard',
     specialSpawns: { sniper: false, healer: false },
     gameMode: 'endless',
+    dailySeed: 0,
+    dailyModifier: null,
+    modeVictory: false,
   };
   applyChapterToGame(g, 'space');
   return g;
@@ -98,10 +106,14 @@ export function cycleWeaponSelection(g: GameData, direction: -1 | 1) {
   g.player.weaponId = g.selectedWeapon;
 }
 
+export function cycleGameModeSelection(g: GameData, direction: -1 | 1) {
+  g.gameMode = nextGameMode(g.gameMode, direction);
+}
+
 export function resetGame(g: GameData) {
   const aircraft = g.selectedAircraft;
   const weapon = g.selectedWeapon;
-  const chapterId = getChapterForWave(1);
+  initModeState(g);
   Object.assign(g, {
     player: mkPlayer(aircraft, weapon),
     bullets: [], enemies: [], particles: [], powerUps: [],
@@ -119,7 +131,9 @@ export function resetGame(g: GameData) {
     hazardSpawnTimer: 0,
     state: 'playing' as const,
   });
-  applyChapterToGame(g, chapterId);
+  applyDailyPlayerMods(g);
+  syncChapterForMode(g);
+  g.enemiesPerWave = getEnemiesPerWave(g);
   initChapterHazards(g);
 }
 
@@ -199,6 +213,7 @@ function playerShoot(g: GameData) {
 }
 
 function tryPowerUp(g: GameData, x: number, y: number) {
+  if (!powerUpsEnabled(g)) return;
   if (Math.random() > 0.18) return;
   const types: PowerUp['type'][] = ['spread','speed','shield','bomb','heal'];
   const wts = [0.28, 0.20, 0.17, 0.15, 0.20];
@@ -208,6 +223,7 @@ function tryPowerUp(g: GameData, x: number, y: number) {
 }
 
 function tryWeaponDrop(g: GameData, x: number, y: number) {
+  if (!powerUpsEnabled(g)) return;
   if (Math.random() > 0.07) return;
   const alts: WeaponId[] = ['armor_piercing', 'shotgun', 'laser', 'homing'];
   const weaponId = alts[Math.floor(Math.random() * alts.length)];
@@ -406,12 +422,18 @@ export function update(g: GameData, input: InputState, dt: number) {
   g.waveTimer--;
   if (g.enemiesSpawned >= g.enemiesPerWave && g.enemies.length === 0) {
     if (g.waveTimer <= 0) {
-      const prevChapter = g.chapterId;
+      if (isStoryComplete(g)) {
+        g.modeVictory = true;
+        g.state = 'gameover';
+        saveHighScore(g.score, g.wave);
+        sfx.playBigExplosion();
+        return;
+      }
       g.wave++; g.enemiesSpawned = 0;
       g.specialSpawns = { sniper: false, healer: false };
-      syncChapterForWave(g);
-      if (g.chapterId !== prevChapter) initChapterHazards(g);
-      g.enemiesPerWave = (g.wave % 5 === 0 && g.wave >= 5) ? 1 : 5 + g.wave * 2;
+      const chapterChanged = syncChapterForMode(g);
+      if (chapterChanged) initChapterHazards(g);
+      g.enemiesPerWave = getEnemiesPerWave(g);
       g.waveTimer = g.waveDelay; g.waveAnnounceTimer = 90;
     }
   } else if (g.enemiesSpawned < g.enemiesPerWave && g.waveTimer <= 0) {
@@ -524,6 +546,7 @@ export function update(g: GameData, input: InputState, dt: number) {
     const pw = g.powerUps[i]; pw.y += pw.vy;
     if (pw.y > H + 30) { g.powerUps.splice(i, 1); continue; }
     if (!hit(p.x, p.y, p.width, p.height, pw.x, pw.y, pw.width * 2, pw.height * 2)) continue;
+    if (!powerUpsEnabled(g)) { g.powerUps.splice(i, 1); continue; }
     addP(g, pw.x, pw.y, 15, '#4f4', 3, 'spark', [2, 4]);
     switch (pw.type) {
       case 'spread': p.powerLevel = Math.min(3, p.powerLevel + 1); sfx.playPowerUp();
@@ -731,19 +754,19 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
     let a = 1;
     if (t > 70) a = (90 - t) / 20; else if (t < 20) a = t / 20;
     a = Math.max(0, Math.min(1, a));
-    const boss = g.wave % 5 === 0 && g.wave >= 5;
+    const announce = getWaveAnnounce(g);
     const chapter = getChapter(g.chapterId);
     ctx.save(); ctx.globalAlpha = a;
     ctx.translate(W / 2, H / 2 - 30);
     ctx.scale(1 + (1 - a) * 0.3, 1 + (1 - a) * 0.3);
     ctx.font = 'bold 32px "Segoe UI",Arial,sans-serif'; ctx.textAlign = 'center';
-    if (boss) { ctx.fillStyle = '#f44'; ctx.shadowColor = '#f00'; ctx.shadowBlur = 20; }
+    if (announce.boss) { ctx.fillStyle = '#f44'; ctx.shadowColor = '#f00'; ctx.shadowBlur = 20; }
     else ctx.fillStyle = '#fff';
-    ctx.fillText(boss ? `⚠ BOSS WAVE ${g.wave} ⚠` : `WAVE ${g.wave}`, 0, 0);
-    if (!boss && g.wave > 1) {
+    ctx.fillText(announce.main, 0, 0);
+    if (announce.sub) {
       ctx.font = '14px "Segoe UI",Arial,sans-serif';
       ctx.fillStyle = chapter.hudColor;
-      ctx.fillText(chapter.name.toUpperCase(), 0, 24);
+      ctx.fillText(announce.sub, 0, 24);
     }
     ctx.restore();
   }
@@ -962,11 +985,15 @@ function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
 
   // Wave & chapter
   ctx.font = '14px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#aac';
-  ctx.fillText(`WAVE ${g.wave}`, 10, 50);
+  ctx.fillText(getWaveLabel(g), 10, 50);
   const chapter = getChapter(g.chapterId);
   ctx.font = '11px "Segoe UI",Arial,sans-serif';
   ctx.fillStyle = chapter.hudColor;
   ctx.fillText(chapter.name, 10, 64);
+  if (g.gameMode === 'daily' && g.dailyModifier) {
+    ctx.fillStyle = '#da8';
+    ctx.fillText(getDailyModifierLabel(g.dailyModifier), 10, 78);
+  }
 
   // ── Player HP bar (top-right, segmented) ──
   const barX = W - 10;
@@ -1048,74 +1075,84 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.textAlign = 'center';
 
   ctx.save(); ctx.shadowColor = '#0af'; ctx.shadowBlur = 40;
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 46px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SKY BLASTER', W / 2, 150); ctx.restore();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 42px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SKY BLASTER', W / 2, 130); ctx.restore();
 
-  ctx.fillStyle = '#6bf'; ctx.font = '15px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SPACE SHOOTER', W / 2, 180);
+  ctx.fillStyle = '#6bf'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SPACE SHOOTER', W / 2, 156);
+
+  const mode = MODE_INFO[g.gameMode];
+  ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SELECT MODE', W / 2, 182);
+  ctx.fillStyle = '#8df'; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`▲  ${mode.name.toUpperCase()}  ▼`, W / 2, 206);
+  ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(mode.tagline, W / 2, 222);
+  if (g.gameMode === 'daily') {
+    ctx.fillStyle = '#da8';
+    ctx.fillText(`Today: ${getDailyModifierLabel(pickDailyModifier(getDailySeed()))}`, W / 2, 236);
+  }
 
   const craft = AIRCRAFT[g.selectedAircraft];
   const weapon = getWeapon(g.selectedWeapon);
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT AIRCRAFT', W / 2, 208);
-  ctx.fillStyle = craft.hullTop; ctx.font = 'bold 22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 236);
-  ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(craft.tagline, W / 2, 254);
-  ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SELECT AIRCRAFT', W / 2, 262);
+  ctx.fillStyle = craft.hullTop; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 286);
+  ctx.fillStyle = '#aac'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(craft.tagline, W / 2, 302);
+  ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
   ctx.fillText(
     `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
-    W / 2, 270,
+    W / 2, 316,
   );
 
-  ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT WEAPON', W / 2, 298);
-  ctx.fillStyle = weapon.hudColor; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${weapon.name.toUpperCase()}  ▶`, W / 2, 324);
-  ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(weapon.tagline, W / 2, 340);
+  ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SELECT WEAPON', W / 2, 340);
+  ctx.fillStyle = weapon.hudColor; ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${weapon.name.toUpperCase()}  ▶`, W / 2, 362);
+  ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(weapon.tagline, W / 2, 376);
 
   ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
-  ctx.fillStyle = '#fff'; ctx.font = '22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE', W / 2, 368);
+  ctx.fillStyle = '#fff'; ctx.font = '20px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('TAP or PRESS SPACE', W / 2, 402);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
+    ['↑ / ↓', 'Choose mode'],
     ['← / →', 'Choose aircraft'],
     ['[ / ]', 'Choose weapon'],
-    ['Arrow / WASD', 'Move'],
-    ['SPACE / Z', 'Shoot'],
+    ['SPACE / Z', 'Shoot / Start'],
     ['X / B', 'Bomb'],
     ['C / Shift', 'Skill'],
-    ['ESC / P', 'Pause'],
-    ['Touch & Drag', 'Move + Auto-fire'],
   ];
-  const controlsTop = 392;
-  const controlsStep = 17;
+  const controlsTop = 424;
+  const controlsStep = 15;
   lines.forEach(([k, v], i) => {
     const y = controlsTop + i * controlsStep;
-    ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#aac'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
     ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, y);
     ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, y);
   });
 
   const sc = loadHighScores();
   if (sc.length) {
-    const scoresTop = controlsTop + (lines.length - 1) * controlsStep + 28;
+    const scoresTop = controlsTop + lines.length * controlsStep + 18;
     ctx.strokeStyle = '#ffffff22';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(40, scoresTop - 14);
-    ctx.lineTo(W - 40, scoresTop - 14);
+    ctx.moveTo(40, scoresTop - 10);
+    ctx.lineTo(W - 40, scoresTop - 10);
     ctx.stroke();
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
     ctx.fillText('HIGH SCORES', W / 2, scoresTop);
-    ctx.font = '11px "Segoe UI",monospace';
+    ctx.font = '10px "Segoe UI",monospace';
     sc.slice(0, 3).forEach((s, i) => {
       ctx.fillStyle = i === 0 ? '#fd4' : '#aac';
-      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, scoresTop + 18 + i * 17);
+      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, scoresTop + 16 + i * 15);
     });
   }
 }
@@ -1124,18 +1161,27 @@ function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, W, H);
   ctx.textAlign = 'center';
 
-  ctx.save(); ctx.shadowColor = '#f44'; ctx.shadowBlur = 25;
-  ctx.fillStyle = '#f44'; ctx.font = 'bold 44px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('GAME OVER', W / 2, 195); ctx.restore();
+  if (g.modeVictory) {
+    ctx.save(); ctx.shadowColor = '#4f8'; ctx.shadowBlur = 25;
+    ctx.fillStyle = '#4f8'; ctx.font = 'bold 40px "Segoe UI",Arial,sans-serif';
+    ctx.fillText('MISSION COMPLETE', W / 2, 195); ctx.restore();
+    ctx.fillStyle = '#aac'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
+    ctx.fillText('All four chapters cleared', W / 2, 230);
+  } else {
+    ctx.save(); ctx.shadowColor = '#f44'; ctx.shadowBlur = 25;
+    ctx.fillStyle = '#f44'; ctx.font = 'bold 44px "Segoe UI",Arial,sans-serif';
+    ctx.fillText('GAME OVER', W / 2, 195); ctx.restore();
+  }
 
   ctx.fillStyle = '#fff'; ctx.font = '24px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`Score: ${g.score.toLocaleString()}`, W / 2, 255);
+  ctx.fillText(`Score: ${g.score.toLocaleString()}`, W / 2, g.modeVictory ? 270 : 255);
 
   ctx.fillStyle = '#aac'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`Wave ${g.wave}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`, W / 2, 285);
+  const progressLabel = g.gameMode === 'story' ? `Stage ${g.wave}` : `Wave ${g.wave}`;
+  ctx.fillText(`${progressLabel}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`, W / 2, g.modeVictory ? 300 : 285);
 
   const sc = loadHighScores();
-  if (sc.length && sc[0].score === g.score) {
+  if (sc.length && sc[0].score === g.score && !g.modeVictory) {
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
     ctx.fillText('★ NEW HIGH SCORE! ★', W / 2, 325);
   }
