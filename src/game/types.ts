@@ -121,6 +121,22 @@ export interface Nebula {
   alpha: number;
 }
 
+export interface Hazard {
+  type: 'asteroid' | 'turret' | 'teleporter';
+  x: number; y: number;
+  width: number; height: number;
+  vx?: number;
+  vy?: number;
+  rot?: number;
+  rotSpeed?: number;
+  shootTimer?: number;
+  shootInterval?: number;
+  side?: number;
+  padId?: number;
+  pulse?: number;
+  cooldown?: number;
+}
+
 export interface GameData {
   player: Player;
   bullets: Bullet[];
@@ -147,6 +163,9 @@ export interface GameData {
   frameCount: number;
   stars: { x: number; y: number; speed: number; brightness: number }[];
   nebulae: Nebula[];
+  chapterId: ChapterId;
+  hazards: Hazard[];
+  hazardSpawnTimer: number;
   selectedAircraft: AircraftId;
   selectedWeapon: WeaponId;
   specialSpawns: { sniper: boolean; healer: boolean };
