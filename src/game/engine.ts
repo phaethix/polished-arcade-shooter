@@ -1,6 +1,8 @@
 import type {
-  GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore, Nebula
+  AircraftId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore, Nebula
 } from './types';
+import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
+import { isPlayerVulnerable, tickSkills, tryActivateSkill, drawSkillIndicator, updateHomingBullets } from './skills';
 import * as sfx from './audio';
 
 // ─── Constants ───────────────────────────────────────────────
@@ -29,13 +31,18 @@ export function saveHighScore(score: number, wave: number): HighScore[] {
 }
 
 // ─── Factories ───────────────────────────────────────────────
-function mkPlayer(): Player {
+function mkPlayer(aircraftId: AircraftId = 'falcon'): Player {
+  const craft = getAircraft(aircraftId);
   return {
     x: W / 2, y: H - 80, width: PW, height: PH,
-    speed: 6, shootTimer: 0, shootInterval: 8,
-    hp: 3, maxHp: 5, invincibleTimer: 0,
+    speed: craft.speed, shootTimer: 0, shootInterval: 8,
+    hp: craft.startHp, maxHp: craft.maxHp, invincibleTimer: 0,
     powerLevel: 0, shieldActive: false, shieldTimer: 0,
     tilt: 0, grazeTimer: 0, grazeCount: 0,
+    aircraftId: craft.id,
+    skillCooldown: 0, skillActiveTimer: 0,
+    skillShieldActive: false, skillShieldTimer: 0, skillAbsorbedHits: 0,
+    damageBoost: 0, dashVx: 0, dashVy: 0,
   };
 }
 
@@ -62,7 +69,7 @@ function mkNebulae(): Nebula[] {
 
 export function createGameData(): GameData {
   return {
-    player: mkPlayer(),
+    player: mkPlayer('falcon'),
     bullets: [], enemies: [], particles: [], powerUps: [],
     score: 0, wave: 0,
     waveTimer: 0, waveDelay: 90,
@@ -77,12 +84,20 @@ export function createGameData(): GameData {
     frameCount: 0,
     stars: mkStars(),
     nebulae: mkNebulae(),
+    selectedAircraft: 'falcon',
+    gameMode: 'endless',
   };
 }
 
+export function cycleAircraftSelection(g: GameData, direction: -1 | 1) {
+  g.selectedAircraft = nextAircraft(g.selectedAircraft, direction);
+  g.player = mkPlayer(g.selectedAircraft);
+}
+
 export function resetGame(g: GameData) {
+  const aircraft = g.selectedAircraft;
   Object.assign(g, {
-    player: mkPlayer(),
+    player: mkPlayer(aircraft),
     bullets: [], enemies: [], particles: [], powerUps: [],
     score: 0, wave: 1,
     waveTimer: 25, waveDelay: 90,
@@ -101,14 +116,14 @@ export function resetGame(g: GameData) {
 // ─── Input ───────────────────────────────────────────────────
 export interface InputState {
   left: boolean; right: boolean; up: boolean; down: boolean;
-  shoot: boolean; bomb: boolean;
+  shoot: boolean; bomb: boolean; skill: boolean;
   touchX: number | null; touchY: number | null;
   touchActive: boolean;
   prevTouchX: number | null; prevTouchY: number | null;
 }
 export function createInputState(): InputState {
   return { left: false, right: false, up: false, down: false,
-           shoot: false, bomb: false,
+           shoot: false, bomb: false, skill: false,
            touchX: null, touchY: null, touchActive: false,
            prevTouchX: null, prevTouchY: null };
 }
@@ -211,19 +226,22 @@ function spawnEnemy(g: GameData) {
 
 function playerShoot(g: GameData) {
   const p = g.player; const l = p.powerLevel;
+  const bulletColor = getAircraft(p.aircraftId).bulletColor;
+  const damage = 1 + p.damageBoost;
+  p.damageBoost = 0;
   sfx.playShoot();
   g.bullets.push({ x: p.x, y: p.y - p.height / 2 - 5, vx: 0, vy: -BSPD,
-    width: 4, height: 14, damage: 1, isPlayer: true, color: '#0ff' });
+    width: 4, height: 14, damage, isPlayer: true, color: bulletColor });
   if (l >= 1) for (const d of [-10, 10])
     g.bullets.push({ x: p.x + d, y: p.y - p.height / 2, vx: 0, vy: -BSPD,
-      width: 3, height: 12, damage: 1, isPlayer: true, color: '#0df' });
+      width: 3, height: 12, damage, isPlayer: true, color: bulletColor });
   if (l >= 2) for (const d of [-1, 1])
     g.bullets.push({ x: p.x + d * 8, y: p.y - p.height / 2, vx: d * 2, vy: -BSPD,
-      width: 3, height: 10, damage: 1, isPlayer: true, color: '#4ef' });
+      width: 3, height: 10, damage, isPlayer: true, color: bulletColor });
   if (l >= 3) for (const d of [-1, 1])
     g.bullets.push({ x: p.x + d * 5, y: p.y - p.height / 2, vx: d * 3.5, vy: -BSPD * 0.9,
-      width: 3, height: 10, damage: 1, isPlayer: true, color: '#8ef' });
-  addP(g, p.x, p.y - p.height / 2, 3, '#0ff', 2, 'spark', [1, 3]);
+      width: 3, height: 10, damage, isPlayer: true, color: bulletColor });
+  addP(g, p.x, p.y - p.height / 2, 3, bulletColor, 2, 'spark', [1, 3]);
 }
 
 function enemyShoot(g: GameData, e: Enemy) {
@@ -330,6 +348,16 @@ export function update(g: GameData, input: InputState, dt: number) {
 
   if (input.bomb) { input.bomb = false; activateBomb(g); }
 
+  if (input.skill) {
+    input.skill = false;
+    tryActivateSkill(g, mx, my);
+  }
+
+  tickSkills(g, dt);
+
+  p.x = Math.max(p.width / 2, Math.min(W - p.width / 2, p.x));
+  p.y = Math.max(p.height / 2, Math.min(H - p.height / 2, p.y));
+
   // Timers
   if (p.invincibleTimer > 0) p.invincibleTimer -= dt;
   if (p.shieldTimer > 0) { p.shieldTimer -= dt; if (p.shieldTimer <= 0) p.shieldActive = false; }
@@ -374,10 +402,11 @@ export function update(g: GameData, input: InputState, dt: number) {
       g.particles.push({ x: b.x, y: b.y + 4, vx: (Math.random() - 0.5) * 0.5, vy: Math.random(),
         life: 0.12, maxLife: 0.12, size: 2, color: '#0ff8', type: 'trail' });
   }
+  updateHomingBullets(g, dt);
   g.bullets = g.bullets.filter(b => b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20);
 
   // ── Graze system (near-miss bonus) ──
-  if (p.invincibleTimer <= 0) {
+  if (isPlayerVulnerable(p)) {
     for (const b of g.bullets) {
       if (b.isPlayer || b.grazed) continue;
       const dx = b.x - p.x, dy = b.y - p.y;
@@ -432,12 +461,18 @@ export function update(g: GameData, input: InputState, dt: number) {
   }
 
   // ── Collision: enemy bullets → player ──
-  if (p.invincibleTimer <= 0) {
+  if (isPlayerVulnerable(p)) {
     for (let bi = g.bullets.length - 1; bi >= 0; bi--) {
       const b = g.bullets[bi]; if (b.isPlayer) continue;
       if (!hit(b.x, b.y, b.width, b.height, p.x, p.y, p.width * 0.4, p.height * 0.4)) continue;
       g.bullets.splice(bi, 1);
-      if (p.shieldActive) {
+      if (p.skillShieldActive) {
+        p.skillAbsorbedHits++;
+        p.damageBoost = p.skillAbsorbedHits;
+        addP(g, p.x, p.y, 12, '#fd4', 3, 'spark', [2, 4]);
+        addRing(g, p.x, p.y, '#ffcc44', 25);
+        sfx.playHit();
+      } else if (p.shieldActive) {
         p.shieldActive = false; p.shieldTimer = 0;
         addP(g, p.x, p.y, 20, '#4af', 4, 'spark', [2, 5]);
         addRing(g, p.x, p.y, '#44aaff', 30);
@@ -447,11 +482,16 @@ export function update(g: GameData, input: InputState, dt: number) {
   }
 
   // ── Collision: enemy body → player ──
-  if (p.invincibleTimer <= 0) {
+  if (isPlayerVulnerable(p)) {
     for (const e of g.enemies) {
       if (!hit(p.x, p.y, p.width * 0.4, p.height * 0.4, e.x, e.y, e.width, e.height)) continue;
       e.hp -= 2; e.flashTimer = 0.1;
-      if (p.shieldActive) {
+      if (p.skillShieldActive) {
+        p.skillAbsorbedHits++;
+        p.damageBoost = p.skillAbsorbedHits;
+        addP(g, p.x, p.y, 10, '#fd4', 3, 'spark');
+        sfx.playHit();
+      } else if (p.shieldActive) {
         p.shieldActive = false; p.shieldTimer = 0;
         addP(g, p.x, p.y, 15, '#4af', 3, 'spark'); sfx.playHit();
       } else { hurtPlayer(g); if (p.hp <= 0) return; }
@@ -587,7 +627,7 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   }
   ctx.globalAlpha = 1;
 
-  if (g.state === 'menu') { drawMenu(ctx); ctx.restore(); ctx.restore(); return; }
+  if (g.state === 'menu') { drawMenu(ctx, g); ctx.restore(); ctx.restore(); return; }
 
   // Power-ups
   for (const pw of g.powerUps) drawPowerUp(ctx, pw);
@@ -717,7 +757,9 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
 
 function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   const p = g.player;
+  const craft = getAircraft(p.aircraftId);
   if (p.invincibleTimer > 0 && Math.floor(p.invincibleTimer * 10) % 2 === 0) return;
+  if (p.skillActiveTimer > 0 && Math.floor(p.skillActiveTimer * 20) % 2 === 0) return;
 
   ctx.save(); ctx.translate(p.x, p.y);
   ctx.rotate(p.tilt * 0.18); // banking
@@ -732,7 +774,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.beginPath(); ctx.arc(0, 2, 20, 0, Math.PI * 2); ctx.stroke();
   ctx.restore();
 
-  // Shield
+  // Shield (power-up)
   if (p.shieldActive) {
     ctx.strokeStyle = '#4af'; ctx.lineWidth = 2;
     ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.01) * 0.2;
@@ -744,11 +786,28 @@ function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.globalAlpha = 1;
   }
 
+  // Skill shield (fortress energy shield)
+  if (p.skillShieldActive) {
+    ctx.strokeStyle = '#fd4'; ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.55 + Math.sin(Date.now() * 0.012) * 0.2;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 6 + (i * Math.PI) / 3;
+      const px = Math.cos(a) * 26;
+      const py = Math.sin(a) * 26;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
   // Engine flame (animated)
   const flicker = 0.8 + Math.random() * 0.4;
   const flameH = 10 + Math.sin(Date.now() * 0.02) * 3;
   const gr2 = ctx.createLinearGradient(0, p.height / 3, 0, p.height / 2 + flameH * flicker);
-  gr2.addColorStop(0, '#88eeff'); gr2.addColorStop(0.4, '#0088ff'); gr2.addColorStop(1, 'transparent');
+  gr2.addColorStop(0, craft.cockpitColor); gr2.addColorStop(0.4, craft.engineColor); gr2.addColorStop(1, 'transparent');
   ctx.fillStyle = gr2;
   ctx.beginPath();
   ctx.moveTo(-5, p.height / 3);
@@ -757,7 +816,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fill();
   // Outer flame
   const gr3 = ctx.createLinearGradient(0, p.height / 3, 0, p.height / 2 + flameH * flicker * 0.7);
-  gr3.addColorStop(0, '#0066ff44'); gr3.addColorStop(1, 'transparent');
+  gr3.addColorStop(0, craft.engineColor + '44'); gr3.addColorStop(1, 'transparent');
   ctx.fillStyle = gr3;
   ctx.beginPath();
   ctx.moveTo(-8, p.height / 3);
@@ -767,7 +826,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
 
   // Ship body
   const gr = ctx.createLinearGradient(0, -p.height / 2, 0, p.height / 2);
-  gr.addColorStop(0, '#44ddff'); gr.addColorStop(0.4, '#2288cc'); gr.addColorStop(1, '#115577');
+  gr.addColorStop(0, craft.hullTop); gr.addColorStop(0.4, craft.hullMid); gr.addColorStop(1, craft.hullBottom);
   ctx.fillStyle = gr; ctx.beginPath();
   ctx.moveTo(0, -p.height / 2);
   ctx.lineTo(p.width / 2, p.height / 3);
@@ -780,14 +839,14 @@ function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.closePath(); ctx.fill();
 
   // Outline highlight
-  ctx.strokeStyle = '#66ddff33'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = craft.hullTop + '33'; ctx.lineWidth = 1; ctx.stroke();
 
   // Cockpit
-  ctx.fillStyle = '#88eeff'; ctx.beginPath();
+  ctx.fillStyle = craft.cockpitColor; ctx.beginPath();
   ctx.ellipse(0, -4, 4, 7, 0, 0, Math.PI * 2); ctx.fill();
   // Cockpit glow
-  ctx.save(); ctx.globalAlpha = 0.3; ctx.shadowColor = '#88eeff'; ctx.shadowBlur = 8;
-  ctx.fillStyle = '#88eeff'; ctx.beginPath();
+  ctx.save(); ctx.globalAlpha = 0.3; ctx.shadowColor = craft.cockpitColor; ctx.shadowBlur = 8;
+  ctx.fillStyle = craft.cockpitColor; ctx.beginPath();
   ctx.ellipse(0, -4, 3, 5, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
@@ -989,46 +1048,63 @@ function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.fillText(`GRAZE ×${p.grazeCount}`, 10, H - 12);
     ctx.globalAlpha = 1;
   }
+
+  drawSkillIndicator(ctx, p, W / 2, H - 36);
 }
 
-function drawMenu(ctx: CanvasRenderingContext2D) {
+function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(0, 0, W, H);
   ctx.textAlign = 'center';
 
   ctx.save(); ctx.shadowColor = '#0af'; ctx.shadowBlur = 40;
   ctx.fillStyle = '#fff'; ctx.font = 'bold 46px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SKY BLASTER', W / 2, 170); ctx.restore();
+  ctx.fillText('SKY BLASTER', W / 2, 150); ctx.restore();
 
   ctx.fillStyle = '#6bf'; ctx.font = '15px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SPACE SHOOTER', W / 2, 200);
+  ctx.fillText('SPACE SHOOTER', W / 2, 180);
+
+  const craft = AIRCRAFT[g.selectedAircraft];
+  ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('SELECT AIRCRAFT', W / 2, 225);
+  ctx.fillStyle = craft.hullTop; ctx.font = 'bold 22px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 255);
+  ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(craft.tagline, W / 2, 275);
+  ctx.fillStyle = '#889'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(
+    `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
+    W / 2, 293,
+  );
 
   ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
   ctx.fillStyle = '#fff'; ctx.font = '22px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE', W / 2, 290);
+  ctx.fillText('TAP or PRESS SPACE', W / 2, 330);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
+    ['← / →', 'Choose aircraft'],
     ['Arrow / WASD', 'Move'],
     ['SPACE / Z', 'Shoot'],
     ['X / B', 'Bomb'],
+    ['C / Shift', 'Skill'],
     ['ESC / P', 'Pause'],
     ['Touch & Drag', 'Move + Auto-fire'],
   ];
   lines.forEach(([k, v], i) => {
     ctx.fillStyle = '#aac'; ctx.font = '12px "Segoe UI",Arial,sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, 365 + i * 20);
-    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, 365 + i * 20);
+    ctx.textAlign = 'right'; ctx.fillText(k, W / 2 - 8, 385 + i * 20);
+    ctx.fillStyle = '#88a'; ctx.textAlign = 'left'; ctx.fillText(v, W / 2 + 8, 385 + i * 20);
   });
 
   const sc = loadHighScores();
   if (sc.length) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
-    ctx.fillText('HIGH SCORES', W / 2, 500);
+    ctx.fillText('HIGH SCORES', W / 2, 540);
     ctx.font = '12px "Segoe UI",monospace';
     sc.slice(0, 5).forEach((s, i) => {
       ctx.fillStyle = i === 0 ? '#fd4' : '#aac';
-      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, 522 + i * 20);
+      ctx.fillText(`${i + 1}. ${String(s.score).padStart(8)}  W${s.wave}  ${s.date}`, W / 2, 562 + i * 20);
     });
   }
 }

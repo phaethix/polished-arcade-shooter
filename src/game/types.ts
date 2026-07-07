@@ -1,5 +1,30 @@
 export interface Vec2 { x: number; y: number; }
 
+// ─── Expansion types (v0.2+) ───────────────────────────────────
+
+export type AircraftId = 'falcon' | 'phantom' | 'fortress';
+
+export type AircraftSkill = 'missile_salvo' | 'dash' | 'energy_shield';
+
+export type WeaponId =
+  | 'standard'
+  | 'armor_piercing'
+  | 'shotgun'
+  | 'laser'
+  | 'homing';
+
+export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
+
+export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily';
+
+export type AchievementId =
+  | 'first_blood'
+  | 'combo_master'
+  | 'graze_king'
+  | 'boss_slayer'
+  | 'survivor'
+  | 'untouchable';
+
 export interface Particle {
   x: number; y: number;
   vx: number; vy: number;
@@ -18,6 +43,7 @@ export interface Bullet {
   isPlayer: boolean;
   color: string;
   grazed?: boolean;        // player already got graze bonus for this bullet
+  homingStrength?: number; // 0..1 turn rate toward target (missiles)
 }
 
 export interface Enemy {
@@ -52,6 +78,15 @@ export interface Player {
   tilt: number;            // visual banking -1..1
   grazeTimer: number;      // visual feedback
   grazeCount: number;      // total grazes this game
+  aircraftId: AircraftId;
+  skillCooldown: number;
+  skillActiveTimer: number;
+  skillShieldActive: boolean;
+  skillShieldTimer: number;
+  skillAbsorbedHits: number;
+  damageBoost: number;
+  dashVx: number;
+  dashVy: number;
 }
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
@@ -98,4 +133,6 @@ export interface GameData {
   frameCount: number;
   stars: { x: number; y: number; speed: number; brightness: number }[];
   nebulae: Nebula[];
+  selectedAircraft: AircraftId;
+  gameMode: GameMode;
 }

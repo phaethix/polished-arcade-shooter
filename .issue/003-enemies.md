@@ -1,0 +1,44 @@
+# 003 — New Enemy Types
+
+**Status:** planned  
+**Phase:** 3  
+**Target version:** v0.3.0
+
+## Summary
+
+Five advanced enemies that add tactical variety beyond basic/fast/tank/boss.
+
+## Enemies
+
+| ID | Name | Behavior | Priority |
+|----|------|----------|----------|
+| `splitter` | Splitter | Splits into 2 mini enemies on death | Medium |
+| `sniper` | Sniper | Long-range aimed shot, stays at top | High (kill first) |
+| `shielded` | Shield Bearer | Frontal shield blocks bullets | Medium |
+| `kamikaze` | Kamikaze | Rushes player, explodes on contact | High |
+| `healer` | Healer | Heals nearby enemies in aura | Critical |
+
+## Spawn rules (draft)
+
+- Splitter: wave 4+
+- Sniper: wave 6+, max 1 per wave
+- Shielded: wave 5+
+- Kamikaze: wave 3+
+- Healer: wave 8+, max 1 per wave, never with boss
+
+## Implementation slices
+
+One commit per enemy type:
+
+1. Extend `Enemy['type']` union + spawn weights
+2. Splitter death handler
+3. Sniper AI + telegraph line
+4. Shielded frontal hitbox check
+5. Kamikaze rush state machine
+6. Healer aura + heal ticks
+
+## Acceptance criteria
+
+- Each enemy is visually distinct
+- Behaviors match the design table
+- No single enemy type dominates spawn tables
