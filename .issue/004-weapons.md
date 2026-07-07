@@ -1,6 +1,6 @@
 # 004 — Weapon System
 
-**Status:** planned  
+**Status:** done  
 **Phase:** 2  
 **Target version:** v0.3.0
 
