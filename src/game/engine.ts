@@ -4,6 +4,11 @@ import type {
 import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
 import { fireWeapon, getWeapon, nextWeapon, drawWeaponLabel, updateBulletTravel, consumePierce } from './weapons';
 import { isPlayerVulnerable, tickSkills, tryActivateSkill, drawSkillIndicator, updateHomingBullets } from './skills';
+import {
+  spawnEnemy, updateEnemies, drawEnemy,
+  spawnSplitterChildren, isFrontalShieldBlock, blocksCenterShot,
+  isKamikazeBlastHit, kamikazeExplosionRadius,
+} from './enemies';
 import * as sfx from './audio';
 
 // ─── Constants ───────────────────────────────────────────────
@@ -87,6 +92,7 @@ export function createGameData(): GameData {
     nebulae: mkNebulae(),
     selectedAircraft: 'falcon',
     selectedWeapon: 'standard',
+    specialSpawns: { sniper: false, healer: false },
     gameMode: 'endless',
   };
 }
@@ -117,6 +123,7 @@ export function resetGame(g: GameData) {
     slowMotion: 1, slowMotionTimer: 0,
     frameCount: 0,
     screenShake: { intensity: 0, duration: 0, timer: 0 },
+    specialSpawns: { sniper: false, healer: false },
     state: 'playing' as const,
   });
 }
@@ -189,70 +196,11 @@ function hit(ax: number, ay: number, aw: number, ah: number,
 }
 
 // ─── Spawners ────────────────────────────────────────────────
-function spawnEnemy(g: GameData) {
-  const w = g.wave;
-  if (w % 5 === 0 && w >= 5 && g.enemiesSpawned === 0) {
-    g.enemies.push({
-      x: W / 2, y: -60, width: 64, height: 56,
-      hp: 20 + w * 5, maxHp: 20 + w * 5,
-      speed: 0.5, type: 'boss',
-      shootTimer: 40, shootInterval: 25,
-      movePattern: 'sine', movePhase: 0,
-      scoreValue: 2000, flashTimer: 0 });
-    g.enemiesSpawned++; return;
-  }
-  const pool: Enemy['type'][] = ['basic'];
-  if (w >= 2) pool.push('fast');
-  if (w >= 3) pool.push('tank');
-  const t = pool[Math.floor(Math.random() * pool.length)];
-  const pats: Enemy['movePattern'][] = ['straight','sine','zigzag'];
-  const pat = pats[Math.floor(Math.random() * pats.length)];
-  const base = { shootTimer: 60 + Math.random() * 60, movePattern: pat,
-                 movePhase: Math.random() * Math.PI * 2, flashTimer: 0 } as const;
-  let e: Enemy;
-  switch (t) {
-    case 'fast':
-      e = { ...base, x: 30 + Math.random() * (W - 60), y: -30,
-            width: 24, height: 24, hp: 1, maxHp: 1,
-            speed: 3 + Math.random(), type: 'fast',
-            shootInterval: 80, scoreValue: 150 }; break;
-    case 'tank': {
-      const hp = 5 + Math.floor(w / 2);
-      e = { ...base, x: 40 + Math.random() * (W - 80), y: -40,
-            width: 40, height: 40, hp, maxHp: hp,
-            speed: 0.8 + Math.random() * 0.5, type: 'tank',
-            movePattern: 'straight', shootInterval: 50, scoreValue: 300 }; break; }
-    default: {
-      const hp = 1 + Math.floor(w / 3);
-      e = { ...base, x: 20 + Math.random() * (W - 40), y: -30,
-            width: 28, height: 28, hp, maxHp: hp,
-            speed: 1.2 + Math.random() * 0.8 + w * 0.05, type: 'basic',
-            shootInterval: Math.max(50, 90 - w * 3), scoreValue: 100 }; }
-  }
-  g.enemies.push(e); g.enemiesSpawned++;
-}
 
 function playerShoot(g: GameData) {
   fireWeapon(g);
   const color = getWeapon(g.player.weaponId).bulletColor;
   addP(g, g.player.x, g.player.y - g.player.height / 2, 3, color, 2, 'spark', [1, 3]);
-}
-
-function enemyShoot(g: GameData, e: Enemy) {
-  const dx = g.player.x - e.x, dy = g.player.y - e.y;
-  const d = Math.sqrt(dx * dx + dy * dy) || 1;
-  const s = 3 + g.wave * 0.1;
-  sfx.playEnemyShoot();
-  if (e.type === 'boss') {
-    for (let i = -2; i <= 2; i++) {
-      const a = Math.atan2(dy, dx) + i * 0.25;
-      g.bullets.push({ x: e.x, y: e.y + e.height / 2, vx: Math.cos(a) * s, vy: Math.sin(a) * s,
-        width: 6, height: 6, damage: 1, isPlayer: false, color: '#f46' });
-    }
-  } else {
-    g.bullets.push({ x: e.x, y: e.y + e.height / 2, vx: (dx / d) * s, vy: (dy / d) * s,
-      width: 5, height: 5, damage: 1, isPlayer: false, color: '#f64' });
-  }
 }
 
 function tryPowerUp(g: GameData, x: number, y: number) {
@@ -269,6 +217,36 @@ function tryWeaponDrop(g: GameData, x: number, y: number) {
   const alts: WeaponId[] = ['armor_piercing', 'shotgun', 'laser', 'homing'];
   const weaponId = alts[Math.floor(Math.random() * alts.length)];
   g.powerUps.push({ x, y, width: 22, height: 22, type: 'weapon', weaponId, vy: 1.4 });
+}
+
+function explodeKamikaze(g: GameData, e: Enemy): void {
+  for (const c of ['#f80', '#fa0', '#f40', '#fff']) {
+    addP(g, e.x, e.y, 5, c, 4, 'explosion', [2, 5]);
+  }
+  addRing(g, e.x, e.y, '#ff884488', kamikazeExplosionRadius());
+  shake(g, 6, 10);
+  sfx.playExplosion();
+  e.hp = 0;
+}
+
+function playerHitFromEnemy(g: GameData): boolean {
+  const p = g.player;
+  if (p.skillShieldActive) {
+    p.skillAbsorbedHits++;
+    p.damageBoost = p.skillAbsorbedHits;
+    addP(g, p.x, p.y, 10, '#fd4', 3, 'spark');
+    sfx.playHit();
+    return false;
+  }
+  if (p.shieldActive) {
+    p.shieldActive = false;
+    p.shieldTimer = 0;
+    addP(g, p.x, p.y, 15, '#4af', 3, 'spark');
+    sfx.playHit();
+    return false;
+  }
+  hurtPlayer(g);
+  return p.hp <= 0;
 }
 
 function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number) {
@@ -289,6 +267,7 @@ function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number) {
     sfx.playBigExplosion(); g.flashAlpha = 0.4; g.flashColor = '#fff';
     g.slowMotion = 0.3; g.slowMotionTimer = 0.6;
   } else sfx.playExplosion();
+  if (e.type === 'splitter') spawnSplitterChildren(g, x, y);
   tryPowerUp(g, x, y);
   tryWeaponDrop(g, x, y);
 }
@@ -312,6 +291,7 @@ function updateLaserFire(g: GameData, shooting: boolean, dt: number) {
     const e = g.enemies[ei];
     if (Math.abs(e.x - p.x) > (e.width + beamW) / 2) continue;
     if (e.y >= p.y - p.height / 2 || e.y < 0) continue;
+    if (blocksCenterShot(e, p.x)) continue;
     e.hp -= damage;
     e.flashTimer = 0.05;
     if (e.hp <= 0) {
@@ -432,6 +412,7 @@ export function update(g: GameData, input: InputState, dt: number) {
   if (g.enemiesSpawned >= g.enemiesPerWave && g.enemies.length === 0) {
     if (g.waveTimer <= 0) {
       g.wave++; g.enemiesSpawned = 0;
+      g.specialSpawns = { sniper: false, healer: false };
       g.enemiesPerWave = (g.wave % 5 === 0 && g.wave >= 5) ? 1 : 5 + g.wave * 2;
       g.waveTimer = g.waveDelay; g.waveAnnounceTimer = 90;
     }
@@ -440,17 +421,7 @@ export function update(g: GameData, input: InputState, dt: number) {
   }
 
   // ── Enemies ──
-  for (const e of g.enemies) {
-    e.movePhase += 0.03 * tm;
-    e.y += e.speed * tm;
-    if (e.flashTimer > 0) e.flashTimer -= dt;
-    if (e.movePattern === 'sine') e.x += Math.sin(e.movePhase) * 2 * tm;
-    else if (e.movePattern === 'zigzag') e.x += (Math.sin(e.movePhase * 2) > 0 ? 1.5 : -1.5) * tm;
-    if (e.type === 'boss' && e.y > 100) { e.y = 100; e.speed = 0; e.movePattern = 'sine'; }
-    e.x = Math.max(e.width / 2, Math.min(W - e.width / 2, e.x));
-    e.shootTimer -= tm;
-    if (e.shootTimer <= 0 && e.y > 0) { enemyShoot(g, e); e.shootTimer = e.shootInterval; }
-  }
+  updateEnemies(g, dt, tm);
 
   // ── Bullets ──
   for (const b of g.bullets) {
@@ -487,6 +458,7 @@ export function update(g: GameData, input: InputState, dt: number) {
     for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
       const e = g.enemies[ei];
       if (!hit(b.x, b.y, b.width, b.height, e.x, e.y, e.width, e.height)) continue;
+      if (isFrontalShieldBlock(e, b)) continue;
       e.hp -= b.damage; e.flashTimer = 0.08;
       sfx.playHit();
       addP(g, b.x, b.y, 4, b.color, 2, 'spark', [1, 3]);
@@ -526,18 +498,21 @@ export function update(g: GameData, input: InputState, dt: number) {
 
   // ── Collision: enemy body → player ──
   if (isPlayerVulnerable(p)) {
-    for (const e of g.enemies) {
+    for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
+      const e = g.enemies[ei];
       if (!hit(p.x, p.y, p.width * 0.4, p.height * 0.4, e.x, e.y, e.width, e.height)) continue;
-      e.hp -= 2; e.flashTimer = 0.1;
-      if (p.skillShieldActive) {
-        p.skillAbsorbedHits++;
-        p.damageBoost = p.skillAbsorbedHits;
-        addP(g, p.x, p.y, 10, '#fd4', 3, 'spark');
-        sfx.playHit();
-      } else if (p.shieldActive) {
-        p.shieldActive = false; p.shieldTimer = 0;
-        addP(g, p.x, p.y, 15, '#4af', 3, 'spark'); sfx.playHit();
-      } else { hurtPlayer(g); if (p.hp <= 0) return; }
+
+      if (e.type === 'kamikaze') {
+        explodeKamikaze(g, e);
+        if (isKamikazeBlastHit(e, p.x, p.y) && playerHitFromEnemy(g)) return;
+        onEnemyKilled(g, e, e.x, e.y);
+        g.enemies.splice(ei, 1);
+        continue;
+      }
+
+      e.hp -= 2;
+      e.flashTimer = 0.1;
+      if (playerHitFromEnemy(g)) return;
       break;
     }
   }
@@ -687,7 +662,7 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   for (const b of g.bullets) if (b.isPlayer) drawBullet(ctx, b);
 
   // Enemies
-  for (const e of g.enemies) drawEnemy(ctx, e, g.frameCount);
+  for (const e of g.enemies) drawEnemy(ctx, g, e, g.frameCount);
 
   // Player
   if (g.state !== 'gameover') {
@@ -932,60 +907,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.moveTo(4, 0); ctx.lineTo(p.width / 2 - 2, p.height / 3 - 2);
   ctx.stroke();
 
-  ctx.restore();
-}
-
-function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, frame: number) {
-  ctx.save(); ctx.translate(e.x, e.y);
-  const f = e.flashTimer > 0;
-
-  // Subtle engine glow under all enemies
-  ctx.save(); ctx.globalAlpha = 0.2; ctx.globalCompositeOperation = 'lighter';
-  const eg = ctx.createRadialGradient(0, -e.height / 3, 0, 0, -e.height / 3, e.width * 0.4);
-  eg.addColorStop(0, e.type === 'boss' ? '#ff2244' : '#ff8844'); eg.addColorStop(1, 'transparent');
-  ctx.fillStyle = eg; ctx.fillRect(-e.width, -e.height, e.width * 2, e.height * 0.8);
-  ctx.restore();
-
-  if (e.type === 'boss') {
-    const gr = ctx.createLinearGradient(0, -e.height / 2, 0, e.height / 2);
-    gr.addColorStop(0, f ? '#fff' : '#cc2244'); gr.addColorStop(1, f ? '#f88' : '#611');
-    ctx.fillStyle = gr; ctx.beginPath();
-    ctx.moveTo(0, e.height / 2); ctx.lineTo(-e.width / 2, -e.height / 4);
-    ctx.lineTo(-e.width / 3, -e.height / 2); ctx.lineTo(0, -e.height / 3);
-    ctx.lineTo(e.width / 3, -e.height / 2); ctx.lineTo(e.width / 2, -e.height / 4);
-    ctx.closePath(); ctx.fill();
-    // Eye
-    const eyeR = 6 + Math.sin(frame * 0.08) * 2;
-    ctx.fillStyle = '#f46'; ctx.beginPath(); ctx.arc(0, 0, eyeR, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.globalAlpha = 0.3; ctx.shadowColor = '#ff2244'; ctx.shadowBlur = 15;
-    ctx.beginPath(); ctx.arc(0, 0, eyeR, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    // Boss outline pulse
-    ctx.save(); ctx.globalAlpha = 0.15 + Math.sin(frame * 0.05) * 0.1;
-    ctx.strokeStyle = '#ff4466'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.restore();
-  } else if (e.type === 'tank') {
-    ctx.fillStyle = f ? '#fff' : '#862'; ctx.beginPath();
-    ctx.moveTo(0, e.height / 2); ctx.lineTo(-e.width / 2, 0);
-    ctx.lineTo(-e.width / 3, -e.height / 2);
-    ctx.lineTo(e.width / 3, -e.height / 2);
-    ctx.lineTo(e.width / 2, 0); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = f ? '#fda' : '#a83'; ctx.fillRect(-6, -e.height / 4, 12, e.height / 2);
-  } else if (e.type === 'fast') {
-    ctx.fillStyle = f ? '#fff' : '#4c4'; ctx.beginPath();
-    ctx.moveTo(0, e.height / 2); ctx.lineTo(-e.width / 2, -e.height / 2);
-    ctx.lineTo(0, -e.height / 4); ctx.lineTo(e.width / 2, -e.height / 2);
-    ctx.closePath(); ctx.fill();
-  } else {
-    const gr = ctx.createLinearGradient(0, -e.height / 2, 0, e.height / 2);
-    gr.addColorStop(0, f ? '#fff' : '#c44'); gr.addColorStop(1, f ? '#faa' : '#822');
-    ctx.fillStyle = gr; ctx.beginPath();
-    ctx.moveTo(0, e.height / 2); ctx.lineTo(-e.width / 2, -e.height / 4);
-    ctx.lineTo(-e.width / 4, -e.height / 2);
-    ctx.lineTo(e.width / 4, -e.height / 2);
-    ctx.lineTo(e.width / 2, -e.height / 4); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = f ? '#fff8' : '#f668'; ctx.beginPath();
-    ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
-  }
   ctx.restore();
 }
 
