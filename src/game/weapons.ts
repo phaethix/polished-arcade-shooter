@@ -39,7 +39,7 @@ export const WEAPONS: Record<WeaponId, WeaponDefinition> = {
     tagline: 'Rounds pierce through enemies',
     hudColor: '#8f8',
     bulletColor: '#afa',
-    unlockedByDefault: true,
+    unlockedByDefault: false,
     coinCost: 300,
   },
   shotgun: {
@@ -49,7 +49,7 @@ export const WEAPONS: Record<WeaponId, WeaponDefinition> = {
     tagline: 'Wide burst at close range',
     hudColor: '#fa4',
     bulletColor: '#fc8',
-    unlockedByDefault: true,
+    unlockedByDefault: false,
     coinCost: 400,
   },
   laser: {
@@ -59,7 +59,7 @@ export const WEAPONS: Record<WeaponId, WeaponDefinition> = {
     tagline: 'Continuous beam ramps damage',
     hudColor: '#f4f',
     bulletColor: '#f8f',
-    unlockedByDefault: true,
+    unlockedByDefault: false,
     coinCost: 600,
   },
   homing: {
@@ -69,7 +69,7 @@ export const WEAPONS: Record<WeaponId, WeaponDefinition> = {
     tagline: 'Slow missiles track targets',
     hudColor: '#f88',
     bulletColor: '#f88',
-    unlockedByDefault: true,
+    unlockedByDefault: false,
     coinCost: 600,
   },
 };
