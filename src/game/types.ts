@@ -50,17 +50,24 @@ export interface Bullet {
   distanceTraveled?: number;
 }
 
+export type EnemyType =
+  | 'basic' | 'fast' | 'tank' | 'boss' | 'mini'
+  | 'splitter' | 'sniper' | 'shielded' | 'kamikaze' | 'healer';
+
 export interface Enemy {
   x: number; y: number;
   width: number; height: number;
   hp: number; maxHp: number;
   speed: number;
-  type: 'basic' | 'fast' | 'tank' | 'boss';
+  type: EnemyType;
   shootTimer: number; shootInterval: number;
   movePattern: 'straight' | 'sine' | 'zigzag';
   movePhase: number;
   scoreValue: number;
   flashTimer: number;
+  state?: 'patrol' | 'rush' | 'aim';
+  aimTimer?: number;
+  healPulse?: number;
 }
 
 export interface PowerUp {
@@ -142,5 +149,6 @@ export interface GameData {
   nebulae: Nebula[];
   selectedAircraft: AircraftId;
   selectedWeapon: WeaponId;
+  specialSpawns: { sniper: boolean; healer: boolean };
   gameMode: GameMode;
 }

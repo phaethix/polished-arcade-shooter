@@ -21,7 +21,7 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | 1.7 | Phantom — dash skill | done |
 | 1.8 | Fortress — energy shield skill | done |
 
-## Phase 2 — Weapons (current)
+## Phase 2 — Weapons
 
 | # | Item | Status |
 |---|------|--------|
@@ -32,15 +32,15 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | 2.5 | Laser beam (sustained DPS) | done |
 | 2.6 | Homing missiles | done |
 
-## Phase 3 — New enemies
+## Phase 3 — New enemies (current)
 
 | # | Item | Status |
 |---|------|--------|
-| 3.1 | Splitter (spawns mini enemies on death) | planned |
-| 3.2 | Sniper (long-range aimed shots) | planned |
-| 3.3 | Shielded (frontal immunity) | planned |
-| 3.4 | Kamikaze (rush + explode) | planned |
-| 3.5 | Healer (aura heal nearby enemies) | planned |
+| 3.1 | Splitter (spawns mini enemies on death) | done |
+| 3.2 | Sniper (long-range aimed shots) | done |
+| 3.3 | Shielded (frontal immunity) | done |
+| 3.4 | Kamikaze (rush + explode) | done |
+| 3.5 | Healer (aura heal nearby enemies) | done |
 
 ## Phase 4 — Chapters & environments
 
