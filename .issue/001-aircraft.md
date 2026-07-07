@@ -1,6 +1,6 @@
 # 001 — Multi-Aircraft System
 
-**Status:** in progress  
+**Status:** done  
 **Phase:** 1  
 **Target version:** v0.2.0
 
@@ -44,8 +44,8 @@ Three playable ships with distinct stats and active skills. Falcon is unlocked b
 4. [x] Player spawn uses aircraft stats
 5. [x] Menu picker (cycle with ←/→)
 6. [x] Hull color per aircraft
-7. [ ] Skill framework (`skillCooldown`, `skillActive` on Player)
-8. [ ] Individual skill implementations (one commit each)
+7. [x] Skill framework (`skillCooldown`, `skillActive` on Player)
+8. [x] Individual skill implementations (one commit each)
 
 ## Acceptance criteria
 
