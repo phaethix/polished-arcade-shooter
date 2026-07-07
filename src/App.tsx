@@ -3,6 +3,9 @@ import {
   createGameData,
   createInputState,
   resetGame,
+  canStartGame,
+  tryUnlockSelectedAircraft,
+  tryUnlockSelectedWeapon,
   cycleAircraftSelection,
   cycleWeaponSelection,
   cycleGameModeSelection,
@@ -114,11 +117,21 @@ export default function App() {
           }
           inp.right = down; e.preventDefault(); break;
 
+        case 'KeyU':
+          if (g.state === 'menu' && down) {
+            const unlockedCraft = tryUnlockSelectedAircraft(g);
+            const unlockedWeapon = tryUnlockSelectedWeapon(g);
+            if (unlockedCraft || unlockedWeapon) playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
         case 'Space': case 'KeyZ':
           e.preventDefault();
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
+              if (g.state === 'menu' && !canStartGame(g)) break;
               playMenuSelect(); resetGame(g);
             } else {
               inp.shoot = true;
@@ -213,13 +226,18 @@ export default function App() {
               playMenuSelect();
             }
           } else if (pt.y >= 388 && pt.y < 420 && pt.x > CANVAS_W / 3 && pt.x < (CANVAS_W * 2) / 3) {
-            playMenuSelect();
-            resetGame(g);
+            if (canStartGame(g)) {
+              playMenuSelect();
+              resetGame(g);
+            }
           }
         }
         return;
       }
-      if (g.state === 'gameover') { playMenuSelect(); resetGame(g); return; }
+      if (g.state === 'gameover') {
+        if (canStartGame(g)) { playMenuSelect(); resetGame(g); }
+        return;
+      }
       if (g.state === 'paused') { g.state = 'playing'; return; }
 
       const pt = toGame(cx, cy);

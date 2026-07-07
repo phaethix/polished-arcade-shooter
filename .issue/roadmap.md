@@ -62,15 +62,15 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | 5.4 | Boss rush | done |
 | 5.5 | Daily challenge (seeded modifiers) | done |
 
-## Phase 6 — Meta progression (current)
+## Phase 6 — Meta progression
 
 | # | Item | Status |
 |---|------|--------|
-| 6.1 | Coin economy + persistence | planned |
-| 6.2 | Unlock aircraft with coins | planned |
-| 6.3 | Unlock weapons with coins | planned |
-| 6.4 | Achievement tracking | planned |
-| 6.5 | Achievement notifications | planned |
+| 6.1 | Coin economy + persistence | done |
+| 6.2 | Unlock aircraft with coins | done |
+| 6.3 | Unlock weapons with coins | done |
+| 6.4 | Achievement tracking | done |
+| 6.5 | Achievement notifications | done |
 
 ## Supplementary ideas (backlog)
 
@@ -88,4 +88,5 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | v0.3.0 | Weapons + 2 new enemy types |
 | v0.4.0 | Chapters + story mode skeleton |
 | v0.5.0 | Chapters + environments |
-| v0.6.0 | Boss rush, daily challenge, achievements |
+| v0.6.0 | Boss rush, daily challenge, game modes |
+| v0.7.0 | Coins, unlocks, achievements |

@@ -1,8 +1,8 @@
 # 006 — Achievements & Unlocks
 
-**Status:** planned  
+**Status:** done  
 **Phase:** 6  
-**Target version:** v0.5.0
+**Target version:** v0.7.0
 
 ## Summary
 
@@ -15,9 +15,9 @@ Persistent progression via coins and achievements stored in `localStorage`.
 | Enemy kill | 1–10 (by type) |
 | Boss kill | 50 |
 | Stage clear (story) | 25 |
-| Daily challenge complete | 100 |
+| Daily challenge complete (wave 10) | 100 |
 
-## Unlock costs (draft)
+## Unlock costs
 
 | Item | Cost |
 |------|------|
@@ -28,35 +28,36 @@ Persistent progression via coins and achievements stored in `localStorage`.
 | Laser | 600 coins |
 | Homing | 600 coins |
 
-## Achievements (draft)
+## Achievements
 
 | ID | Name | Condition |
 |----|------|-----------|
-| `first_blood` | First Blood | Kill 1 enemy |
-| `combo_master` | Combo Master | Reach 20x combo |
+| `first_blood` | First Blood | Kill 1 enemy (lifetime) |
+| `combo_master` | Combo Master | Reach 20× combo |
 | `graze_king` | Graze King | Graze 50 bullets in one run |
 | `boss_slayer` | Boss Slayer | Defeat 10 bosses (lifetime) |
 | `survivor` | Survivor | Reach wave 10 |
 | `untouchable` | Untouchable | Clear a stage without taking damage |
 
-## Storage keys (planned)
+## Storage keys
 
 ```text
 sky_blaster_coins_v1
 sky_blaster_unlocks_v1
 sky_blaster_achievements_v1
+sky_blaster_stats_v1
 ```
 
-## Implementation slices
+## Implementation
 
-1. Progress persistence module (`src/game/progress.ts`)
-2. Coin awards on enemy kill / stage clear
-3. Unlock checks on menu (lock icon for locked aircraft/weapons)
-4. Achievement tracker hooks in engine events
-5. Achievement toast UI on unlock
+- `src/game/progress.ts` — persistence, unlocks, coin awards
+- Menu: coin balance, lock icons, `U` to unlock
+- Achievement toast on unlock during play
+- Locked aircraft/weapons block game start
 
 ## Acceptance criteria
 
-- Coins and unlocks persist across browser sessions
-- Locked items show cost and cannot be selected
-- Achievements unlock once and stay unlocked
+- [x] Coins and unlocks persist across browser sessions
+- [x] Locked items show cost and cannot start until unlocked
+- [x] Achievements unlock once and stay unlocked
+- [x] Achievement notification toast on unlock
