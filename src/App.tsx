@@ -4,6 +4,7 @@ import {
   createInputState,
   resetGame,
   cycleAircraftSelection,
+  cycleWeaponSelection,
   update,
   updateBackground,
   render,
@@ -118,6 +119,21 @@ export default function App() {
           if (down && g.state === 'playing') inp.skill = true;
           e.preventDefault(); break;
 
+        case 'BracketLeft':
+          if (g.state === 'menu' && down) {
+            cycleWeaponSelection(g, -1);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+        case 'BracketRight':
+          if (g.state === 'menu' && down) {
+            cycleWeaponSelection(g, 1);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
         case 'Escape': case 'KeyP':
           if (down) {
             if (g.state === 'playing') g.state = 'paused';
@@ -157,13 +173,23 @@ export default function App() {
       if (g.state === 'menu') {
         const pt = toGame(cx, cy);
         if (pt) {
-          if (pt.x < CANVAS_W / 3) {
-            cycleAircraftSelection(g, -1);
-            playMenuSelect();
-          } else if (pt.x > (CANVAS_W * 2) / 3) {
-            cycleAircraftSelection(g, 1);
-            playMenuSelect();
-          } else {
+          if (pt.y < 300) {
+            if (pt.x < CANVAS_W / 3) {
+              cycleAircraftSelection(g, -1);
+              playMenuSelect();
+            } else if (pt.x > (CANVAS_W * 2) / 3) {
+              cycleAircraftSelection(g, 1);
+              playMenuSelect();
+            }
+          } else if (pt.y < 380) {
+            if (pt.x < CANVAS_W / 3) {
+              cycleWeaponSelection(g, -1);
+              playMenuSelect();
+            } else if (pt.x > (CANVAS_W * 2) / 3) {
+              cycleWeaponSelection(g, 1);
+              playMenuSelect();
+            }
+          } else if (pt.x > CANVAS_W / 3 && pt.x < (CANVAS_W * 2) / 3) {
             playMenuSelect();
             resetGame(g);
           }
