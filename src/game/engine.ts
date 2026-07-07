@@ -1,5 +1,5 @@
 import type {
-  AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore,
+  AchievementId, AircraftId, WeaponId, GameData, Player, Enemy, Bullet, Particle, PowerUp, HighScore,
 } from './types';
 import { AIRCRAFT, getAircraft, nextAircraft } from './aircraft';
 import { fireWeapon, getWeapon, nextWeapon, drawWeaponLabel, updateBulletTravel, consumePierce } from './weapons';
@@ -18,6 +18,12 @@ import {
   initModeState, isStoryComplete, MODE_INFO, nextGameMode, pickDailyModifier,
   powerUpsEnabled, syncChapterForMode,
 } from './modes';
+import {
+  ACHIEVEMENTS, addCoins, canAffordUnlock, coinRewardForEnemy,
+  DAILY_COMPLETE_COINS, DAILY_COMPLETE_WAVE, isAircraftUnlocked, isWeaponUnlocked,
+  loadCoins, recordEnemyKill, STORY_STAGE_CLEAR_COINS, tryUnlockAircraft, tryUnlockWeapon,
+  unlockAchievement,
+} from './progress';
 import {
   drawHazards, handleHazardCollisions, initChapterHazards, updateHazards,
 } from './hazards';
@@ -91,9 +97,67 @@ export function createGameData(): GameData {
     dailySeed: 0,
     dailyModifier: null,
     modeVictory: false,
+    waveDamageTaken: false,
+    dailyBonusAwarded: false,
+    runCoinsEarned: 0,
+    achievementToast: null,
   };
+  ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');
   return g;
+}
+
+function ensureValidMenuSelection(g: GameData) {
+  if (!isAircraftUnlocked(g.selectedAircraft)) g.selectedAircraft = 'falcon';
+  if (!isWeaponUnlocked(g.selectedWeapon)) g.selectedWeapon = 'standard';
+  g.player = mkPlayer(g.selectedAircraft, g.selectedWeapon);
+}
+
+export function canStartGame(g: GameData): boolean {
+  return isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
+}
+
+export function tryUnlockSelectedAircraft(g: GameData): boolean {
+  if (tryUnlockAircraft(g.selectedAircraft)) {
+    g.player = mkPlayer(g.selectedAircraft, g.selectedWeapon);
+    return true;
+  }
+  return false;
+}
+
+export function tryUnlockSelectedWeapon(g: GameData): boolean {
+  return tryUnlockWeapon(g.selectedWeapon);
+}
+
+function queueAchievement(g: GameData, id: AchievementId) {
+  const unlocked = unlockAchievement(id);
+  if (unlocked) {
+    g.achievementToast = { id, timer: 3.5 };
+    sfx.playPowerUp();
+  }
+}
+
+function awardRunCoins(g: GameData, amount: number, x?: number, y?: number) {
+  if (amount <= 0) return;
+  addCoins(amount);
+  g.runCoinsEarned += amount;
+  if (x != null && y != null) addScore(g, x, y, `+${amount}¢`, '#fd4');
+}
+
+function onWaveCleared(g: GameData) {
+  if (!g.waveDamageTaken) queueAchievement(g, 'untouchable');
+  if (g.gameMode === 'story') awardRunCoins(g, STORY_STAGE_CLEAR_COINS);
+  if (g.gameMode === 'daily' && g.wave >= DAILY_COMPLETE_WAVE && !g.dailyBonusAwarded) {
+    awardRunCoins(g, DAILY_COMPLETE_COINS);
+    g.dailyBonusAwarded = true;
+  }
+  if (g.wave >= 10) queueAchievement(g, 'survivor');
+}
+
+function tickAchievementToast(g: GameData, dt: number) {
+  if (!g.achievementToast) return;
+  g.achievementToast.timer -= dt;
+  if (g.achievementToast.timer <= 0) g.achievementToast = null;
 }
 
 export function cycleAircraftSelection(g: GameData, direction: -1 | 1) {
@@ -111,6 +175,7 @@ export function cycleGameModeSelection(g: GameData, direction: -1 | 1) {
 }
 
 export function resetGame(g: GameData) {
+  if (!canStartGame(g)) return;
   const aircraft = g.selectedAircraft;
   const weapon = g.selectedWeapon;
   initModeState(g);
@@ -129,6 +194,10 @@ export function resetGame(g: GameData) {
     screenShake: { intensity: 0, duration: 0, timer: 0 },
     specialSpawns: { sniper: false, healer: false },
     hazardSpawnTimer: 0,
+    waveDamageTaken: false,
+    dailyBonusAwarded: false,
+    runCoinsEarned: 0,
+    achievementToast: null,
     state: 'playing' as const,
   });
   applyDailyPlayerMods(g);
@@ -281,6 +350,13 @@ function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number) {
   if (e.type === 'splitter') spawnSplitterChildren(g, x, y);
   tryPowerUp(g, x, y);
   tryWeaponDrop(g, x, y);
+
+  const coinReward = coinRewardForEnemy(e.type);
+  awardRunCoins(g, coinReward, x, y - 22);
+  const stats = recordEnemyKill(boss);
+  if (stats.enemyKills === 1) queueAchievement(g, 'first_blood');
+  if (stats.bossKills >= 10) queueAchievement(g, 'boss_slayer');
+  if (g.combo >= 20) queueAchievement(g, 'combo_master');
 }
 
 function updateLaserFire(g: GameData, shooting: boolean, dt: number) {
@@ -328,6 +404,7 @@ function activateBomb(g: GameData) {
 
 function hurtPlayer(g: GameData) {
   const p = g.player;
+  g.waveDamageTaken = true;
   p.hp--; p.invincibleTimer = 2;
   shake(g, 10, 12);
   g.flashAlpha = 0.25; g.flashColor = '#ff2200';
@@ -354,6 +431,7 @@ function killPlayer(g: GameData) {
 export function update(g: GameData, input: InputState, dt: number) {
   if (g.state !== 'playing') return;
   g.frameCount++;
+  tickAchievementToast(g, dt);
   const p = g.player;
 
   // Slow-motion
@@ -423,13 +501,16 @@ export function update(g: GameData, input: InputState, dt: number) {
   if (g.enemiesSpawned >= g.enemiesPerWave && g.enemies.length === 0) {
     if (g.waveTimer <= 0) {
       if (isStoryComplete(g)) {
+        onWaveCleared(g);
         g.modeVictory = true;
         g.state = 'gameover';
         saveHighScore(g.score, g.wave);
         sfx.playBigExplosion();
         return;
       }
+      onWaveCleared(g);
       g.wave++; g.enemiesSpawned = 0;
+      g.waveDamageTaken = false;
       g.specialSpawns = { sniper: false, healer: false };
       const chapterChanged = syncChapterForMode(g);
       if (chapterChanged) initChapterHazards(g);
@@ -467,6 +548,7 @@ export function update(g: GameData, input: InputState, dt: number) {
         g.score += 10;
         p.grazeTimer = 0.3;
         p.grazeCount++;
+        if (p.grazeCount >= 50) queueAchievement(g, 'graze_king');
         sfx.playGraze();
         addP(g, p.x + dx * 0.5, p.y + dy * 0.5, 3, '#aaeeff', 1.5, 'spark', [1, 2]);
       }
@@ -618,6 +700,7 @@ export function update(g: GameData, input: InputState, dt: number) {
 
 // Called in non-playing states
 export function updateBackground(g: GameData, dt: number) {
+  tickAchievementToast(g, dt);
   for (const s of g.stars) { s.y += s.speed; if (s.y > H) { s.y = -2; s.x = Math.random() * W; } }
   for (const n of g.nebulae) { n.y += n.speed; if (n.y - n.radius > H) { n.y = -n.radius; n.x = Math.random() * W; } }
   for (let i = g.particles.length - 1; i >= 0; i--) {
@@ -652,7 +735,12 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   // BG
   drawChapterBackground(ctx, g);
 
-  if (g.state === 'menu') { drawMenu(ctx, g); ctx.restore(); ctx.restore(); return; }
+  if (g.state === 'menu') {
+    drawMenu(ctx, g);
+    drawAchievementToast(ctx, g);
+    ctx.restore(); ctx.restore();
+    return;
+  }
 
   // Environmental hazards (behind entities)
   drawHazards(ctx, g);
@@ -737,6 +825,7 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   }
 
   drawHUD(ctx, g);
+  drawAchievementToast(ctx, g);
 
   // Combo
   if (g.combo >= 3) {
@@ -780,6 +869,7 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   }
 
   if (g.state === 'gameover') drawGameOver(ctx, g);
+  if (g.state === 'gameover' || g.state === 'paused') drawAchievementToast(ctx, g);
 
   // Slow-mo overlay
   if (g.slowMotion < 1) {
@@ -1070,6 +1160,37 @@ function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
   drawWeaponLabel(ctx, p.weaponId, 10, H - 36);
 }
 
+function drawAchievementToast(ctx: CanvasRenderingContext2D, g: GameData) {
+  if (!g.achievementToast) return;
+  const def = ACHIEVEMENTS[g.achievementToast.id];
+  const fadeIn = Math.min(1, (3.5 - g.achievementToast.timer) / 0.4);
+  const fadeOut = Math.min(1, g.achievementToast.timer / 0.5);
+  const a = Math.min(fadeIn, fadeOut);
+  const boxW = 300;
+  const boxH = 50;
+  const x = (W - boxW) / 2;
+  const y = 78;
+
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.fillStyle = 'rgba(8,12,24,0.85)';
+  ctx.strokeStyle = '#fd4';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(x, y, boxW, boxH, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fd4';
+  ctx.font = 'bold 11px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('ACHIEVEMENT UNLOCKED', W / 2, y + 16);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(def.name, W / 2, y + 36);
+  ctx.restore();
+}
+
 function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(0, 0, W, H);
   ctx.textAlign = 'center';
@@ -1080,6 +1201,11 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
 
   ctx.fillStyle = '#6bf'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
   ctx.fillText('SPACE SHOOTER', W / 2, 156);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#fd4'; ctx.font = 'bold 14px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`¢ ${loadCoins().toLocaleString()}`, W - 12, 28);
+  ctx.textAlign = 'center';
 
   const mode = MODE_INFO[g.gameMode];
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
@@ -1095,37 +1221,55 @@ function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
 
   const craft = AIRCRAFT[g.selectedAircraft];
   const weapon = getWeapon(g.selectedWeapon);
+  const craftUnlocked = isAircraftUnlocked(g.selectedAircraft);
+  const weaponUnlocked = isWeaponUnlocked(g.selectedWeapon);
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
   ctx.fillText('SELECT AIRCRAFT', W / 2, 262);
-  ctx.fillStyle = craft.hullTop; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${craft.name.toUpperCase()}  ▶`, W / 2, 286);
+  ctx.fillStyle = craftUnlocked ? craft.hullTop : '#888';
+  ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${craft.name.toUpperCase()}${craftUnlocked ? '' : ' 🔒'}  ▶`, W / 2, 286);
   ctx.fillStyle = '#aac'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
   ctx.fillText(craft.tagline, W / 2, 302);
-  ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(
-    `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
-    W / 2, 316,
-  );
+  if (!craftUnlocked) {
+    ctx.fillStyle = canAffordUnlock(craft.coinCost) ? '#8f8' : '#f88';
+    ctx.font = '10px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(`${craft.coinCost} coins — press U to unlock`, W / 2, 316);
+  } else {
+    ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(
+      `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
+      W / 2, 316,
+    );
+  }
 
   ctx.fillStyle = '#fd4'; ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
   ctx.fillText('SELECT WEAPON', W / 2, 340);
-  ctx.fillStyle = weapon.hudColor; ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${weapon.name.toUpperCase()}  ▶`, W / 2, 362);
-  ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(weapon.tagline, W / 2, 376);
+  ctx.fillStyle = weaponUnlocked ? weapon.hudColor : '#888';
+  ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${weapon.name.toUpperCase()}${weaponUnlocked ? '' : ' 🔒'}  ▶`, W / 2, 362);
+  if (!weaponUnlocked) {
+    ctx.fillStyle = canAffordUnlock(weapon.coinCost) ? '#8f8' : '#f88';
+    ctx.font = '10px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(`${weapon.coinCost} coins — press U to unlock`, W / 2, 376);
+  } else {
+    ctx.fillStyle = '#889'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(weapon.tagline, W / 2, 376);
+  }
 
-  ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
-  ctx.fillStyle = '#fff'; ctx.font = '20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE', W / 2, 402);
+  const ready = canStartGame(g);
+  ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
+  ctx.fillStyle = ready ? '#fff' : '#f88';
+  ctx.font = `${ready ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
+  ctx.fillText(ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START', W / 2, 402);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
     ['↑ / ↓', 'Choose mode'],
     ['← / →', 'Choose aircraft'],
     ['[ / ]', 'Choose weapon'],
+    ['U', 'Unlock selection'],
     ['SPACE / Z', 'Shoot / Start'],
     ['X / B', 'Bomb'],
-    ['C / Shift', 'Skill'],
   ];
   const controlsTop = 424;
   const controlsStep = 15;
@@ -1179,6 +1323,11 @@ function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fillStyle = '#aac'; ctx.font = '14px "Segoe UI",Arial,sans-serif';
   const progressLabel = g.gameMode === 'story' ? `Stage ${g.wave}` : `Wave ${g.wave}`;
   ctx.fillText(`${progressLabel}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`, W / 2, g.modeVictory ? 300 : 285);
+
+  if (g.runCoinsEarned > 0) {
+    ctx.fillStyle = '#fd4'; ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(`+${g.runCoinsEarned} coins earned`, W / 2, g.modeVictory ? 328 : 313);
+  }
 
   const sc = loadHighScores();
   if (sc.length && sc[0].score === g.score && !g.modeVictory) {
