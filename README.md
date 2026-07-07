@@ -120,6 +120,18 @@ npm run dev
 | `npm run preview` | Preview the production build locally |
 | `npm run typecheck` | Run TypeScript without emitting files |
 
+### Play online (GitHub Pages)
+
+The game is deployed automatically when changes land on `main`:
+
+**https://phaethix.github.io/polished-arcade-shooter/**
+
+If deployment fails with a `404` on the deploy step, enable Pages once in the repository:
+
+1. **Settings → Pages**
+2. **Build and deployment → Source** → select **GitHub Actions**
+3. Re-run the **Deploy to GitHub Pages** workflow from the Actions tab
+
 ### Project Structure
 
 ```text
