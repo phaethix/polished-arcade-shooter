@@ -1,5 +1,6 @@
 import type { Enemy, EnemyType, GameData, Bullet } from './types';
 import * as sfx from './audio';
+import { getBossHp, getEnemySpeedMult, getSpawnPoolOverride, isBossWave } from './modes';
 
 const W = 400;
 
@@ -9,19 +10,18 @@ const KAMIKAZE_RUSH_SPEED = 5.5;
 const KAMIKAZE_TRIGGER_DIST = 160;
 const SNIPER_AIM_FRAMES = 50;
 
-function isBossWave(wave: number): boolean {
-  return wave % 5 === 0 && wave >= 5;
-}
-
 function buildSpawnPool(g: GameData): EnemyType[] {
+  const override = getSpawnPoolOverride(g);
+  if (override) return override;
+
   const w = g.wave;
   const pool: EnemyType[] = ['basic', 'basic', 'basic'];
   if (w >= 2) pool.push('fast');
   if (w >= 3) { pool.push('tank'); pool.push('kamikaze'); }
   if (w >= 4) pool.push('splitter');
   if (w >= 5) pool.push('shielded');
-  if (w >= 6 && !g.specialSpawns.sniper) pool.push('sniper');
-  if (w >= 8 && !isBossWave(w) && !g.specialSpawns.healer) pool.push('healer');
+  if (w >= 6 && !isBossWave(g) && !g.specialSpawns.sniper) pool.push('sniper');
+  if (w >= 8 && !isBossWave(g) && !g.specialSpawns.healer) pool.push('healer');
   return pool;
 }
 
@@ -117,10 +117,11 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
 
 export function spawnEnemy(g: GameData): void {
   const w = g.wave;
-  if (isBossWave(w) && g.enemiesSpawned === 0) {
+  if (isBossWave(g) && g.enemiesSpawned === 0) {
+    const hp = getBossHp(g);
     g.enemies.push(baseEnemy({
       type: 'boss', x: W / 2, y: -60,
-      width: 64, height: 56, hp: 20 + w * 5, maxHp: 20 + w * 5,
+      width: 64, height: 56, hp, maxHp: hp,
       speed: 0.5, shootTimer: 40, shootInterval: 25,
       movePattern: 'sine', scoreValue: 2000,
     }));
@@ -258,17 +259,18 @@ function updateSniperAim(g: GameData, e: Enemy, tm: number): void {
 
 export function updateEnemies(g: GameData, dt: number, tm: number): void {
   tickHealerAuras(g, dt);
+  const speedMult = getEnemySpeedMult(g);
 
   for (const e of g.enemies) {
     e.movePhase += 0.03 * tm;
     if (e.flashTimer > 0) e.flashTimer -= dt;
 
     if (e.type === 'kamikaze') {
-      updateKamikaze(e, g, tm);
+      updateKamikaze(e, g, tm * speedMult);
     } else {
-      e.y += e.speed * tm;
-      if (e.movePattern === 'sine') e.x += Math.sin(e.movePhase) * 2 * tm;
-      else if (e.movePattern === 'zigzag') e.x += (Math.sin(e.movePhase * 2) > 0 ? 1.5 : -1.5) * tm;
+      e.y += e.speed * tm * speedMult;
+      if (e.movePattern === 'sine') e.x += Math.sin(e.movePhase) * 2 * tm * speedMult;
+      else if (e.movePattern === 'zigzag') e.x += (Math.sin(e.movePhase * 2) > 0 ? 1.5 : -1.5) * tm * speedMult;
     }
 
     if (e.type === 'boss' && e.y > 100) {
