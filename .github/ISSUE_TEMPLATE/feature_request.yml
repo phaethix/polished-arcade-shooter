@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an improvement or new gameplay feature
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share the problem you want to solve and how you imagine the feature working.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What pain point or opportunity does this address?
+      placeholder: Boss fights feel repetitive after wave 10...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the feature you would like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: List any alternative approaches you thought about.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: Gameplay / engine
+        - label: UI / UX
+        - label: Audio
+        - label: Mobile / touch controls
+        - label: Documentation / tooling
