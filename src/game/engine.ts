@@ -355,6 +355,9 @@ export function update(g: GameData, input: InputState, dt: number) {
 
   tickSkills(g, dt);
 
+  p.x = Math.max(p.width / 2, Math.min(W - p.width / 2, p.x));
+  p.y = Math.max(p.height / 2, Math.min(H - p.height / 2, p.y));
+
   // Timers
   if (p.invincibleTimer > 0) p.invincibleTimer -= dt;
   if (p.shieldTimer > 0) { p.shieldTimer -= dt; if (p.shieldTimer <= 0) p.shieldActive = false; }
