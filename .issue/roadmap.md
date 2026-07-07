@@ -12,11 +12,11 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 
 | # | Item | Status |
 |---|------|--------|
-| 1.1 | Expansion type definitions | planned |
-| 1.2 | Aircraft configuration data | planned |
-| 1.3 | Aircraft stats on player spawn | planned |
-| 1.4 | Menu aircraft picker | planned |
-| 1.5 | Aircraft-specific visuals | planned |
+| 1.1 | Expansion type definitions | done |
+| 1.2 | Aircraft configuration data | done |
+| 1.3 | Aircraft stats on player spawn | done |
+| 1.4 | Menu aircraft picker | done |
+| 1.5 | Aircraft-specific visuals | done |
 | 1.6 | Falcon — missile salvo skill | planned |
 | 1.7 | Phantom — dash skill | planned |
 | 1.8 | Fortress — energy shield skill | planned |

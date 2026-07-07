@@ -39,11 +39,11 @@ Three playable ships with distinct stats and active skills. Falcon is unlocked b
 ## Implementation slices
 
 1. [x] Design spec (this file)
-2. [ ] Type definitions (`AircraftId`, `AircraftSkill`)
-3. [ ] Static config (`src/game/aircraft.ts`)
-4. [ ] Player spawn uses aircraft stats
-5. [ ] Menu picker (cycle with ←/→)
-6. [ ] Hull color per aircraft
+2. [x] Type definitions (`AircraftId`, `AircraftSkill`)
+3. [x] Static config (`src/game/aircraft.ts`)
+4. [x] Player spawn uses aircraft stats
+5. [x] Menu picker (cycle with ←/→)
+6. [x] Hull color per aircraft
 7. [ ] Skill framework (`skillCooldown`, `skillActive` on Player)
 8. [ ] Individual skill implementations (one commit each)
 
