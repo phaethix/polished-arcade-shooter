@@ -45,10 +45,23 @@ src/
 └── main.tsx          # Application entry point
 ```
 
+## Git conventions
+
+This project uses documented and enforced Git conventions for branch names and commit messages.
+
+Read [docs/GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) before opening a pull request. In short:
+
+- Branch format: `<type>/<short-description>` (example: `feature/mobile-touch-fix`)
+- Commit format: [Conventional Commits](https://www.conventionalcommits.org/) (example: `feat(game): add shield power-up`)
+- Pull request titles should follow the same commit format
+- Prefer squash merges to keep `main` history clean
+
+Local commit messages are checked by a Husky hook after `npm install`. Pull requests are checked by GitHub Actions.
+
 ## Pull requests
 
-1. Create a feature branch from `main`.
-2. Make your changes with clear commit messages.
+1. Create a branch from `main` using the naming rules in [docs/GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md).
+2. Write Conventional Commit messages for every commit.
 3. Fill out the pull request template completely.
 4. Confirm the game still runs locally and that CI checks pass.
 

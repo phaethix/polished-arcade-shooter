@@ -134,8 +134,9 @@ src/
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) before opening a pull request.
 
+- Git workflow: branch naming and [Conventional Commits](https://www.conventionalcommits.org/) are enforced in CI
 - Bug reports: use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml)
 - Feature ideas: use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml)
 - Security issues: see [SECURITY.md](SECURITY.md)
