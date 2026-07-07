@@ -4,8 +4,8 @@
 |---|---|
 | **Project** | Sky Blaster (polished-arcade-shooter) |
 | **Game version** | v0.7.0 |
-| **Document version** | 1.2.0 |
-| **Last updated** | 2026-07-07 22:05 (UTC+8) |
+| **Document version** | 1.2.2 |
+| **Last updated** | 2026-07-07 22:10 (UTC+8) |
 | **Status** | Expansion complete (Phases 1–6) |
 | **License** | MIT |
 | **Live demo** | https://phaethix.github.io/polished-arcade-shooter/ |
@@ -168,33 +168,11 @@ Input is collected through keyboard events and unified touch/mouse drag, stored 
 
 ### 5.3 Module architecture
 
-```text
-src/
-├── App.tsx              React shell — RAF loop, input wiring
-├── app/
-│   └── input.ts         Keyboard / touch input state
-└── game/
-    ├── engine.ts        Orchestrator — state machine, collisions, waves
-    ├── types.ts         Shared interfaces (Player, Enemy, GameData, …)
-    ├── core/
-    │   ├── constants.ts Canvas size and tuning constants
-    │   └── collision.ts Hit-test helpers
-    ├── effects.ts       Particles, shake, score popups
-    ├── storage/
-    │   └── highscores.ts  localStorage high scores
-    ├── render/          Canvas UI (menu, HUD, overlays, world sprites)
-    ├── aircraft.ts      Aircraft stats and visuals
-    ├── weapons.ts       Firing patterns and weapon config
-    ├── skills.ts        Active abilities per aircraft
-    ├── enemies.ts       Spawn logic, AI, rendering
-    ├── chapters.ts      Background themes and chapter rotation
-    ├── hazards.ts       Environmental threats per chapter
-    ├── modes.ts         Per-mode wave rules and daily modifiers
-    ├── progress.ts      Coins, unlocks, achievements (persistence)
-    └── audio.ts         Synthesized sound effects
-```
+`src/` is organized in three layers: a React shell (`App.tsx`, `app/input.ts`), a game orchestrator (`engine.ts`), and flat domain modules (aircraft, weapons, enemies, chapters, hazards, modes, progress, audio). Shared infrastructure sits under `game/core/`, `game/render/`, `game/storage/`, and `game/effects.ts`.
 
-**Dependency direction** flows inward: `engine.ts` imports domain and render modules; domain modules do not import `engine.ts`. Data definitions (`aircraft.ts`, `weapons.ts`, `chapters.ts`) are pure config + helpers. See [ARCHITECTURE.md](./ARCHITECTURE.md) for layer rules and future split points.
+**Dependency direction** flows inward: `engine.ts` imports domain and render modules; domain modules do not import `engine.ts`. Data definitions (`aircraft.ts`, `weapons.ts`, `chapters.ts`) are pure config + helpers.
+
+For the full module tree, dependency rules, and future split points, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### 5.4 State machine
 
@@ -351,6 +329,8 @@ When you change product scope, architecture, or methodology described here:
 
 | Doc version | Updated at (UTC+8) | Game version | Changes |
 |-------------|-------------------|--------------|---------|
+| **1.2.2** | 2026-07-07 22:10 | v0.7.0 | §5.3 condensed to a layer summary; full module tree deferred to [ARCHITECTURE.md](./ARCHITECTURE.md). |
+| **1.2.1** | 2026-07-07 22:09 | v0.7.0 | §5.3 module tree expanded to list all `render/` files; aligned with [ARCHITECTURE.md](./ARCHITECTURE.md) and current `src/` layout. |
 | **1.2.0** | 2026-07-07 22:05 | v0.7.0 | §5.3 updated for `core/`, `render/`, `app/`, and `storage/` split; added [ARCHITECTURE.md](./ARCHITECTURE.md) to Appendix C. |
 | **1.1.1** | 2026-07-07 21:57 | v0.7.0 | **Last updated** now records time to the minute; changelog **Updated at** column uses the same format. |
 | **1.1.0** | 2026-07-07 21:56 | v0.7.0 | Added living-document notice, header metadata (`Document version`, `Last updated`), and this revision history appendix with maintainer guidelines. |

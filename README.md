@@ -4,9 +4,11 @@
 [![Deploy](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A fast-paced, juicy vertical shoot-em-up built with React, TypeScript, and Canvas. Features tight controls, satisfying feedback, and endless waves of enemies.
+A fast-paced, juicy vertical shoot-em-up built with React, TypeScript, and Canvas. **v0.7.0** ships four game modes, three aircraft with skills, five weapons, chapter environments, and meta progression (coins, unlocks, achievements).
 
 **[▶ Play online](https://phaethix.github.io/polished-arcade-shooter/)** — no install required, runs in your browser.
+
+For the full product overview and architecture, see [docs/WHITEPAPER.md](docs/WHITEPAPER.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
@@ -136,14 +138,21 @@ If deployment fails with a `404` on the deploy step, enable Pages once in the re
 
 ```text
 src/
-├── App.tsx           # Main React component with game loop
-├── game/
-│   ├── engine.ts     # Core game logic, update & render
-│   ├── types.ts      # TypeScript interfaces
-│   └── audio.ts      # Web Audio synthesizer
-├── index.css         # Global styles
-└── main.tsx          # Entry point
+├── App.tsx           # React shell — game loop and input wiring
+├── app/input.ts      # Keyboard / touch input state
+└── game/             # Game domain (engine, render, modes, progress, …)
 ```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module tree and dependency rules.
+
+### Documentation
+
+| Document | Description |
+|----------|-------------|
+| [WHITEPAPER.md](docs/WHITEPAPER.md) | Product vision, systems, and release history |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Source layout and module responsibilities |
+| [GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) | Branch naming and commit format |
+| [roadmap.md](.issue/roadmap.md) | Expansion phases (complete) and backlog |
 
 ---
 
