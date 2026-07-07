@@ -2,7 +2,7 @@
   "name": "polished-arcade-shooter",
   "private": true,
   "version": "0.1.0",
-  "description": "Sky Blaster — a polished vertical arcade shooter built with React, TypeScript, and Canvas.",
+  "description": "Sky Blaster — browser vertical shoot-'em-up with four modes, meta progression, and procedural audio. React, TypeScript, Canvas.",
   "license": "MIT",
   "repository": {
     "type": "git",

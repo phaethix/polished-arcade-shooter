@@ -2,106 +2,150 @@
 
 [![CI](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml)
 [![Deploy](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml)
+[![Release](https://img.shields.io/github/v/release/phaethix/polished-arcade-shooter)](https://github.com/phaethix/polished-arcade-shooter/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A fast-paced, juicy vertical shoot-em-up built with React, TypeScript, and Canvas. **v0.7.0** ships four game modes, three aircraft with skills, five weapons, chapter environments, and meta progression (coins, unlocks, achievements).
+A browser-native vertical shoot-'em-up built with **React**, **TypeScript**, and **Canvas**. **v0.7.1** ships four game modes, three aircraft with active skills, five weapons, four environmental chapters, and local meta progression (coins, unlocks, achievements).
 
-**[▶ Play online](https://phaethix.github.io/polished-arcade-shooter/)** — no install required, runs in your browser.
+**[▶ Play online](https://phaethix.github.io/polished-arcade-shooter/)** — no install, runs at 60 fps on desktop and mobile.
 
-For the full product overview and architecture, see [docs/WHITEPAPER.md](docs/WHITEPAPER.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+For product vision, architecture, and release history, see [docs/WHITEPAPER.md](docs/WHITEPAPER.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
 ## Features
 
-- **Dual Input Support** — Keyboard (WASD/Arrows + Z/Space) and touch/mouse drag controls
-- **Juicy Feedback** — Screen shake, particle explosions, shockwave rings, score popups, slow-motion on boss kills
-- **Polished Visuals** — Parallax starfield, nebula clouds, engine flames, bullet glow effects
-- **Persistent High Scores** — Local storage leaderboard with top 10 scores
-- **Procedural Audio** — Web Audio API synthesized sound effects (no external files)
-- **Mobile Optimized** — Responsive design, touch-friendly, 60fps on mobile devices
-- **Endless Mode** — Infinite waves with scaling difficulty and boss fights every 5 waves
+- **Four game modes** — Story (20 stages), Endless, Boss Rush, and Daily Challenge
+- **Three aircraft** — Falcon, Phantom, and Fortress, each with a unique active skill
+- **Five weapons** — Standard, armor-piercing, shotgun, laser, and homing missiles
+- **Ten enemy types** — From basics and tanks to splitters, snipers, shielded units, kamikaze, and healers
+- **Four chapters** — Deep Space, Asteroid Belt, Enemy Carrier, and Wormhole with environmental hazards
+- **Meta progression** — Coins, permanent unlocks, six achievements, and a local top-10 leaderboard
+- **Juicy feedback** — Screen shake, particles, shockwave rings, score popups, slow-motion boss kills
+- **Procedural audio** — Web Audio API synthesis; no external sound files
+- **Dual input** — Keyboard and touch/mouse drag; skill button zone on mobile
 
 ---
 
-## How to Play
+## Game modes
 
-### Controls
-
-| Platform | Move | Shoot | Bomb | Pause |
-|----------|------|-------|------|-------|
-| **Keyboard** | `WASD` or `Arrow Keys` | `Space` or `Z` | `X` or `B` | `Esc` or `P` |
-| **Touch/Mouse** | Drag anywhere | Auto-fire while touching | — | Tap when paused |
-
-### Objective
-
-Survive as long as possible, destroy enemies, collect power-ups, and achieve the highest score!
+| Mode | Goal |
+|------|------|
+| **Story** | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending |
+| **Endless** | Survive infinite waves; difficulty and chapter environments rotate every 5 waves |
+| **Boss Rush** | Fight consecutive bosses with scaling HP — no filler waves |
+| **Daily Challenge** | Same seeded modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm) |
 
 ---
 
-## Power-Ups
+## Loadout
 
-| Icon | Color | Name | Effect |
-|------|-------|------|--------|
-| **S** | Orange | **Spread** | +2 bullets per level (max Lv3 = 7 bullets) |
-| **F** | Green | **Fire Rate** | Increases shooting speed |
-| **◇** | Blue | **Shield** | Blocks 1 hit, lasts 10 seconds |
-| **B** | Red | **Bomb** | Clears all enemy bullets, damages all enemies |
-| **+** | Teal | **Heal** | Restores 1 HP (or +500 score if full) |
+### Aircraft
+
+| Ship | Style | Skill |
+|------|-------|-------|
+| **Falcon** | Balanced all-rounder | Missile Salvo — homing missiles at nearby enemies |
+| **Phantom** | Fast and fragile | Dash — short invincible burst |
+| **Fortress** | Slow and tanky | Energy Shield — absorbs hits and boosts attacks |
+
+### Weapons
+
+| Weapon | Effect |
+|--------|--------|
+| **Standard** | Reliable spread-fire blaster (default) |
+| **Armor Piercing** | Rounds pierce through enemies |
+| **Shotgun** | Wide burst at close range |
+| **Laser** | Sustained beam; damage ramps while held |
+| **Homing** | Slow missiles that track targets |
+
+Select aircraft and weapon on the menu before starting. Phantom, Fortress, and alternate weapons unlock with coins earned in runs.
+
+---
+
+## Controls
+
+### In-game
+
+| Action | Keyboard | Touch / Mouse |
+|--------|----------|---------------|
+| Move | `WASD` or `Arrow Keys` | Drag anywhere |
+| Shoot | `Space` or `Z` (hold) | Auto-fire while touching |
+| Bomb | `X` or `B` | — |
+| Skill | `C` or `Shift` | Tap the skill zone (bottom center) |
+| Pause | `Esc` or `P` | Tap when paused |
+
+### Menu
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Cycle game mode |
+| `←` / `→` | Cycle aircraft |
+| `[` / `]` | Cycle weapon |
+| `U` | Unlock selected aircraft or weapon (costs coins) |
+| `Space` / `Z` | Start game |
+
+Touch: tap the mode, aircraft, and weapon rows to cycle; tap **TAP or PRESS SPACE** to start.
+
+---
+
+## Power-ups
+
+| Icon | Effect |
+|------|--------|
+| **S** | Spread — +1 power level (max 3; more bullets per shot) |
+| **F** | Fire rate — faster shooting |
+| **◇** | Shield — blocks one hit (~10 s) |
+| **B** | Bomb — clears enemy bullets and damages all enemies |
+| **+** | Heal — +1 HP, or +500 score if already full |
+| **W** | Weapon — swap to the dropped weapon for the rest of the run |
 
 ---
 
 ## Enemies
 
-| Type | Color | Behavior | Points |
-|------|-------|----------|--------|
-| **Basic** | Red | Standard movement patterns | 100 |
-| **Fast** | Green | Quick, erratic movement | 150 |
-| **Tank** | Brown | Slow, high HP | 300 |
-| **Boss** | Dark Red | Appears every 5 waves, fires spread shots | 2000 |
+| Type | Behavior | Base score |
+|------|----------|------------|
+| **Basic** | Standard patterns | 100 |
+| **Fast** | Quick, erratic movement | 150 |
+| **Tank** | High HP, slow | 300 |
+| **Splitter** | Spawns mini enemies on death | 220 |
+| **Sniper** | Long-range aimed shots | 350 |
+| **Shielded** | Frontal immunity | 280 |
+| **Kamikaze** | Rushes the player and explodes | 180 |
+| **Healer** | Heals nearby enemies | 400 |
+| **Mini** | Small splitter spawn | 75 |
+| **Boss** | Appears on boss waves / story milestones | 2000 |
 
 ---
 
-## Wave System
+## Scoring & progression
 
-- **Endless waves** with increasing difficulty
-- Enemy count per wave: `5 + wave × 2`
-- **Boss waves** every 5th wave (Wave 5, 10, 15...)
-- Boss HP scales: `20 + wave × 5`
-- Enemies shoot faster and move quicker as waves progress
-
----
-
-## Scoring System
-
-| Action | Points |
-|--------|--------|
-| Basic enemy kill | 100 |
-| Fast enemy kill | 150 |
-| Tank enemy kill | 300 |
-| Boss kill | 2000 |
-| Graze (near-miss) | +10 |
-| Combo bonus | +50% per 5 kills |
-| Heal at full HP | +500 |
+| Mechanic | Detail |
+|----------|--------|
+| **Combo** | Chain kills within 1.5 s; every 5 combo adds +50% score multiplier |
+| **Graze** | Fly near enemy bullets (not hitting) for +10 points each |
+| **Coins** | Earned from kills, bosses, story clears, and daily milestones; spent on unlocks |
+| **Achievements** | Six goals (first kill, 20× combo, 50 grazes, 10 boss kills lifetime, wave 10, no-damage stage) |
+| **High scores** | Top 10 saved locally with wave and date |
 
 ---
 
-## Tech Stack
+## Tech stack
 
-- **React 19** — UI framework
-- **TypeScript** — Type safety
-- **Vite** — Build tool
-- **Tailwind CSS 4** — Styling
-- **Canvas API** — Game rendering
-- **Web Audio API** — Procedural sound synthesis
+- **React 19** — UI shell and game loop host
+- **TypeScript** — Type-safe game logic
+- **Vite** — Build tool; single-file production output for GitHub Pages
+- **Tailwind CSS 4** — Full-screen layout
+- **Canvas 2D** — Rendering, particles, and HUD
+- **Web Audio API** — Procedural sound effects
 
 ---
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 18+ (CI uses Node 24)
 - npm
 
 ### Installation
@@ -113,7 +157,7 @@ npm install
 npm run dev
 ```
 
-### Available scripts
+### Scripts
 
 | Command | Description |
 |---------|-------------|
@@ -124,17 +168,13 @@ npm run dev
 
 ### Play online (GitHub Pages)
 
-The game is deployed automatically when changes land on `main`:
+Deployed automatically when changes land on `main`:
 
 **https://phaethix.github.io/polished-arcade-shooter/**
 
-If deployment fails with a `404` on the deploy step, enable Pages once in the repository:
+If deployment fails with a `404`, enable Pages once: **Settings → Pages → Source → GitHub Actions**, then re-run the deploy workflow.
 
-1. **Settings → Pages**
-2. **Build and deployment → Source** → select **GitHub Actions**
-3. Re-run the **Deploy to GitHub Pages** workflow from the Actions tab
-
-### Project Structure
+### Project structure
 
 ```text
 src/
@@ -143,7 +183,7 @@ src/
 └── game/             # Game domain (engine, render, modes, progress, …)
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module tree and dependency rules.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module tree.
 
 ### Documentation
 
@@ -161,9 +201,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module tree and de
 Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) before opening a pull request.
 
 - Git workflow: branch naming and [Conventional Commits](https://www.conventionalcommits.org/) are enforced in CI
-- Bug reports: use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml)
-- Feature ideas: use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml)
-- Security issues: see [SECURITY.md](SECURITY.md)
+- Bug reports: [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml)
+- Feature ideas: [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml)
+- Security: [SECURITY.md](SECURITY.md)
 
 This project follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -171,10 +211,10 @@ This project follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 ## Acknowledgments
 
-Inspired by classic shoot-em-ups like Raiden, 1942, and Touhou.
+Inspired by classic vertical shooters such as *Raiden*, *1942*, and *Touhou*.
