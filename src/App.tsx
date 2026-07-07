@@ -84,6 +84,7 @@ export default function App() {
       switch (e.code) {
         case 'ArrowUp': case 'KeyW':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             cycleGameModeSelection(g, -1);
             playMenuSelect();
             e.preventDefault();
@@ -92,6 +93,7 @@ export default function App() {
           inp.up = down; e.preventDefault(); break;
         case 'ArrowDown': case 'KeyS':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             cycleGameModeSelection(g, 1);
             playMenuSelect();
             e.preventDefault();
@@ -100,6 +102,7 @@ export default function App() {
           inp.down = down; e.preventDefault(); break;
         case 'ArrowLeft': case 'KeyA':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             cycleAircraftSelection(g, -1);
             playMenuSelect();
             e.preventDefault();
@@ -108,6 +111,7 @@ export default function App() {
           inp.left = down; e.preventDefault(); break;
         case 'ArrowRight': case 'KeyD':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             cycleAircraftSelection(g, 1);
             playMenuSelect();
             e.preventDefault();
@@ -117,6 +121,7 @@ export default function App() {
 
         case 'KeyU':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             const unlockedCraft = tryUnlockSelectedAircraft(g);
             const unlockedWeapon = tryUnlockSelectedWeapon(g);
             if (unlockedCraft || unlockedWeapon) playMenuSelect();
@@ -147,6 +152,7 @@ export default function App() {
 
         case 'BracketLeft':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             cycleWeaponSelection(g, -1);
             playMenuSelect();
             e.preventDefault();
@@ -154,6 +160,7 @@ export default function App() {
           break;
         case 'BracketRight':
           if (g.state === 'menu' && down) {
+            resumeAudio();
             cycleWeaponSelection(g, 1);
             playMenuSelect();
             e.preventDefault();
