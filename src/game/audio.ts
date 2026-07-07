@@ -2,32 +2,49 @@
 let audioCtx: AudioContext | null = null;
 
 function getCtx(): AudioContext {
-  if (!audioCtx) audioCtx = new AudioContext();
+  if (!audioCtx) {
+    const AC = window.AudioContext
+      ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AC) throw new Error('Web Audio API unavailable');
+    audioCtx = new AC();
+  }
   return audioCtx;
 }
 
+/** Call from a user-gesture handler (tap / key) to unlock audio on mobile. */
 export function resumeAudio() {
-  if (audioCtx?.state === 'suspended') audioCtx.resume();
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') void ctx.resume();
+}
+
+async function ensureRunning(ctx: AudioContext) {
+  if (ctx.state === 'suspended') await ctx.resume();
 }
 
 function tone(
   freq: number, dur: number, type: OscillatorType = 'square',
   vol = 0.1, freqEnd?: number, delay = 0,
 ) {
-  try {
-    const c = getCtx();
-    const o = c.createOscillator();
-    const g = c.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, c.currentTime + delay);
-    if (freqEnd !== undefined)
-      o.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 20), c.currentTime + delay + dur);
-    g.gain.setValueAtTime(vol, c.currentTime + delay);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + delay + dur);
-    o.connect(g); g.connect(c.destination);
-    o.start(c.currentTime + delay);
-    o.stop(c.currentTime + delay + dur);
-  } catch { /* silent */ }
+  void (async () => {
+    try {
+      const c = getCtx();
+      await ensureRunning(c);
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, c.currentTime + delay);
+      if (freqEnd !== undefined) {
+        o.frequency.exponentialRampToValueAtTime(
+          Math.max(freqEnd, 20), c.currentTime + delay + dur,
+        );
+      }
+      g.gain.setValueAtTime(vol, c.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + delay + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(c.currentTime + delay);
+      o.stop(c.currentTime + delay + dur);
+    } catch { /* silent */ }
+  })();
 }
 
 export const playShoot      = () => tone(880, 0.08, 'square', 0.05, 440);
