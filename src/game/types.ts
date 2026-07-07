@@ -179,4 +179,8 @@ export interface GameData {
   dailySeed: number;
   dailyModifier: DailyModifier | null;
   modeVictory: boolean;
+  waveDamageTaken: boolean;
+  dailyBonusAwarded: boolean;
+  runCoinsEarned: number;
+  achievementToast: { id: AchievementId; timer: number } | null;
 }
