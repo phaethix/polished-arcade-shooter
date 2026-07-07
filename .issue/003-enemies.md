@@ -1,6 +1,6 @@
 # 003 — New Enemy Types
 
-**Status:** planned  
+**Status:** done  
 **Phase:** 3  
 **Target version:** v0.3.0
 
