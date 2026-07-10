@@ -34,8 +34,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(p.tilt * 0.18); // banking
-
-  // HP-based hull glow ring
   const hpR = p.hp / p.maxHp;
   const hpCol = hpR > 0.6 ? '#44ffaa' : hpR > 0.34 ? '#ffaa44' : '#ff4444';
   ctx.save();
@@ -48,8 +46,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.arc(0, 2, 20, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
-
-  // Shield (power-up)
   if (p.shieldActive) {
     ctx.strokeStyle = '#4af';
     ctx.lineWidth = 2;
@@ -57,7 +53,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.beginPath();
     ctx.arc(0, 0, 24, 0, Math.PI * 2);
     ctx.stroke();
-    // Inner glow
     ctx.globalAlpha = 0.08;
     ctx.fillStyle = '#4af';
     ctx.beginPath();
@@ -65,8 +60,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.fill();
     ctx.globalAlpha = 1;
   }
-
-  // Skill shield (fortress energy shield)
   if (p.skillShieldActive) {
     ctx.strokeStyle = '#fd4';
     ctx.lineWidth = 2;
@@ -83,8 +76,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
-
-  // Engine flame (animated)
   const flicker = 0.8 + Math.random() * 0.4;
   const flameH = 10 + Math.sin(Date.now() * 0.02) * 3;
   const gr2 = ctx.createLinearGradient(0, p.height / 3, 0, p.height / 2 + flameH * flicker);
@@ -97,7 +88,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.lineTo(0, p.height / 2 + flameH * flicker);
   ctx.lineTo(5, p.height / 3);
   ctx.fill();
-  // Outer flame
   const gr3 = ctx.createLinearGradient(0, p.height / 3, 0, p.height / 2 + flameH * flicker * 0.7);
   gr3.addColorStop(0, craft.engineColor + '44');
   gr3.addColorStop(1, 'transparent');
@@ -107,8 +97,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.lineTo(0, p.height / 2 + flameH * flicker * 0.7);
   ctx.lineTo(8, p.height / 3);
   ctx.fill();
-
-  // Ship body
   const gr = ctx.createLinearGradient(0, -p.height / 2, 0, p.height / 2);
   gr.addColorStop(0, craft.hullTop);
   gr.addColorStop(0.4, craft.hullMid);
@@ -125,18 +113,13 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.lineTo(-p.width / 2, p.height / 3);
   ctx.closePath();
   ctx.fill();
-
-  // Outline highlight
   ctx.strokeStyle = craft.hullTop + '33';
   ctx.lineWidth = 1;
   ctx.stroke();
-
-  // Cockpit
   ctx.fillStyle = craft.cockpitColor;
   ctx.beginPath();
   ctx.ellipse(0, -4, 4, 7, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Cockpit glow
   ctx.save();
   ctx.globalAlpha = 0.3;
   ctx.shadowColor = craft.cockpitColor;
@@ -146,8 +129,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.ellipse(0, -4, 3, 5, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-
-  // Wing stripes
   ctx.strokeStyle = '#66ccff44';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -170,7 +151,6 @@ export function drawBullet(ctx: CanvasRenderingContext2D, b: Bullet) {
     gr.addColorStop(1, '#036');
     ctx.fillStyle = gr;
     ctx.fillRect(-b.width / 2, -b.height / 2, b.width, b.height);
-    // Glow
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = 0.35;
@@ -178,7 +158,6 @@ export function drawBullet(ctx: CanvasRenderingContext2D, b: Bullet) {
     ctx.fillRect(-b.width * 1.2, -b.height / 2, b.width * 2.4, b.height);
     ctx.restore();
   } else {
-    // Enemy bullet with glow
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = 0.3;
@@ -224,7 +203,6 @@ export function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
     pw.type === 'weapon' && pw.weaponId
       ? getWeapon(pw.weaponId).hudColor
       : (col[pw.type] ?? '#fff');
-  // Outer glow
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   ctx.globalAlpha = 0.15;
@@ -233,7 +211,6 @@ export function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
   ctx.arc(0, 0, 18, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  // BG circle
   ctx.fillStyle = c;
   ctx.globalAlpha = 0.25;
   ctx.beginPath();
@@ -245,10 +222,8 @@ export function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
   ctx.beginPath();
   ctx.arc(0, 0, 12, 0, Math.PI * 2);
   ctx.stroke();
-  // Icon
   ctx.fillStyle = '#fff';
   if (pw.type === 'heal') {
-    // Draw a cross
     ctx.fillRect(-6, -2, 12, 4);
     ctx.fillRect(-2, -6, 4, 12);
   } else if (pw.type === 'weapon' && pw.weaponId) {
