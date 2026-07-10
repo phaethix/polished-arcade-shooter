@@ -100,6 +100,7 @@ export function createGameData(): GameData {
     shotsHit: 0,
     damageDealt: 0,
     enemiesKilled: 0,
+    autoFire: true,
   };
   ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');

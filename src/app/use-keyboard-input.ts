@@ -162,6 +162,14 @@ export function useKeyboardInput(
           }
           e.preventDefault();
           break;
+
+        case 'KeyF':
+          if (down && g.state === 'playing') {
+            g.autoFire = !g.autoFire;
+            playMenuSelect();
+          }
+          e.preventDefault();
+          break;
       }
     };
 

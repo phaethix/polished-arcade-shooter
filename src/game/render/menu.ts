@@ -146,6 +146,7 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
     ['U', 'Unlock selection'],
     ['SPACE / Z', 'Shoot / Start'],
     ['X / B', 'Bomb'],
+    ['F', 'Toggle auto-fire'],
   ];
   const controlsTop = layout.controls.topY;
   const controlsStep = layout.controls.step;

@@ -57,13 +57,14 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 
 ### In-game
 
-| Action | Keyboard               | Touch / Mouse                      |
-| ------ | ---------------------- | ---------------------------------- |
-| Move   | `WASD` or `Arrow Keys` | Drag anywhere                      |
-| Shoot  | `Space` or `Z` (hold)  | Auto-fire while touching           |
-| Bomb   | `X` or `B`             | —                                  |
-| Skill  | `C` or `Shift`         | Tap the skill zone (bottom center) |
-| Pause  | `Esc` or `P`           | Tap when paused                    |
+| Action    | Keyboard                                    | Touch / Mouse                      |
+| --------- | ------------------------------------------- | ---------------------------------- |
+| Move      | `WASD` or `Arrow Keys`                      | Drag anywhere                      |
+| Shoot     | `Space` or `Z` (hold)                       | Auto-fire while touching           |
+| Auto-fire | `F` toggles continuous fire (on by default) | —                                  |
+| Bomb      | `X` or `B`                                  | —                                  |
+| Skill     | `C` or `Shift`                              | Tap the skill zone (bottom center) |
+| Pause     | `Esc` or `P`                                | Tap when paused                    |
 
 ### Menu
 
