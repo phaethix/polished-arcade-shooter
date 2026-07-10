@@ -1,5 +1,6 @@
 import type { GameData, Player, Enemy } from './types';
 import { getAircraft } from './aircraft';
+import { MAX_PARTICLES } from './core/constants';
 import * as sfx from './audio';
 
 const MISSILE_COUNT = 5;
@@ -82,23 +83,24 @@ function activateDash(g: GameData, moveX: number, moveY: number): boolean {
   if (!dx && !dy) dy = -1;
 
   const len = Math.hypot(dx, dy) || 1;
-  p.dashVx = (dx / len) * 16;
+  p.dashVx = (dx / len) * 16; // dash speed (px/frame)
   p.dashVy = (dy / len) * 16;
-  p.skillActiveTimer = 0.22;
+  p.skillActiveTimer = 0.22; // dash duration (seconds)
   startSkillCooldown(p);
   sfx.playMenuSelect();
 
-  g.particles.push({
-    x: p.x,
-    y: p.y,
-    vx: -p.dashVx * 0.15,
-    vy: -p.dashVy * 0.15,
-    life: 0.25,
-    maxLife: 0.25,
-    size: 4,
-    color: '#c8f',
-    type: 'trail',
-  });
+  if (g.particles.length < MAX_PARTICLES)
+    g.particles.push({
+      x: p.x,
+      y: p.y,
+      vx: -p.dashVx * 0.15,
+      vy: -p.dashVy * 0.15,
+      life: 0.25,
+      maxLife: 0.25,
+      size: 4,
+      color: '#c8f',
+      type: 'trail',
+    });
 
   return true;
 }
@@ -106,7 +108,7 @@ function activateDash(g: GameData, moveX: number, moveY: number): boolean {
 function activateEnergyShield(g: GameData): boolean {
   const p = g.player;
   p.skillShieldActive = true;
-  p.skillShieldTimer = 3;
+  p.skillShieldTimer = 3; // shield duration (seconds)
   p.skillAbsorbedHits = 0;
   p.damageBoost = 0;
   startSkillCooldown(p);

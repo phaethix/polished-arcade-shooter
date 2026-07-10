@@ -16,6 +16,7 @@ import {
   PLAYER_H,
   COMBO_WINDOW_S,
   GRAZE_RADIUS,
+  MAX_PARTICLES,
 } from './core/constants';
 import { boxesOverlap } from './core/collision';
 import { shake, addParticles, addRing, addScorePopup } from './effects';
@@ -278,7 +279,7 @@ function playerShoot(g: GameData) {
 
 function tryPowerUp(g: GameData, x: number, y: number) {
   if (!powerUpsEnabled(g)) return;
-  if (Math.random() > 0.18) return;
+  if (Math.random() > 0.18) return; // 18% power-up drop chance
   const types: PowerUp['type'][] = ['spread', 'speed', 'shield', 'bomb', 'heal'];
   const wts = [0.28, 0.2, 0.17, 0.15, 0.2];
   let r = Math.random();
@@ -295,7 +296,7 @@ function tryPowerUp(g: GameData, x: number, y: number) {
 
 function tryWeaponDrop(g: GameData, x: number, y: number) {
   if (!powerUpsEnabled(g)) return;
-  if (Math.random() > 0.07) return;
+  if (Math.random() > 0.07) return; // 7% weapon drop chance
   const alts: WeaponId[] = ['armor_piercing', 'shotgun', 'laser', 'homing'];
   const weaponId = alts[Math.floor(Math.random() * alts.length)];
   g.powerUps.push({ x, y, width: 22, height: 22, type: 'weapon', weaponId, vy: 1.4 });
@@ -434,7 +435,7 @@ function hurtPlayer(g: GameData) {
   const p = g.player;
   g.waveDamageTaken = true;
   p.hp--;
-  p.invincibleTimer = 2;
+  p.invincibleTimer = 2; // 2 seconds of i-frames after hit
   shake(g, 10, 12);
   g.flashAlpha = 0.25;
   g.flashColor = '#ff2200';
@@ -583,7 +584,7 @@ export function update(g: GameData, input: InputState, dt: number) {
     }
   } else if (g.enemiesSpawned < g.enemiesPerWave && g.waveTimer <= 0) {
     spawnEnemy(g);
-    g.waveTimer = Math.max(15, 50 - g.wave * 3);
+    g.waveTimer = Math.max(15, 50 - g.wave * 3); // spawn interval (frames), floor at 15
   }
 
   // ── Enemies ──
@@ -595,7 +596,7 @@ export function update(g: GameData, input: InputState, dt: number) {
     const m = b.isPlayer ? 1 : tm; // player bullets always full speed
     b.x += b.vx * m;
     b.y += b.vy * m;
-    if (b.isPlayer && Math.random() > 0.65)
+    if (b.isPlayer && Math.random() > 0.65 && g.particles.length < MAX_PARTICLES)
       g.particles.push({
         x: b.x,
         y: b.y + 4,
@@ -790,6 +791,7 @@ export function update(g: GameData, input: InputState, dt: number) {
   // Danger vignette — pulse when low HP
   const hpRatio = p.hp / p.maxHp;
   if (hpRatio <= 0.34) {
+    // low HP threshold — trigger danger vignette
     g.dangerAlpha = 0.15 + Math.sin(g.frameCount * 0.08) * 0.1;
   } else {
     g.dangerAlpha *= 0.9;
@@ -889,7 +891,7 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   ctx.scale(scale, scale);
 
   if (g.screenShake.timer > 0) {
-    const a = g.screenShake.intensity * (g.screenShake.timer / g.screenShake.duration);
+    const a = g.screenShake.intensity * (g.screenShake.timer / (g.screenShake.duration || 1));
     ctx.translate((Math.random() - 0.5) * a * 2, (Math.random() - 0.5) * a * 2);
   }
 
@@ -929,11 +931,9 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
     drawComboBanner(ctx, g);
     drawWaveAnnounce(ctx, g);
   }
-  drawAchievementToast(ctx, g);
   if (g.state === 'paused') drawPausedOverlay(ctx, g);
-
   if (g.state === 'gameover') drawGameOver(ctx, g);
-  if (g.state === 'gameover' || g.state === 'paused') drawAchievementToast(ctx, g);
+  drawAchievementToast(ctx, g);
 
   drawSlowMotionOverlay(ctx, g);
 

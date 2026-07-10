@@ -1,8 +1,3 @@
-export interface Vec2 {
-  x: number;
-  y: number;
-}
-
 // ─── Expansion types (v0.2+) ───────────────────────────────────
 
 export type AircraftId = 'falcon' | 'phantom' | 'fortress';

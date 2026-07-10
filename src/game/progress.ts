@@ -50,7 +50,7 @@ function readJson<T>(key: string, fallback: T): T {
     const raw = localStorage.getItem(key);
     if (raw) return JSON.parse(raw) as T;
   } catch {
-    /* */
+    /* silent */
   }
   return fallback;
 }
@@ -59,7 +59,7 @@ function writeJson(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* */
+    /* silent */
   }
 }
 

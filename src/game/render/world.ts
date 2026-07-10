@@ -204,7 +204,7 @@ export function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
   ctx.translate(pw.x, pw.y);
   const pulse = 1 + Math.sin(Date.now() * 0.008) * 0.15;
   ctx.scale(pulse, pulse);
-  const col: Record<string, string> = {
+  const col: Record<PowerUp['type'], string> = {
     spread: '#f80',
     speed: '#0f8',
     shield: '#48f',
@@ -212,7 +212,7 @@ export function drawPowerUp(ctx: CanvasRenderingContext2D, pw: PowerUp) {
     heal: '#4f8',
     weapon: '#fd4',
   };
-  const ico: Record<string, string> = {
+  const ico: Record<PowerUp['type'], string> = {
     spread: 'S',
     speed: 'F',
     shield: '◇',

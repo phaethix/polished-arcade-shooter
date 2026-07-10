@@ -7,7 +7,7 @@ export function loadHighScores(): HighScore[] {
     const r = localStorage.getItem(HS_KEY);
     if (r) return JSON.parse(r);
   } catch {
-    /* */
+    /* silent */
   }
   return [];
 }
@@ -20,7 +20,7 @@ export function saveHighScore(score: number, wave: number): HighScore[] {
   try {
     localStorage.setItem(HS_KEY, JSON.stringify(top));
   } catch {
-    /* */
+    /* silent */
   }
   return top;
 }
