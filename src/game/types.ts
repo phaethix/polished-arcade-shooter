@@ -10,6 +10,8 @@ export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
 
 export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily';
 
+export type Difficulty = 'easy' | 'normal' | 'hard';
+
 export type DailyModifier = 'double_speed' | 'no_powerups' | 'single_hp' | 'kamikaze_only';
 
 export type AchievementId =
@@ -198,6 +200,7 @@ export interface GameData {
   selectedWeapon: WeaponId;
   specialSpawns: { sniper: boolean; healer: boolean };
   gameMode: GameMode;
+  difficulty: Difficulty;
   dailySeed: number;
   dailyModifier: DailyModifier | null;
   modeVictory: boolean;
