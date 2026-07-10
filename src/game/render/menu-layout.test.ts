@@ -22,9 +22,43 @@ describe('resolveMenuTouch', () => {
     expect(resolveMenuTouch(320, 280)).toEqual({ kind: 'cycle_aircraft', direction: 1 });
   });
 
+  // Centered ◀ NAME ▶ glyphs sit near mid-canvas; half-row split must hit them.
+  it('cycles aircraft when tapping near the centered arrow glyphs', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2 - 20, 280)).toEqual({
+      kind: 'cycle_aircraft',
+      direction: -1,
+    });
+    expect(resolveMenuTouch(CANVAS_W / 2 + 20, 280)).toEqual({
+      kind: 'cycle_aircraft',
+      direction: 1,
+    });
+  });
+
   it('cycles difficulty from left and right zones', () => {
     expect(resolveMenuTouch(50, 410)).toEqual({ kind: 'cycle_difficulty', direction: -1 });
     expect(resolveMenuTouch(320, 410)).toEqual({ kind: 'cycle_difficulty', direction: 1 });
+  });
+
+  it('cycles difficulty when tapping near the centered arrow glyphs', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2 - 20, 410)).toEqual({
+      kind: 'cycle_difficulty',
+      direction: -1,
+    });
+    expect(resolveMenuTouch(CANVAS_W / 2 + 20, 410)).toEqual({
+      kind: 'cycle_difficulty',
+      direction: 1,
+    });
+  });
+
+  it('cycles weapon when tapping near the centered arrow glyphs', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2 - 20, 350)).toEqual({
+      kind: 'cycle_weapon',
+      direction: -1,
+    });
+    expect(resolveMenuTouch(CANVAS_W / 2 + 20, 350)).toEqual({
+      kind: 'cycle_weapon',
+      direction: 1,
+    });
   });
 
   it('starts from the center start row', () => {
