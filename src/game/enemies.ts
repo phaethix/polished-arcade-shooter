@@ -1,6 +1,12 @@
 import type { Enemy, EnemyType, GameData, Bullet } from './types';
 import * as sfx from './audio';
-import { getBossHp, getEnemySpeedMult, getSpawnPoolOverride, isBossWave } from './modes';
+import {
+  getBossHp,
+  getEnemyHpMult,
+  getEnemySpeedMult,
+  getSpawnPoolOverride,
+  isBossWave,
+} from './modes';
 import { CANVAS_W } from './core/constants';
 import { addParticles } from './effects';
 
@@ -226,7 +232,13 @@ export function spawnEnemy(g: GameData): void {
   const type = pool[Math.floor(Math.random() * pool.length)];
   if (type === 'sniper') g.specialSpawns.sniper = true;
   if (type === 'healer') g.specialSpawns.healer = true;
-  g.enemies.push(createEnemy(type, w));
+  const enemy = createEnemy(type, w);
+  const hpMult = getEnemyHpMult(g);
+  if (hpMult !== 1) {
+    enemy.hp = Math.max(1, Math.round(enemy.hp * hpMult));
+    enemy.maxHp = Math.max(1, Math.round(enemy.maxHp * hpMult));
+  }
+  g.enemies.push(enemy);
   g.enemiesSpawned++;
 }
 

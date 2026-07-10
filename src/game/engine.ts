@@ -1,6 +1,7 @@
 import type {
   AchievementId,
   AircraftId,
+  Difficulty,
   WeaponId,
   GameData,
   Player,
@@ -38,8 +39,11 @@ import { applyChapterToGame, drawChapterBackground } from './chapters';
 import {
   applyDailyPlayerMods,
   getEnemiesPerWave,
+  getPlayerHpBonus,
+  getSpawnIntervalMult,
   initModeState,
   isStoryComplete,
+  nextDifficulty,
   nextGameMode,
   powerUpsEnabled,
   syncChapterForMode,
@@ -147,6 +151,7 @@ export function createGameData(): GameData {
     selectedWeapon: 'standard',
     specialSpawns: { sniper: false, healer: false },
     gameMode: 'endless',
+    difficulty: 'normal' as Difficulty,
     dailySeed: 0,
     dailyModifier: null,
     modeVictory: false,
@@ -227,6 +232,10 @@ export function cycleGameModeSelection(g: GameData, direction: -1 | 1) {
   g.gameMode = nextGameMode(g.gameMode, direction);
 }
 
+export function cycleDifficultySelection(g: GameData, direction: -1 | 1) {
+  g.difficulty = nextDifficulty(g.difficulty, direction);
+}
+
 export function resetGame(g: GameData) {
   if (!canStartGame(g)) return;
   const aircraft = g.selectedAircraft;
@@ -264,6 +273,11 @@ export function resetGame(g: GameData) {
     state: 'playing' as const,
   });
   applyDailyPlayerMods(g);
+  const hpBonus = getPlayerHpBonus(g);
+  if (hpBonus > 0) {
+    g.player.hp += hpBonus;
+    g.player.maxHp += hpBonus;
+  }
   syncChapterForMode(g);
   g.enemiesPerWave = getEnemiesPerWave(g);
   initChapterHazards(g);
@@ -584,7 +598,7 @@ export function update(g: GameData, input: InputState, dt: number) {
     }
   } else if (g.enemiesSpawned < g.enemiesPerWave && g.waveTimer <= 0) {
     spawnEnemy(g);
-    g.waveTimer = Math.max(15, 50 - g.wave * 3); // spawn interval (frames), floor at 15
+    g.waveTimer = Math.max(15, (50 - g.wave * 3) * getSpawnIntervalMult(g));
   }
 
   // ── Enemies ──

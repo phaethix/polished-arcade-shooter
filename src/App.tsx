@@ -8,6 +8,7 @@ import {
   cycleAircraftSelection,
   cycleWeaponSelection,
   cycleGameModeSelection,
+  cycleDifficultySelection,
   update,
   updateBackground,
   render,
@@ -196,6 +197,15 @@ export default function App() {
           }
           break;
 
+        case 'KeyQ':
+          if (g.state === 'menu' && down) {
+            resumeAudio();
+            cycleDifficultySelection(g, 1);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
         case 'Escape':
         case 'KeyP':
           if (down) {
@@ -264,9 +274,17 @@ export default function App() {
               cycleWeaponSelection(g, 1);
               playMenuSelect();
             }
+          } else if (pt.y >= 388 && pt.y < 440) {
+            if (pt.x < CANVAS_W / 3) {
+              cycleDifficultySelection(g, -1);
+              playMenuSelect();
+            } else if (pt.x > (CANVAS_W * 2) / 3) {
+              cycleDifficultySelection(g, 1);
+              playMenuSelect();
+            }
           } else if (
-            pt.y >= 388 &&
-            pt.y < 420 &&
+            pt.y >= 440 &&
+            pt.y < 472 &&
             pt.x > CANVAS_W / 3 &&
             pt.x < (CANVAS_W * 2) / 3
           ) {
