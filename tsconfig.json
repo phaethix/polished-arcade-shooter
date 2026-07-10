@@ -5,6 +5,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["node"],
 
     /* Bundler mode */
@@ -16,9 +17,8 @@
     "jsx": "react-jsx",
 
     /* Path mapping */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Linting */
@@ -27,5 +27,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "vite.config.ts", "vitest.config.ts", "eslint.config.js"]
+  "include": ["src", "vite.config.ts", "vitest.config.ts"]
 }
