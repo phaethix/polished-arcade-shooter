@@ -72,7 +72,7 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 | `↑` / `↓` | Cycle game mode |
 | `←` / `→` | Cycle aircraft |
 | `[` / `]` | Cycle weapon |
-| `Q` | Cycle difficulty |
+| `,` / `.` | Cycle difficulty |
 | `U` | Unlock selected aircraft or weapon (costs coins) |
 | `Space` / `Z` | Start game |
 
