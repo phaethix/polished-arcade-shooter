@@ -111,7 +111,5 @@ export function resolveMenuTouch(x: number, y: number): MenuTouchAction | null {
 }
 
 export function isInSkillZone(x: number, y: number): boolean {
-  return (
-    y > CANVAS_H - SKILL_ZONE_HEIGHT && Math.abs(x - CANVAS_W / 2) < SKILL_ZONE_HALF_WIDTH
-  );
+  return y > CANVAS_H - SKILL_ZONE_HEIGHT && Math.abs(x - CANVAS_W / 2) < SKILL_ZONE_HALF_WIDTH;
 }

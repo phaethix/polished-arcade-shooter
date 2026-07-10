@@ -77,7 +77,11 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
   if (!craftUnlocked) {
     ctx.fillStyle = canAffordUnlock(craft.coinCost) ? '#8f8' : '#f88';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`${craft.coinCost} coins — press U to unlock`, CANVAS_W / 2, layout.aircraft.detailY);
+    ctx.fillText(
+      `${craft.coinCost} coins — press U to unlock`,
+      CANVAS_W / 2,
+      layout.aircraft.detailY,
+    );
   } else {
     ctx.fillStyle = '#889';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
@@ -101,7 +105,11 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
   if (!weaponUnlocked) {
     ctx.fillStyle = canAffordUnlock(weapon.coinCost) ? '#8f8' : '#f88';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`${weapon.coinCost} coins — press U to unlock`, CANVAS_W / 2, layout.weapon.detailY);
+    ctx.fillText(
+      `${weapon.coinCost} coins — press U to unlock`,
+      CANVAS_W / 2,
+      layout.weapon.detailY,
+    );
   } else {
     ctx.fillStyle = '#889';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
@@ -123,7 +131,11 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
   ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
   ctx.fillStyle = ready ? '#fff' : '#f88';
   ctx.font = `${ready ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
-  ctx.fillText(ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START', CANVAS_W / 2, layout.start.textY);
+  ctx.fillText(
+    ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START',
+    CANVAS_W / 2,
+    layout.start.textY,
+  );
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [

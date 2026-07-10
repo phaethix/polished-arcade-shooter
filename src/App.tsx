@@ -21,7 +21,12 @@ import { isInSkillZone, resolveMenuTouch } from './game/render/menu-layout';
 import { resumeAudio, playMenuSelect } from './game/audio';
 import type { GameData } from './game/types';
 
-function handleMenuTouchAction(g: GameData, cx: number, cy: number, toGame: (x: number, y: number) => { x: number; y: number } | null): void {
+function handleMenuTouchAction(
+  g: GameData,
+  cx: number,
+  cy: number,
+  toGame: (x: number, y: number) => { x: number; y: number } | null,
+): void {
   const pt = toGame(cx, cy);
   if (!pt) {
     return;
