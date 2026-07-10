@@ -2,6 +2,7 @@ import type { GameData } from './types';
 import type { InputState } from '../app/input';
 import { createInputState } from '../app/input';
 import { CANVAS_W, CANVAS_H } from './core/constants';
+import { createRng } from './core/rng';
 import { nextAircraft } from './aircraft';
 import { nextWeapon } from './weapons';
 import { updateEnemies, drawEnemy } from './enemies';
@@ -93,6 +94,7 @@ export function createGameData(): GameData {
     dailyBonusAwarded: false,
     runCoinsEarned: 0,
     achievementToast: null,
+    rng: createRng(0),
   };
   ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');
@@ -191,6 +193,10 @@ export function resetGame(g: GameData): void {
     achievementToast: null,
     state: 'playing' as const,
   });
+  g.rng =
+    g.gameMode === 'daily'
+      ? createRng(g.dailySeed)
+      : createRng((Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0);
   applyDailyPlayerMods(g);
   const hpBonus = getPlayerHpBonus(g);
   if (hpBonus > 0) {

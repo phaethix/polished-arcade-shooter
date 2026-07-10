@@ -1,3 +1,5 @@
+import type { Rng } from './core/rng';
+
 export type AircraftId = 'falcon' | 'phantom' | 'fortress';
 
 export type AircraftSkill = 'missile_salvo' | 'dash' | 'energy_shield';
@@ -206,4 +208,5 @@ export interface GameData {
   dailyBonusAwarded: boolean;
   runCoinsEarned: number;
   achievementToast: { id: AchievementId; timer: number } | null;
+  rng: Rng;
 }

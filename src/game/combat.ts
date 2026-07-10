@@ -19,12 +19,12 @@ function tryPowerUp(g: GameData, x: number, y: number): void {
   if (!powerUpsEnabled(g)) {
     return;
   }
-  if (Math.random() > 0.18) {
+  if (g.rng.next() > 0.18) {
     return;
   }
   const types: PowerUp['type'][] = ['spread', 'speed', 'shield', 'bomb', 'heal'];
   const wts = [0.28, 0.2, 0.17, 0.15, 0.2];
-  let r = Math.random();
+  let r = g.rng.next();
   let t: PowerUp['type'] = 'spread';
   for (let i = 0; i < types.length; i++) {
     r -= wts[i];
@@ -40,11 +40,11 @@ function tryWeaponDrop(g: GameData, x: number, y: number): void {
   if (!powerUpsEnabled(g)) {
     return;
   }
-  if (Math.random() > 0.07) {
+  if (g.rng.next() > 0.07) {
     return;
   }
   const alts: WeaponId[] = ['armor_piercing', 'shotgun', 'laser', 'homing'];
-  const weaponId = alts[Math.floor(Math.random() * alts.length)];
+  const weaponId = alts[Math.floor(g.rng.next() * alts.length)];
   g.powerUps.push({ x, y, width: 22, height: 22, type: 'weapon', weaponId, vy: 1.4 });
 }
 
