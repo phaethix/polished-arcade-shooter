@@ -1,3 +1,5 @@
+// ─── Expansion types (v0.2+) ───────────────────────────────────
+
 export type AircraftId = 'falcon' | 'phantom' | 'fortress';
 
 export type AircraftSkill = 'missile_salvo' | 'dash' | 'energy_shield';

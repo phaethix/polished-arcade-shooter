@@ -63,7 +63,7 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
-// Cached reads avoid JSON.parse on every menu frame.
+// ─── In-memory cache (avoids repeated JSON.parse on every read) ───
 let coinsCache: number | null = null;
 let unlocksCache: UnlockState | null = null;
 let achievementsCache: Set<AchievementId> | null = null;

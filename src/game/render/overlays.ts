@@ -5,7 +5,7 @@ import { getChapter } from '../chapters';
 
 export function drawParticles(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.save();
-  // lighter compositing makes particle glow visible on the dark background
+  // Additive blending for glow effects
   ctx.globalCompositeOperation = 'lighter';
   for (const pt of g.particles) {
     if (pt.type === 'score') continue;
@@ -38,7 +38,7 @@ export function drawParticles(ctx: CanvasRenderingContext2D, g: GameData) {
   }
   ctx.restore();
 
-  // Restore default compositing for readable score text
+  // Score popups (normal blending)
   for (const pt of g.particles) {
     if (pt.type !== 'score') continue;
     const a = Math.max(0, pt.life / pt.maxLife);

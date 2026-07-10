@@ -82,6 +82,7 @@ export type { InputState };
 export { createInputState };
 export { CANVAS_W, CANVAS_H };
 
+// ─── Factories ───────────────────────────────────────────────
 function mkPlayer(aircraftId: AircraftId = 'falcon', weaponId: WeaponId = 'standard'): Player {
   const craft = getAircraft(aircraftId);
   return {
@@ -115,7 +116,6 @@ function mkPlayer(aircraftId: AircraftId = 'falcon', weaponId: WeaponId = 'stand
   };
 }
 
-/** Creates the initial title-screen game state. */
 export function createGameData(): GameData {
   const g: GameData = {
     player: mkPlayer('falcon'),
@@ -170,12 +170,10 @@ function ensureValidMenuSelection(g: GameData) {
   g.player = mkPlayer(g.selectedAircraft, g.selectedWeapon);
 }
 
-/** Returns whether the selected loadout is unlocked and the run can start. */
 export function canStartGame(g: GameData): boolean {
   return isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
 }
 
-/** Toggles between playing and paused when invoked from the shell. */
 export function togglePause(g: GameData): void {
   if (g.state === 'playing') {
     g.state = 'paused';
@@ -297,6 +295,8 @@ export function resetGame(g: GameData): void {
   g.enemiesPerWave = getEnemiesPerWave(g);
   initChapterHazards(g);
 }
+
+// ─── Helpers ─────────────────────────────────────────────────
 
 function playerShoot(g: GameData) {
   fireWeapon(g);
@@ -486,8 +486,8 @@ function killPlayer(g: GameData) {
   saveHighScore(g.score, g.wave);
 }
 
-/** Advances one fixed-timestep simulation tick while the run is active. */
-export function update(g: GameData, input: InputState, dt: number): void {
+// ═══════════════════════ MAIN UPDATE ═════════════════════════
+export function update(g: GameData, input: InputState, dt: number) {
   if (g.state !== 'playing') return;
   g.frameCount++;
   tickAchievementToast(g, dt);
@@ -501,6 +501,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
   }
   const tm = g.slowMotion; // time multiplier
 
+  // ── Player movement (keyboard always full speed) ──
   let mx = 0,
     my = 0;
   if (input.left) mx--;
@@ -584,6 +585,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
       [2, 4],
     );
 
+  // ── Waves ──
   if (g.waveAnnounceTimer > 0) g.waveAnnounceTimer--;
   g.waveTimer--;
   if (g.enemiesSpawned >= g.enemiesPerWave && g.enemies.length === 0) {
@@ -612,9 +614,11 @@ export function update(g: GameData, input: InputState, dt: number): void {
     g.waveTimer = Math.max(15, (50 - g.wave * 3) * getSpawnIntervalMult(g));
   }
 
+  // ── Enemies ──
   updateEnemies(g, dt, tm);
   updateHazards(g, dt, tm);
 
+  // ── Bullets ──
   for (const b of g.bullets) {
     const m = b.isPlayer ? 1 : tm; // player bullets always full speed
     b.x += b.vx * m;
@@ -638,6 +642,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
     (b) => b.x > -20 && b.x < CANVAS_W + 20 && b.y > -20 && b.y < CANVAS_H + 20,
   );
 
+  // ── Graze system (near-miss bonus) ──
   if (isPlayerVulnerable(p)) {
     for (const b of g.bullets) {
       if (b.isPlayer || b.grazed) continue;
@@ -656,6 +661,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
     }
   }
 
+  // ── Collision: player bullets → enemies ──
   for (let bi = g.bullets.length - 1; bi >= 0; bi--) {
     const b = g.bullets[bi];
     if (!b.isPlayer) continue;
@@ -680,6 +686,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
     }
   }
 
+  // ── Collision: enemy bullets → player ──
   if (isPlayerVulnerable(p)) {
     for (let bi = g.bullets.length - 1; bi >= 0; bi--) {
       const b = g.bullets[bi];
@@ -706,6 +713,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
     }
   }
 
+  // ── Collision: enemy body → player ──
   if (isPlayerVulnerable(p)) {
     for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
       const e = g.enemies[ei];
@@ -730,6 +738,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
   const hazardHit = handleHazardCollisions(g, isPlayerVulnerable, () => hurtPlayer(g));
   if (hazardHit.playerDied) return;
 
+  // ── Power-ups ──
   for (let i = g.powerUps.length - 1; i >= 0; i--) {
     const pw = g.powerUps[i];
     pw.y += pw.vy;
@@ -822,6 +831,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
     if (g.flashAlpha < 0) g.flashAlpha = 0;
   }
 
+  // ── Particles ──
   for (let i = g.particles.length - 1; i >= 0; i--) {
     const pt = g.particles[i];
     pt.x += pt.vx * tm;
@@ -859,7 +869,7 @@ export function update(g: GameData, input: InputState, dt: number): void {
   }
 }
 
-/** Updates ambient visuals while the game is not playing. */
+// Called in non-playing states
 export function updateBackground(g: GameData, dt: number) {
   tickAchievementToast(g, dt);
   for (const s of g.stars) {
@@ -893,8 +903,9 @@ export function updateBackground(g: GameData, dt: number) {
   g.dangerAlpha *= 0.92;
 }
 
-/** Draws the current frame to the canvas, including letterboxing. */
-export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, ch: number): void {
+// ═════════════════════════ RENDER ════════════════════════════
+
+export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, ch: number) {
   const scale = Math.min(cw / CANVAS_W, ch / CANVAS_H);
   const ox = (cw - CANVAS_W * scale) / 2;
   const oy = (ch - CANVAS_H * scale) / 2;
