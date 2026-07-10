@@ -1,6 +1,7 @@
 import type { GameData } from '../types';
 import { CANVAS_W, CANVAS_H } from '../core/constants';
 import { loadHighScores } from '../storage/highscores';
+import { formatAccuracy } from '../run-stats';
 
 /** Advance baseline after a line (canvas fillText y is the baseline, not the top). */
 function lineStep(y: number, fontSize: number, gap = 14): number {
@@ -40,13 +41,22 @@ export function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.fillStyle = '#aac';
   ctx.font = '14px "Segoe UI",Arial,sans-serif';
   const progressLabel = g.gameMode === 'story' ? `Stage ${g.wave}` : `Wave ${g.wave}`;
+  const progressY = g.modeVictory ? 300 : 285;
   ctx.fillText(
     `${progressLabel}  ·  Combo ${g.maxCombo}x  ·  Graze ${g.player.grazeCount}`,
     CANVAS_W / 2,
-    g.modeVictory ? 300 : 285,
+    progressY,
   );
 
-  let y = g.modeVictory ? 328 : 310;
+  ctx.fillStyle = '#889';
+  ctx.font = '13px "Segoe UI",Arial,sans-serif';
+  let y = lineStep(progressY, 13, 12);
+  ctx.fillText(
+    `Accuracy ${formatAccuracy(g.shotsHit, g.shotsFired)}  ·  Damage ${Math.round(g.damageDealt).toLocaleString()}  ·  Kills ${g.enemiesKilled}`,
+    CANVAS_W / 2,
+    y,
+  );
+  y = lineStep(y, 13, 15);
   const sc = loadHighScores();
   const isNewHighScore = sc.length > 0 && sc[0].score === g.score && !g.modeVictory;
 

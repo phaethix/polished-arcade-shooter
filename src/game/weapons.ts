@@ -109,6 +109,7 @@ function pushStandardSpread(g: GameData, damage: number, color: string) {
     color,
     weapon: p.weaponId,
   });
+  g.shotsFired++;
   if (l >= 1)
     for (const d of [-10, 10]) {
       g.bullets.push({
@@ -123,6 +124,7 @@ function pushStandardSpread(g: GameData, damage: number, color: string) {
         color,
         weapon: p.weaponId,
       });
+      g.shotsFired++;
     }
   if (l >= 2)
     for (const d of [-1, 1]) {
@@ -138,6 +140,7 @@ function pushStandardSpread(g: GameData, damage: number, color: string) {
         color,
         weapon: p.weaponId,
       });
+      g.shotsFired++;
     }
   if (l >= 3)
     for (const d of [-1, 1]) {
@@ -153,6 +156,7 @@ function pushStandardSpread(g: GameData, damage: number, color: string) {
         color,
         weapon: p.weaponId,
       });
+      g.shotsFired++;
     }
 }
 
@@ -187,6 +191,7 @@ export function fireArmorPiercing(g: GameData) {
       weapon: 'armor_piercing',
       pierceRemaining: pierce,
     });
+    g.shotsFired++;
   };
   mk(p.x, p.y - p.height / 2 - 5, 0, -BULLET_SPEED, 4, 14, damage);
   if (l >= 1)
@@ -223,6 +228,7 @@ export function fireShotgun(g: GameData) {
       maxTravel: 95,
       distanceTraveled: 0,
     });
+    g.shotsFired++;
   }
 }
 
@@ -250,6 +256,7 @@ export function fireHoming(g: GameData) {
       weapon: 'homing',
       homingStrength: 0.14,
     });
+    g.shotsFired++;
   }
 }
 

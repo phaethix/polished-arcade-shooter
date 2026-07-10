@@ -121,3 +121,4 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 | **Coins**        | Earned from kills, bosses, story clears, and daily milestones; spent on unlocks                |
 | **Achievements** | Six goals (first kill, 20× combo, 50 grazes, 10 boss kills lifetime, wave 10, no-damage stage) |
 | **High scores**  | Top 10 saved locally with wave and date                                                        |
+| **Run stats**    | Game over screen shows accuracy, total damage dealt, and kills for the run                     |

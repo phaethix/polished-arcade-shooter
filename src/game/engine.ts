@@ -96,6 +96,10 @@ export function createGameData(): GameData {
     runCoinsEarned: 0,
     achievementToast: null,
     rng: createRng(0),
+    shotsFired: 0,
+    shotsHit: 0,
+    damageDealt: 0,
+    enemiesKilled: 0,
   };
   ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');
@@ -192,6 +196,10 @@ export function resetGame(g: GameData): void {
     dailyBonusAwarded: false,
     runCoinsEarned: 0,
     achievementToast: null,
+    shotsFired: 0,
+    shotsHit: 0,
+    damageDealt: 0,
+    enemiesKilled: 0,
     state: 'playing' as const,
   });
   g.rng =

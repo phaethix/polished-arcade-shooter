@@ -209,4 +209,8 @@ export interface GameData {
   runCoinsEarned: number;
   achievementToast: { id: AchievementId; timer: number } | null;
   rng: Rng;
+  shotsFired: number;
+  shotsHit: number;
+  damageDealt: number;
+  enemiesKilled: number;
 }

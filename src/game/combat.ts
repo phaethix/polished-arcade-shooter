@@ -79,6 +79,7 @@ export function playerHitFromEnemy(g: GameData): boolean {
 }
 
 export function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number): void {
+  g.enemiesKilled++;
   const boss = e.type === 'boss';
   const cols = boss ? ['#f40', '#fa0', '#f60', '#fff', '#f20'] : ['#f60', '#fa0', '#f30', '#fff'];
   for (const c of cols) {
@@ -147,6 +148,7 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
     return;
   }
   p.laserRamp = Math.min(3, p.laserRamp + dt * 2.5);
+  g.shotsFired++;
   const dps = 0.35 + p.laserRamp * 0.45;
   const damage = dps * dt * 60;
   const beamW = 10 + p.powerLevel * 2;
@@ -163,6 +165,8 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
       continue;
     }
     e.hp -= damage;
+    g.shotsHit++;
+    g.damageDealt += damage;
     e.flashTimer = 0.05;
     if (e.hp <= 0) {
       onEnemyKilled(g, e, e.x, e.y);
@@ -187,6 +191,7 @@ export function activateBomb(g: GameData): void {
   g.bullets = g.bullets.filter((b) => b.isPlayer);
   for (const e of g.enemies) {
     e.hp -= 3;
+    g.damageDealt += 3;
     e.flashTimer = 0.15;
     addParticles(g, e.x, e.y, 8, '#fff', 4, 'spark');
   }
