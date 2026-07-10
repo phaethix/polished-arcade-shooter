@@ -11,8 +11,11 @@ import {
   pickDailyModifier,
 } from '../modes';
 import { isAircraftUnlocked, isWeaponUnlocked, canAffordUnlock, loadCoins } from '../progress';
+import { MENU_LAYOUT } from './menu-layout';
 
-export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
+export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
+  const layout = MENU_LAYOUT;
+
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
   ctx.textAlign = 'center';
@@ -22,12 +25,12 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.shadowBlur = 40;
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 42px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SKY BLASTER', CANVAS_W / 2, 130);
+  ctx.fillText('SKY BLASTER', CANVAS_W / 2, layout.titleY);
   ctx.restore();
 
   ctx.fillStyle = '#6bf';
   ctx.font = '14px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SPACE SHOOTER', CANVAS_W / 2, 156);
+  ctx.fillText('SPACE SHOOTER', CANVAS_W / 2, layout.subtitleY);
 
   ctx.textAlign = 'right';
   ctx.fillStyle = '#fd4';
@@ -38,19 +41,19 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   const mode = MODE_INFO[g.gameMode];
   ctx.fillStyle = '#fd4';
   ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT MODE', CANVAS_W / 2, 182);
+  ctx.fillText('SELECT MODE', CANVAS_W / 2, layout.mode.labelY);
   ctx.fillStyle = '#8df';
   ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`▲  ${mode.name.toUpperCase()}  ▼`, CANVAS_W / 2, 206);
+  ctx.fillText(`▲  ${mode.name.toUpperCase()}  ▼`, CANVAS_W / 2, layout.mode.valueY);
   ctx.fillStyle = '#889';
   ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(mode.tagline, CANVAS_W / 2, 222);
+  ctx.fillText(mode.tagline, CANVAS_W / 2, layout.mode.taglineY);
   if (g.gameMode === 'daily') {
     ctx.fillStyle = '#da8';
     ctx.fillText(
       `Today: ${getDailyModifierLabel(pickDailyModifier(getDailySeed()))}`,
       CANVAS_W / 2,
-      236,
+      layout.mode.dailyY,
     );
   }
 
@@ -60,80 +63,92 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
   const weaponUnlocked = isWeaponUnlocked(g.selectedWeapon);
   ctx.fillStyle = '#fd4';
   ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT AIRCRAFT', CANVAS_W / 2, 262);
+  ctx.fillText('SELECT AIRCRAFT', CANVAS_W / 2, layout.aircraft.labelY);
   ctx.fillStyle = craftUnlocked ? craft.hullTop : '#888';
   ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
   ctx.fillText(
     `◀  ${craft.name.toUpperCase()}${craftUnlocked ? '' : ' 🔒'}  ▶`,
     CANVAS_W / 2,
-    286,
+    layout.aircraft.valueY,
   );
   ctx.fillStyle = '#aac';
   ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(craft.tagline, CANVAS_W / 2, 302);
+  ctx.fillText(craft.tagline, CANVAS_W / 2, layout.aircraft.valueY + 16);
   if (!craftUnlocked) {
     ctx.fillStyle = canAffordUnlock(craft.coinCost) ? '#8f8' : '#f88';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`${craft.coinCost} coins — press U to unlock`, CANVAS_W / 2, 316);
+    ctx.fillText(
+      `${craft.coinCost} coins — press U to unlock`,
+      CANVAS_W / 2,
+      layout.aircraft.detailY,
+    );
   } else {
     ctx.fillStyle = '#889';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
     ctx.fillText(
       `SPD ${craft.speed}  ·  HP ${craft.startHp}/${craft.maxHp}  ·  ${craft.skillName}`,
       CANVAS_W / 2,
-      316,
+      layout.aircraft.detailY,
     );
   }
 
   ctx.fillStyle = '#fd4';
   ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('SELECT WEAPON', CANVAS_W / 2, 340);
+  ctx.fillText('SELECT WEAPON', CANVAS_W / 2, layout.weapon.labelY);
   ctx.fillStyle = weaponUnlocked ? weapon.hudColor : '#888';
   ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
   ctx.fillText(
     `◀  ${weapon.name.toUpperCase()}${weaponUnlocked ? '' : ' 🔒'}  ▶`,
     CANVAS_W / 2,
-    362,
+    layout.weapon.valueY,
   );
   if (!weaponUnlocked) {
     ctx.fillStyle = canAffordUnlock(weapon.coinCost) ? '#8f8' : '#f88';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(`${weapon.coinCost} coins — press U to unlock`, CANVAS_W / 2, 376);
+    ctx.fillText(
+      `${weapon.coinCost} coins — press U to unlock`,
+      CANVAS_W / 2,
+      layout.weapon.detailY,
+    );
   } else {
     ctx.fillStyle = '#889';
     ctx.font = '10px "Segoe UI",Arial,sans-serif';
-    ctx.fillText(weapon.tagline, CANVAS_W / 2, 376);
+    ctx.fillText(weapon.tagline, CANVAS_W / 2, layout.weapon.detailY);
   }
 
   const diff = DIFFICULTY_INFO[g.difficulty];
   ctx.fillStyle = '#fd4';
   ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('DIFFICULTY', CANVAS_W / 2, 394);
+  ctx.fillText('DIFFICULTY', CANVAS_W / 2, layout.difficulty.labelY);
   ctx.fillStyle = diff.color;
   ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(`◀  ${diff.name.toUpperCase()}  ▶`, CANVAS_W / 2, 414);
+  ctx.fillText(`◀  ${diff.name.toUpperCase()}  ▶`, CANVAS_W / 2, layout.difficulty.valueY);
   ctx.fillStyle = '#889';
   ctx.font = '10px "Segoe UI",Arial,sans-serif';
-  ctx.fillText(diff.tagline, CANVAS_W / 2, 428);
+  ctx.fillText(diff.tagline, CANVAS_W / 2, layout.difficulty.taglineY);
 
   const ready = isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
   ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
   ctx.fillStyle = ready ? '#fff' : '#f88';
   ctx.font = `${ready ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
-  ctx.fillText(ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START', CANVAS_W / 2, 452);
+  ctx.fillText(
+    ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START',
+    CANVAS_W / 2,
+    layout.start.textY,
+  );
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
     ['↑ / ↓', 'Choose mode'],
     ['← / →', 'Choose aircraft'],
     ['[ / ]', 'Choose weapon'],
-    ['Q', 'Choose difficulty'],
+    [', / .', 'Choose difficulty'],
     ['U', 'Unlock selection'],
     ['SPACE / Z', 'Shoot / Start'],
     ['X / B', 'Bomb'],
   ];
-  const controlsTop = 474;
-  const controlsStep = 15;
+  const controlsTop = layout.controls.topY;
+  const controlsStep = layout.controls.step;
   lines.forEach(([k, v], i) => {
     const y = controlsTop + i * controlsStep;
     ctx.fillStyle = '#aac';

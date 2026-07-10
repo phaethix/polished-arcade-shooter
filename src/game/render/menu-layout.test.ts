@@ -1,0 +1,44 @@
+import { describe, it, expect } from 'vitest';
+import { CANVAS_W } from '../core/constants';
+import { isInSkillZone, resolveMenuTouch } from './menu-layout';
+
+describe('resolveMenuTouch', () => {
+  it('cycles mode up in the top half of the mode row', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2, 180)).toEqual({
+      kind: 'cycle_mode',
+      direction: -1,
+    });
+  });
+
+  it('cycles mode down in the bottom half of the mode row', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2, 220)).toEqual({
+      kind: 'cycle_mode',
+      direction: 1,
+    });
+  });
+
+  it('cycles aircraft from left and right zones', () => {
+    expect(resolveMenuTouch(50, 280)).toEqual({ kind: 'cycle_aircraft', direction: -1 });
+    expect(resolveMenuTouch(320, 280)).toEqual({ kind: 'cycle_aircraft', direction: 1 });
+  });
+
+  it('cycles difficulty from left and right zones', () => {
+    expect(resolveMenuTouch(50, 410)).toEqual({ kind: 'cycle_difficulty', direction: -1 });
+    expect(resolveMenuTouch(320, 410)).toEqual({ kind: 'cycle_difficulty', direction: 1 });
+  });
+
+  it('starts from the center start row', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2, 455)).toEqual({ kind: 'start' });
+  });
+
+  it('ignores taps outside interactive rows', () => {
+    expect(resolveMenuTouch(CANVAS_W / 2, 120)).toBeNull();
+  });
+});
+
+describe('isInSkillZone', () => {
+  it('detects the bottom-center skill tap area', () => {
+    expect(isInSkillZone(CANVAS_W / 2, 680)).toBe(true);
+    expect(isInSkillZone(0, 680)).toBe(false);
+  });
+});

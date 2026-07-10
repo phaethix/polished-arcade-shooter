@@ -40,7 +40,7 @@ App.tsx (RAF)
 
 # Touch / menu layout
 
-Menu drawing lives in `render/menu.ts`. If you change menu layout, update matching touch hit zones in `App.tsx` — they use Y-range constants that must stay in sync.
+Menu drawing lives in `render/menu.ts`. Layout constants and touch hit testing live in `render/menu-layout.ts` — update both together when menu geometry changes.
 
 # Testing
 

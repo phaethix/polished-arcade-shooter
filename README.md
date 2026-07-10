@@ -16,7 +16,7 @@ No install required for the live demo. Runs at 60 fps on desktop and mobile (key
 
 ## Overview
 
-Sky Blaster (*polished-arcade-shooter*) is an open-source arcade shooter you can play instantly in the browser or run locally for development. The game ships as a single static page on GitHub Pages — no backend, no asset downloads, offline-capable progression via `localStorage`.
+Sky Blaster (_polished-arcade-shooter_) is an open-source arcade shooter you can play instantly in the browser or run locally for development. The game ships as a single static page on GitHub Pages — no backend, no asset downloads, offline-capable progression via `localStorage`.
 
 The codebase is structured for incremental feature growth: a thin React shell hosts a fixed-timestep Canvas game loop, with typed domain modules for combat, modes, and meta progression.
 
@@ -24,14 +24,14 @@ The codebase is structured for incremental feature growth: a thin React shell ho
 
 ## Highlights
 
-| | |
-| --- | --- |
-| **Modes** | Story (20 stages), Endless, Boss Rush, Daily Challenge |
-| **Loadout** | 3 aircraft with active skills · 5 weapons |
-| **Difficulty** | Easy / Normal / Hard — speed, HP, spawn rate, starting HP |
-| **World** | 4 chapters with environmental hazards · 10 enemy archetypes |
-| **Progression** | Coins, unlocks, 6 achievements, local top-10 leaderboard |
-| **Tech** | Canvas 2D rendering · Web Audio synthesis · Vitest unit tests |
+|                 |                                                               |
+| --------------- | ------------------------------------------------------------- |
+| **Modes**       | Story (20 stages), Endless, Boss Rush, Daily Challenge        |
+| **Loadout**     | 3 aircraft with active skills · 5 weapons                     |
+| **Difficulty**  | Easy / Normal / Hard — speed, HP, spawn rate, starting HP     |
+| **World**       | 4 chapters with environmental hazards · 10 enemy archetypes   |
+| **Progression** | Coins, unlocks, 6 achievements, local top-10 leaderboard      |
+| **Tech**        | Canvas 2D rendering · Web Audio synthesis · Vitest unit tests |
 
 ---
 
@@ -80,16 +80,16 @@ Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md
 
 ### npm scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Production build |
-| `npm run build:pages` | Build for GitHub Pages (single-file output) |
-| `npm run preview` | Preview production build |
-| `npm run typecheck` | TypeScript check (`tsc --noEmit`) |
-| `npm run lint` / `lint:fix` | ESLint |
-| `npm run format` / `format:check` | Prettier |
-| `npm test` / `test:run` | Vitest (watch / single run) |
+| Command                           | Description                                 |
+| --------------------------------- | ------------------------------------------- |
+| `npm run dev`                     | Start Vite dev server                       |
+| `npm run build`                   | Production build                            |
+| `npm run build:pages`             | Build for GitHub Pages (single-file output) |
+| `npm run preview`                 | Preview production build                    |
+| `npm run typecheck`               | TypeScript check (`tsc --noEmit`)           |
+| `npm run lint` / `lint:fix`       | ESLint                                      |
+| `npm run format` / `format:check` | Prettier                                    |
+| `npm test` / `test:run`           | Vitest (watch / single run)                 |
 
 ### Project structure
 
@@ -123,29 +123,29 @@ Module boundaries and dependency rules: **[docs/ARCHITECTURE.md](docs/ARCHITECTU
 
 ### Tech stack
 
-| Layer | Choice |
-| --- | --- |
-| UI | React 19 |
-| Language | TypeScript 5.9 (strict) |
-| Build | Vite 7 + single-file plugin for Pages |
-| Rendering | Canvas 2D |
-| Styling | Tailwind CSS 4 (page chrome only) |
-| Audio | Web Audio API |
-| Tests | Vitest |
-| Quality | ESLint, Prettier, commitlint, Husky |
+| Layer     | Choice                                |
+| --------- | ------------------------------------- |
+| UI        | React 19                              |
+| Language  | TypeScript 5.9 (strict)               |
+| Build     | Vite 7 + single-file plugin for Pages |
+| Rendering | Canvas 2D                             |
+| Styling   | Tailwind CSS 4 (page chrome only)     |
+| Audio     | Web Audio API                         |
+| Tests     | Vitest                                |
+| Quality   | ESLint, Prettier, commitlint, Husky   |
 
 ---
 
 ## Documentation
 
-| Document | Description |
-| --- | --- |
-| [PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md) | Controls, modes, enemies, scoring |
-| [WHITEPAPER.md](docs/WHITEPAPER.md) | Product vision, systems, release history |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Source layout and module responsibilities |
-| [GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) | Branch naming and commit format |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, testing, and pull request workflow |
-| [roadmap.md](.issue/roadmap.md) | Expansion phases and backlog |
+| Document                                      | Description                               |
+| --------------------------------------------- | ----------------------------------------- |
+| [PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md)       | Controls, modes, enemies, scoring         |
+| [WHITEPAPER.md](docs/WHITEPAPER.md)           | Product vision, systems, release history  |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Source layout and module responsibilities |
+| [GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) | Branch naming and commit format           |
+| [CONTRIBUTING.md](CONTRIBUTING.md)            | Setup, testing, and pull request workflow |
+| [roadmap.md](.issue/roadmap.md)               | Expansion phases and backlog              |
 
 ---
 
@@ -159,13 +159,13 @@ Contributions are welcome. This repository follows the [GitHub community standar
 4. Open a pull request using the [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 5. Ensure CI passes (`typecheck`, `lint`, `format:check`, `test:run`, `build`).
 
-| Resource | Link |
-| --- | --- |
-| Bug reports | [New issue](https://github.com/phaethix/polished-arcade-shooter/issues/new?template=bug_report.yml) |
+| Resource         | Link                                                                                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| Bug reports      | [New issue](https://github.com/phaethix/polished-arcade-shooter/issues/new?template=bug_report.yml)      |
 | Feature requests | [New issue](https://github.com/phaethix/polished-arcade-shooter/issues/new?template=feature_request.yml) |
-| Questions | [GitHub Discussions](https://github.com/phaethix/polished-arcade-shooter/discussions) |
-| Security | [SECURITY.md](SECURITY.md) |
-| Code of conduct | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
+| Questions        | [GitHub Discussions](https://github.com/phaethix/polished-arcade-shooter/discussions)                    |
+| Security         | [SECURITY.md](SECURITY.md)                                                                               |
+| Code of conduct  | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)                                                                 |
 
 ---
 

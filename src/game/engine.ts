@@ -1,7 +1,6 @@
 import type {
   AchievementId,
   AircraftId,
-  Difficulty,
   WeaponId,
   GameData,
   Player,
@@ -151,7 +150,7 @@ export function createGameData(): GameData {
     selectedWeapon: 'standard',
     specialSpawns: { sniper: false, healer: false },
     gameMode: 'endless',
-    difficulty: 'normal' as Difficulty,
+    difficulty: 'normal',
     dailySeed: 0,
     dailyModifier: null,
     modeVictory: false,
@@ -173,6 +172,20 @@ function ensureValidMenuSelection(g: GameData) {
 
 export function canStartGame(g: GameData): boolean {
   return isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
+}
+
+export function togglePause(g: GameData): void {
+  if (g.state === 'playing') {
+    g.state = 'paused';
+  } else if (g.state === 'paused') {
+    g.state = 'playing';
+  }
+}
+
+export function resumeFromPause(g: GameData): void {
+  if (g.state === 'paused') {
+    g.state = 'playing';
+  }
 }
 
 export function tryUnlockSelectedAircraft(g: GameData): boolean {
@@ -218,25 +231,25 @@ function tickAchievementToast(g: GameData, dt: number) {
   if (g.achievementToast.timer <= 0) g.achievementToast = null;
 }
 
-export function cycleAircraftSelection(g: GameData, direction: -1 | 1) {
+export function cycleAircraftSelection(g: GameData, direction: -1 | 1): void {
   g.selectedAircraft = nextAircraft(g.selectedAircraft, direction);
   g.player = mkPlayer(g.selectedAircraft, g.selectedWeapon);
 }
 
-export function cycleWeaponSelection(g: GameData, direction: -1 | 1) {
+export function cycleWeaponSelection(g: GameData, direction: -1 | 1): void {
   g.selectedWeapon = nextWeapon(g.selectedWeapon, direction);
   g.player.weaponId = g.selectedWeapon;
 }
 
-export function cycleGameModeSelection(g: GameData, direction: -1 | 1) {
+export function cycleGameModeSelection(g: GameData, direction: -1 | 1): void {
   g.gameMode = nextGameMode(g.gameMode, direction);
 }
 
-export function cycleDifficultySelection(g: GameData, direction: -1 | 1) {
+export function cycleDifficultySelection(g: GameData, direction: -1 | 1): void {
   g.difficulty = nextDifficulty(g.difficulty, direction);
 }
 
-export function resetGame(g: GameData) {
+export function resetGame(g: GameData): void {
   if (!canStartGame(g)) return;
   const aircraft = g.selectedAircraft;
   const weapon = g.selectedWeapon;

@@ -9,14 +9,59 @@ import {
   cycleWeaponSelection,
   cycleGameModeSelection,
   cycleDifficultySelection,
+  togglePause,
+  resumeFromPause,
   update,
   updateBackground,
   render,
 } from './game/engine';
 import { createInputState, type InputState } from './app/input';
-import { CANVAS_W, CANVAS_H } from './game/core/constants';
+import { CANVAS_W, CANVAS_H, FIXED_TIMESTEP_S, MAX_FRAME_DELTA_S } from './game/core/constants';
+import { isInSkillZone, resolveMenuTouch } from './game/render/menu-layout';
 import { resumeAudio, playMenuSelect } from './game/audio';
 import type { GameData } from './game/types';
+
+function handleMenuTouchAction(
+  g: GameData,
+  cx: number,
+  cy: number,
+  toGame: (x: number, y: number) => { x: number; y: number } | null,
+): void {
+  const pt = toGame(cx, cy);
+  if (!pt) {
+    return;
+  }
+
+  const action = resolveMenuTouch(pt.x, pt.y);
+  if (!action) {
+    return;
+  }
+
+  switch (action.kind) {
+    case 'cycle_mode':
+      cycleGameModeSelection(g, action.direction);
+      playMenuSelect();
+      break;
+    case 'cycle_aircraft':
+      cycleAircraftSelection(g, action.direction);
+      playMenuSelect();
+      break;
+    case 'cycle_weapon':
+      cycleWeaponSelection(g, action.direction);
+      playMenuSelect();
+      break;
+    case 'cycle_difficulty':
+      cycleDifficultySelection(g, action.direction);
+      playMenuSelect();
+      break;
+    case 'start':
+      if (canStartGame(g)) {
+        playMenuSelect();
+        resetGame(g);
+      }
+      break;
+  }
+}
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,7 +71,9 @@ export default function App() {
 
   const getCanvasScale = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return null;
+    if (!canvas) {
+      return null;
+    }
     const rect = canvas.getBoundingClientRect();
     const scale = Math.min(rect.width / CANVAS_W, rect.height / CANVAS_H);
     return {
@@ -40,33 +87,35 @@ export default function App() {
   // ── Game loop ──────────────────────────────────────────────
   useEffect(() => {
     const cvs = canvasRef.current;
-    if (!cvs) return;
-    const ctx = cvs.getContext('2d')!;
-    const DT = 1 / 60;
-    const MAX_FRAME_DELTA = 0.1; // clamp to prevent spiral after tab switch
+    if (!cvs) {
+      return;
+    }
+    const ctx = cvs.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
     let last = performance.now();
     let accumulator = 0;
 
     const tick = (now: number) => {
       let elapsed = (now - last) / 1000;
       last = now;
-      elapsed = Math.min(elapsed, MAX_FRAME_DELTA);
+      elapsed = Math.min(elapsed, MAX_FRAME_DELTA_S);
       accumulator += elapsed;
 
       const game = gameRef.current;
       const input = inputRef.current;
 
-      // Fixed-timestep simulation: run as many DT steps as fit in the accumulator
-      while (accumulator >= DT) {
+      while (accumulator >= FIXED_TIMESTEP_S) {
         if (game.state === 'playing') {
-          update(game, input, DT);
+          update(game, input, FIXED_TIMESTEP_S);
         } else {
-          updateBackground(game, DT); // stars, particles, shake/flash decay
+          updateBackground(game, FIXED_TIMESTEP_S);
         }
-        accumulator -= DT;
+        accumulator -= FIXED_TIMESTEP_S;
       }
 
-      // Resize backing store to match CSS size × DPR
       const dpr = window.devicePixelRatio || 1;
       const w = cvs.clientWidth;
       const h = cvs.clientHeight;
@@ -145,7 +194,9 @@ export default function App() {
             resumeAudio();
             const unlockedCraft = tryUnlockSelectedAircraft(g);
             const unlockedWeapon = tryUnlockSelectedWeapon(g);
-            if (unlockedCraft || unlockedWeapon) playMenuSelect();
+            if (unlockedCraft || unlockedWeapon) {
+              playMenuSelect();
+            }
             e.preventDefault();
           }
           break;
@@ -156,7 +207,9 @@ export default function App() {
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
-              if (g.state === 'menu' && !canStartGame(g)) break;
+              if (g.state === 'menu' && !canStartGame(g)) {
+                break;
+              }
               playMenuSelect();
               resetGame(g);
             } else {
@@ -169,14 +222,18 @@ export default function App() {
 
         case 'KeyX':
         case 'KeyB':
-          if (down && g.state === 'playing') inp.bomb = true;
+          if (down && g.state === 'playing') {
+            inp.bomb = true;
+          }
           e.preventDefault();
           break;
 
         case 'KeyC':
         case 'ShiftLeft':
         case 'ShiftRight':
-          if (down && g.state === 'playing') inp.skill = true;
+          if (down && g.state === 'playing') {
+            inp.skill = true;
+          }
           e.preventDefault();
           break;
 
@@ -197,7 +254,15 @@ export default function App() {
           }
           break;
 
-        case 'KeyQ':
+        case 'Comma':
+          if (g.state === 'menu' && down) {
+            resumeAudio();
+            cycleDifficultySelection(g, -1);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+        case 'Period':
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleDifficultySelection(g, 1);
@@ -209,8 +274,7 @@ export default function App() {
         case 'Escape':
         case 'KeyP':
           if (down) {
-            if (g.state === 'playing') g.state = 'paused';
-            else if (g.state === 'paused') g.state = 'playing';
+            togglePause(g);
           }
           e.preventDefault();
           break;
@@ -230,12 +294,15 @@ export default function App() {
   // ── Touch / Mouse ─────────────────────────────────────────
   useEffect(() => {
     const cvs = canvasRef.current;
-    if (!cvs) return;
+    if (!cvs) {
+      return;
+    }
 
-    // Convert a client-space point → game-space
     const toGame = (cx: number, cy: number) => {
       const info = getCanvasScale();
-      if (!info) return null;
+      if (!info) {
+        return null;
+      }
       return {
         x: (cx - info.rect.left - info.offsetX) / info.scale,
         y: (cy - info.rect.top - info.offsetY) / info.scale,
@@ -248,52 +315,7 @@ export default function App() {
       const inp = inputRef.current;
 
       if (g.state === 'menu') {
-        const pt = toGame(cx, cy);
-        if (pt) {
-          if (pt.y >= 170 && pt.y < 248) {
-            if (pt.y < 206) {
-              cycleGameModeSelection(g, -1);
-              playMenuSelect();
-            } else {
-              cycleGameModeSelection(g, 1);
-              playMenuSelect();
-            }
-          } else if (pt.y >= 248 && pt.y < 328) {
-            if (pt.x < CANVAS_W / 3) {
-              cycleAircraftSelection(g, -1);
-              playMenuSelect();
-            } else if (pt.x > (CANVAS_W * 2) / 3) {
-              cycleAircraftSelection(g, 1);
-              playMenuSelect();
-            }
-          } else if (pt.y >= 328 && pt.y < 388) {
-            if (pt.x < CANVAS_W / 3) {
-              cycleWeaponSelection(g, -1);
-              playMenuSelect();
-            } else if (pt.x > (CANVAS_W * 2) / 3) {
-              cycleWeaponSelection(g, 1);
-              playMenuSelect();
-            }
-          } else if (pt.y >= 388 && pt.y < 440) {
-            if (pt.x < CANVAS_W / 3) {
-              cycleDifficultySelection(g, -1);
-              playMenuSelect();
-            } else if (pt.x > (CANVAS_W * 2) / 3) {
-              cycleDifficultySelection(g, 1);
-              playMenuSelect();
-            }
-          } else if (
-            pt.y >= 440 &&
-            pt.y < 472 &&
-            pt.x > CANVAS_W / 3 &&
-            pt.x < (CANVAS_W * 2) / 3
-          ) {
-            if (canStartGame(g)) {
-              playMenuSelect();
-              resetGame(g);
-            }
-          }
-        }
+        handleMenuTouchAction(g, cx, cy, toGame);
         return;
       }
       if (g.state === 'gameover') {
@@ -304,17 +326,14 @@ export default function App() {
         return;
       }
       if (g.state === 'paused') {
-        g.state = 'playing';
+        resumeFromPause(g);
         return;
       }
 
       const pt = toGame(cx, cy);
-      if (g.state === 'playing' && pt) {
-        const inSkillZone = pt.y > CANVAS_H - 72 && Math.abs(pt.x - CANVAS_W / 2) < 36;
-        if (inSkillZone) {
-          inp.skill = true;
-          return;
-        }
+      if (g.state === 'playing' && pt && isInSkillZone(pt.x, pt.y)) {
+        inp.skill = true;
+        return;
       }
 
       if (pt) {
@@ -328,7 +347,9 @@ export default function App() {
 
     const moveInput = (cx: number, cy: number) => {
       const inp = inputRef.current;
-      if (!inp.touchActive) return;
+      if (!inp.touchActive) {
+        return;
+      }
       const pt = toGame(cx, cy);
       if (pt) {
         inp.touchX = pt.x;
@@ -342,7 +363,6 @@ export default function App() {
       inp.touchX = inp.touchY = inp.prevTouchX = inp.prevTouchY = null;
     };
 
-    // Touch events
     const onTS = (e: TouchEvent) => {
       e.preventDefault();
       startInput(e.touches[0].clientX, e.touches[0].clientY);
@@ -361,7 +381,6 @@ export default function App() {
     cvs.addEventListener('touchend', onTE, { passive: false });
     cvs.addEventListener('touchcancel', onTE, { passive: false });
 
-    // Mouse events (drag to move + auto-fire while held)
     const onMD = (e: MouseEvent) => startInput(e.clientX, e.clientY);
     const onMM = (e: MouseEvent) => moveInput(e.clientX, e.clientY);
     const onMU = () => endInput();
