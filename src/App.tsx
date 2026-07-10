@@ -42,32 +42,40 @@ export default function App() {
     if (!cvs) return;
     const ctx = cvs.getContext('2d')!;
     const DT = 1 / 60;
+    const MAX_FRAME_DELTA = 0.1;   // clamp to prevent spiral after tab switch
     let last = performance.now();
+    let accumulator = 0;
 
     const tick = (now: number) => {
-      const elapsed = now - last;
-      if (elapsed >= 14) {               // ~60 fps cap
-        last = now;
-        const game = gameRef.current;
-        const input = inputRef.current;
+      let elapsed = (now - last) / 1000;
+      last = now;
+      elapsed = Math.min(elapsed, MAX_FRAME_DELTA);
+      accumulator += elapsed;
 
+      const game = gameRef.current;
+      const input = inputRef.current;
+
+      // Fixed-timestep simulation: run as many DT steps as fit in the accumulator
+      while (accumulator >= DT) {
         if (game.state === 'playing') {
           update(game, input, DT);
         } else {
-          updateBackground(game, DT);    // stars, particles, shake/flash decay
+          updateBackground(game, DT);  // stars, particles, shake/flash decay
         }
-
-        // Resize backing store to match CSS size × DPR
-        const dpr = window.devicePixelRatio || 1;
-        const w = cvs.clientWidth;
-        const h = cvs.clientHeight;
-        if (cvs.width !== w * dpr || cvs.height !== h * dpr) {
-          cvs.width = w * dpr;
-          cvs.height = h * dpr;
-        }
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        render(ctx, game, w, h);
+        accumulator -= DT;
       }
+
+      // Resize backing store to match CSS size × DPR
+      const dpr = window.devicePixelRatio || 1;
+      const w = cvs.clientWidth;
+      const h = cvs.clientHeight;
+      if (cvs.width !== w * dpr || cvs.height !== h * dpr) {
+        cvs.width = w * dpr;
+        cvs.height = h * dpr;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      render(ctx, game, w, h);
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
