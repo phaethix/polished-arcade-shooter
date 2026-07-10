@@ -21,6 +21,7 @@ Thank you for your interest in contributing. This project is a browser-based arc
 
    ```bash
    npm run typecheck
+   npm run test:run
    npm run build
    ```
 
@@ -31,6 +32,29 @@ Thank you for your interest in contributing. This project is a browser-based arc
 - Prefer small, readable functions over large refactors unless discussed first.
 - Avoid adding external assets unless there is a clear reason; the project currently uses procedural audio and canvas rendering.
 - Update documentation when behavior, controls, or setup steps change.
+
+## Testing
+
+Unit tests run on [Vitest](https://vitest.dev/) in a Node environment — no browser or DOM required.
+
+### Running tests
+
+```bash
+npm test          # watch mode (re-runs on file change)
+npm run test:run  # single run (used in CI)
+```
+
+### Adding tests
+
+- Co-locate test files next to the source: `foo.ts` → `foo.test.ts`.
+- Test **pure functions** first — collision helpers, mode logic, scoring, and spawn pools are ideal candidates.
+- Import Vitest APIs explicitly: `import { describe, it, expect } from "vitest"`.
+- For modules that touch `localStorage`, mock it with `vi.stubGlobal("localStorage", …)` in a `beforeEach` hook.
+
+### What to avoid
+
+- Do not test rendering or Canvas drawing — those are verified by manual play-testing.
+- Do not test the React shell or input wiring in unit tests.
 
 ## Project layout
 

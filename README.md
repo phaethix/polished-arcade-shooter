@@ -165,6 +165,8 @@ npm run dev
 | `npm run build` | Build the production bundle |
 | `npm run preview` | Preview the production build locally |
 | `npm run typecheck` | Run TypeScript without emitting files |
+| `npm run test:run` | Run unit tests once (CI mode) |
+| `npm test` | Run unit tests in watch mode |
 
 ### Play online (GitHub Pages)
 
