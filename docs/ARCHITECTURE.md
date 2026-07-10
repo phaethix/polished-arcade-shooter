@@ -10,7 +10,17 @@ src/
 ├── app/
 │   └── input.ts            Mutable input state (keyboard + touch/mouse)
 └── game/
-    ├── engine.ts           Game loop orchestrator (update, collisions, state machine)
+    ├── engine.ts           Game loop orchestrator (update, render, state machine)
+    ├── combat.ts             Damage, kills, bombs, laser fire
+    ├── player-factory.ts     Player ship construction
+    ├── run-progress.ts       Achievements, coins, wave-clear rewards
+    ├── systems/
+    │   ├── player-controller.ts  Movement, shooting, skills
+    │   ├── wave-spawner.ts       Wave timers and enemy spawning
+    │   ├── bullet-system.ts      Bullet motion and culling
+    │   ├── collision-system.ts   Graze, hits, hazards
+    │   ├── power-up-system.ts    Pickup handling
+    │   └── ambient-system.ts     Particles, combo, stars, shake decay
     ├── types.ts            Shared interfaces
     ├── core/
     │   ├── constants.ts    Canvas size, player bounds, combo/graze tuning
@@ -61,17 +71,16 @@ App.tsx (RAF)
 The orchestrator intentionally retains:
 
 - State machine transitions (`menu` → `playing` → `paused` / `gameover`)
-- Wave spawning and collision resolution
-- Power-up pickup, combo/graze scoring, achievement triggers
-- Menu selection cycling and unlock actions
+- Menu selection cycling, unlock actions, and `resetGame`
+- Delegation to `systems/*` for per-tick simulation
 
-Future splits (only if `engine.ts` grows again): dedicated `collision-system.ts`, `wave-spawner.ts`, or `menu-actions.ts`.
+Combat helpers live in `combat.ts`; run rewards and achievements in `run-progress.ts`.
 
 ## Known tech debt
 
 | Item                            | Notes                                                                                                                                                               |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `engine.ts` size                | Reduced from ~1350 lines; still the largest file because collisions and wave logic remain centralized.                                                              |
+| `engine.ts` size                | Reduced to ~280 lines; simulation logic lives in `systems/` and `combat.ts`.                                                                                        |
 | Enemy rendering in `enemies.ts` | Enemy sprites stay with spawn/AI; only player-side world drawing moved to `render/world.ts`.                                                                        |
 | Test coverage                   | Vitest unit tests cover pure functions in `core/`, `modes`, `enemies`, `weapons`, `progress`, and `chapters`. Integration and rendering tests remain a future goal. |
 
