@@ -29,7 +29,10 @@ App.tsx (RAF)
 
 | Concern | Location |
 | --- | --- |
-| State machine, collisions, waves | `engine.ts` (or future split modules) |
+| State machine, menu actions, reset | `engine.ts` |
+| Combat (damage, kills, bombs, laser) | `combat.ts` |
+| Per-tick simulation | `systems/*` |
+| Achievements and run coin rewards | `run-progress.ts` |
 | HUD, menu, overlays, game-over | `render/` |
 | Spawn AI, enemy types | `enemies.ts` |
 | Weapons, firing patterns | `weapons.ts` |
