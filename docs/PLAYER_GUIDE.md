@@ -6,11 +6,11 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 
 ## Game modes
 
-| Mode                | Goal                                                                                                     |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Story**           | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending              |
-| **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                        |
-| **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                               |
+| Mode                | Goal                                                                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Story**           | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending                                                                                                                    |
+| **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                                                                                                                              |
+| **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                     |
 | **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream |
 
 ---

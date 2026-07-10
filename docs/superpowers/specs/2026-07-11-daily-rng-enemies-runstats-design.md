@@ -22,9 +22,9 @@ Out of scope: Practice mode, full replay/recording, object pools, gamepad, color
 
 `GameData` always carries an `rng` instance (`createRng(seed)` → `{ next(): number }` in `[0, 1)`).
 
-| Mode | Seed source |
-| --- | --- |
-| Daily | `g.dailySeed` (existing `YYYYMMDD` integer from `getDailySeed()`) |
+| Mode        | Seed source                                                                  |
+| ----------- | ---------------------------------------------------------------------------- |
+| Daily       | `g.dailySeed` (existing `YYYYMMDD` integer from `getDailySeed()`)            |
 | Other modes | Non-stable seed at `resetGame` (e.g. `Date.now()` mixed) so each run differs |
 
 **Gameplay** calls (`enemies` spawn, `hazards` spawn, `combat` power-up rolls) use `g.rng.next()`.  
@@ -32,17 +32,17 @@ Out of scope: Practice mode, full replay/recording, object pools, gamepad, color
 
 ### Files
 
-| File | Change |
-| --- | --- |
-| `src/game/core/rng.ts` | New: mulberry32 `createRng(seed)` |
-| `src/game/core/rng.test.ts` | Same seed → identical sequence |
-| `src/game/types.ts` | Add `rng: Rng` to `GameData` |
-| `src/game/engine.ts` | Init `rng` in `createGameData` / `resetGame` |
-| `src/game/enemies.ts` (then B modules) | Replace gameplay `Math.random` with `g.rng` |
-| `src/game/hazards.ts` | Same for spawn/timing rolls |
-| `src/game/combat.ts` | Same for drop rolls |
-| `docs/PLAYER_GUIDE.md` | Note that Daily gameplay RNG is date-seeded |
-| `.issue/roadmap.md` | Mark difficulty done; note seeded Daily |
+| File                                   | Change                                       |
+| -------------------------------------- | -------------------------------------------- |
+| `src/game/core/rng.ts`                 | New: mulberry32 `createRng(seed)`            |
+| `src/game/core/rng.test.ts`            | Same seed → identical sequence               |
+| `src/game/types.ts`                    | Add `rng: Rng` to `GameData`                 |
+| `src/game/engine.ts`                   | Init `rng` in `createGameData` / `resetGame` |
+| `src/game/enemies.ts` (then B modules) | Replace gameplay `Math.random` with `g.rng`  |
+| `src/game/hazards.ts`                  | Same for spawn/timing rolls                  |
+| `src/game/combat.ts`                   | Same for drop rolls                          |
+| `docs/PLAYER_GUIDE.md`                 | Note that Daily gameplay RNG is date-seeded  |
+| `.issue/roadmap.md`                    | Mark difficulty done; note seeded Daily      |
 
 ### Acceptance
 
@@ -93,12 +93,12 @@ Delete or replace the monolithic `src/game/enemies.ts` with the folder + barrel.
 
 Add to `GameData` (or nested `runStats`):
 
-| Field | Meaning |
-| --- | --- |
-| `shotsFired` | Player projectiles / laser ticks that count as a shot attempt |
-| `shotsHit` | Player shots that dealt damage to an enemy (pierce: count once per enemy hit is fine) |
-| `damageDealt` | Cumulative HP damage applied to enemies |
-| `enemiesKilled` | Enemies removed via kill path |
+| Field           | Meaning                                                                               |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `shotsFired`    | Player projectiles / laser ticks that count as a shot attempt                         |
+| `shotsHit`      | Player shots that dealt damage to an enemy (pierce: count once per enemy hit is fine) |
+| `damageDealt`   | Cumulative HP damage applied to enemies                                               |
+| `enemiesKilled` | Enemies removed via kill path                                                         |
 
 Reset all to `0` in `resetGame`. `grazeCount` / `maxCombo` already exist.
 
@@ -132,9 +132,9 @@ Adjust vertical spacing so high-score list still fits; shrink font if needed. No
 
 ## Implementation order
 
-1. A — RNG module + wire gameplay call sites + tests + docs  
-2. B — File split (behavior-preserving refactor)  
-3. C — Stats fields + instrumentation + game-over UI  
+1. A — RNG module + wire gameplay call sites + tests + docs
+2. B — File split (behavior-preserving refactor)
+3. C — Stats fields + instrumentation + game-over UI
 
 Prefer one concern per commit within each slice (types → logic → UI/docs).
 
@@ -142,8 +142,8 @@ Prefer one concern per commit within each slice (types → logic → UI/docs).
 
 ## Risks
 
-| Risk | Mitigation |
-| --- | --- |
+| Risk                                  | Mitigation                                                    |
+| ------------------------------------- | ------------------------------------------------------------- |
 | Missed `Math.random` in gameplay path | Grep audit after A; Daily determinism test covers spawn/drops |
-| Game-over layout overflow | Compact one-line stats; reuse `lineStep` |
-| Import churn in B | Barrel `enemies/index.ts` preserves paths |
+| Game-over layout overflow             | Compact one-line stats; reuse `lineStep`                      |
+| Import churn in B                     | Barrel `enemies/index.ts` preserves paths                     |

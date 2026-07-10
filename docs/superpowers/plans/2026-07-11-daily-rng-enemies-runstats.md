@@ -14,26 +14,27 @@
 
 ## File map
 
-| Path | Role |
-| --- | --- |
-| `src/game/core/rng.ts` | `Rng` interface + `createRng(seed)` |
-| `src/game/core/rng.test.ts` | Determinism unit tests |
-| `src/game/types.ts` | `rng` + run-stat fields on `GameData` |
-| `src/game/engine.ts` | Init/reset `rng` and run stats |
-| `src/game/enemies.ts` → `enemies/*` | Spawn uses `g.rng`; later split |
-| `src/game/hazards.ts` | Spawn/timing uses `g.rng`; particle FX stay `Math.random` |
-| `src/game/combat.ts` | Drop rolls use `g.rng`; laser FX stay `Math.random`; kill/hit stats |
-| `src/game/weapons.ts` | Count `shotsFired` on fire |
-| `src/game/run-stats.ts` | Pure `formatAccuracy` helper |
-| `src/game/render/gameover.ts` | Stats line |
-| `src/game/render/enemies.ts` | `drawEnemy` |
-| `docs/PLAYER_GUIDE.md`, `.issue/roadmap.md` | Docs sync |
+| Path                                        | Role                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------- |
+| `src/game/core/rng.ts`                      | `Rng` interface + `createRng(seed)`                                 |
+| `src/game/core/rng.test.ts`                 | Determinism unit tests                                              |
+| `src/game/types.ts`                         | `rng` + run-stat fields on `GameData`                               |
+| `src/game/engine.ts`                        | Init/reset `rng` and run stats                                      |
+| `src/game/enemies.ts` → `enemies/*`         | Spawn uses `g.rng`; later split                                     |
+| `src/game/hazards.ts`                       | Spawn/timing uses `g.rng`; particle FX stay `Math.random`           |
+| `src/game/combat.ts`                        | Drop rolls use `g.rng`; laser FX stay `Math.random`; kill/hit stats |
+| `src/game/weapons.ts`                       | Count `shotsFired` on fire                                          |
+| `src/game/run-stats.ts`                     | Pure `formatAccuracy` helper                                        |
+| `src/game/render/gameover.ts`               | Stats line                                                          |
+| `src/game/render/enemies.ts`                | `drawEnemy`                                                         |
+| `docs/PLAYER_GUIDE.md`, `.issue/roadmap.md` | Docs sync                                                           |
 
 ---
 
 ### Task 1: RNG core (TDD)
 
 **Files:**
+
 - Create: `src/game/core/rng.ts`
 - Create: `src/game/core/rng.test.ts`
 
@@ -113,6 +114,7 @@ git commit -m "feat(game): add mulberry32 seeded rng helper"
 ### Task 2: Wire `rng` onto `GameData`
 
 **Files:**
+
 - Modify: `src/game/types.ts`
 - Modify: `src/game/engine.ts`
 - Create: `src/game/core/rng-game.test.ts` (spawn determinism smoke)
@@ -120,6 +122,7 @@ git commit -m "feat(game): add mulberry32 seeded rng helper"
 - [ ] **Step 1: Add type + init**
 
 In `types.ts`:
+
 ```typescript
 import type { Rng } from './core/rng';
 // on GameData:
@@ -127,14 +130,18 @@ rng: Rng;
 ```
 
 In `createGameData()`:
+
 ```typescript
 rng: createRng(0),
 ```
 
 In `resetGame()`, after `initModeState(g)`:
+
 ```typescript
 g.rng =
-  g.gameMode === 'daily' ? createRng(g.dailySeed) : createRng((Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0);
+  g.gameMode === 'daily'
+    ? createRng(g.dailySeed)
+    : createRng((Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0);
 ```
 
 Import `createRng` from `./core/rng`.
@@ -184,6 +191,7 @@ describe('daily spawn determinism', () => {
 Adjust if `resetGame` already sets daily rng from `dailySeed` — then omit the manual `g.rng =` and set mode before reset via menu fields + `initModeState` path. Prefer: set `g.gameMode = 'daily'`, call `resetGame` which calls `initModeState` then `createRng(g.dailySeed)`.
 
 Note: `resetGame` calls `initModeState` which overwrites `dailySeed` with `getDailySeed()`. For the test, either:
+
 - export a test helper `resetGameWithSeed(g, seed)`, or
 - after `resetGame`, assign `g.dailySeed = seed; g.rng = createRng(seed);` and clear enemies then spawn.
 
@@ -202,6 +210,7 @@ git commit -m "feat(game): seed gameplay rng from daily date"
 ### Task 3: Docs for Daily RNG
 
 **Files:**
+
 - Modify: `docs/PLAYER_GUIDE.md` (Daily Challenge row)
 - Modify: `.issue/roadmap.md` (difficulty done; add seeded Daily under supplementary or done)
 
@@ -214,6 +223,7 @@ git commit -m "feat(game): seed gameplay rng from daily date"
 ### Task 4: Split enemies module
 
 **Files:**
+
 - Create: `src/game/enemies/helpers.ts` (blocksCenterShot, isFrontalShieldBlock, kamikazeExplosionRadius, isKamikazeBlastHit)
 - Create: `src/game/enemies/spawn.ts` (pool, createEnemy, spawnEnemy, spawnSplitterChildren)
 - Create: `src/game/enemies/ai.ts` (enemyShoot, updateEnemies, fireEnemyBullet)
@@ -242,6 +252,7 @@ Update `docs/ARCHITECTURE.md` enemies bullet to list `enemies/` + `render/enemie
 ### Task 5: Run stats (TDD + UI)
 
 **Files:**
+
 - Create: `src/game/run-stats.ts` + `src/game/run-stats.test.ts`
 - Modify: `src/game/types.ts`, `engine.ts`, `weapons.ts`, `combat.ts`, `render/gameover.ts`
 - Optionally: `docs/PLAYER_GUIDE.md` one line under scoring
@@ -294,6 +305,7 @@ Pierce: increment `shotsHit` once per enemy damaged by that bullet (existing hit
 - [ ] **Step 5: Game-over UI**
 
 Below graze line:
+
 ```typescript
 ctx.fillText(
   `Accuracy ${formatAccuracy(g.shotsHit, g.shotsFired)}  ·  Damage ${Math.round(g.damageDealt).toLocaleString()}  ·  Kills ${g.enemiesKilled}`,
@@ -301,6 +313,7 @@ ctx.fillText(
   y,
 );
 ```
+
 Shift subsequent `y` with `lineStep`.
 
 - [ ] **Step 6: typecheck + test:run + Commit**
@@ -321,13 +334,13 @@ git commit -m "feat(game): show run accuracy damage and kills on game over"
 
 ## Spec coverage checklist
 
-| Spec item | Task |
-| --- | --- |
-| mulberry32 + unit tests | Task 1 |
-| GameData.rng + daily/other seeding | Task 2 |
-| Gameplay vs cosmetic random split | Task 2 |
-| Spawn determinism test | Task 2 |
-| PLAYER_GUIDE + roadmap | Task 3 |
-| enemies/ split + render draw | Task 4 |
+| Spec item                               | Task   |
+| --------------------------------------- | ------ |
+| mulberry32 + unit tests                 | Task 1 |
+| GameData.rng + daily/other seeding      | Task 2 |
+| Gameplay vs cosmetic random split       | Task 2 |
+| Spawn determinism test                  | Task 2 |
+| PLAYER_GUIDE + roadmap                  | Task 3 |
+| enemies/ split + render draw            | Task 4 |
 | run stats fields + UI + accuracy helper | Task 5 |
-| Full verify | Task 6 |
+| Full verify                             | Task 6 |

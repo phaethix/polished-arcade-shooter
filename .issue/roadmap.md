@@ -84,10 +84,10 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 
 ## Supplementary completed
 
-| Item | Status |
-| --- | --- |
+| Item                                    | Status     |
+| --------------------------------------- | ---------- |
 | Difficulty tiers (Easy / Normal / Hard) | done (#33) |
-| Daily seeded gameplay RNG | done |
+| Daily seeded gameplay RNG               | done       |
 
 ## Supplementary ideas (backlog)
 
