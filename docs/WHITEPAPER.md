@@ -304,9 +304,11 @@ The project is **feature-complete** against its original expansion plan. It is p
 
 | Document                                   | Role                                  |
 | ------------------------------------------ | ------------------------------------- |
-| [README.md](../README.md)                  | Quick start and player-facing summary |
+| [README.md](../README.md)                  | Repository overview and quick start   |
+| [PLAYER_GUIDE.md](./PLAYER_GUIDE.md)      | Controls, modes, enemies, progression |
 | [ARCHITECTURE.md](./ARCHITECTURE.md)       | Source layout and dependency rules    |
 | [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Contributor git workflow              |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)      | Development and pull request workflow |
 | [.issue/roadmap.md](../.issue/roadmap.md)  | Phase checklist and backlog           |
 | [.issue/001–006](../.issue/)               | Per-feature specification notes       |
 
