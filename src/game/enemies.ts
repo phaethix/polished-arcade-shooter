@@ -1,8 +1,8 @@
 import type { Enemy, EnemyType, GameData, Bullet } from './types';
 import * as sfx from './audio';
 import { getBossHp, getEnemySpeedMult, getSpawnPoolOverride, isBossWave } from './modes';
-
-const W = 400;
+import { CANVAS_W } from './core/constants';
+import { addParticles } from './effects';
 
 const HEAL_RADIUS = 100;
 const HEAL_INTERVAL = 2;
@@ -42,7 +42,7 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
   switch (type) {
     case 'fast':
       return baseEnemy({
-        type, x: 30 + Math.random() * (W - 60), y: -30,
+        type, x: 30 + Math.random() * (CANVAS_W - 60), y: -30,
         width: 24, height: 24, hp: 1, maxHp: 1,
         speed: 3 + Math.random(), shootInterval: 80, scoreValue: 150,
         movePattern: pat,
@@ -50,7 +50,7 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
     case 'tank': {
       const hp = 5 + Math.floor(wave / 2);
       return baseEnemy({
-        type, x: 40 + Math.random() * (W - 80), y: -40,
+        type, x: 40 + Math.random() * (CANVAS_W - 80), y: -40,
         width: 40, height: 40, hp, maxHp: hp,
         speed: 0.8 + Math.random() * 0.5, shootInterval: 50, scoreValue: 300,
         movePattern: 'straight',
@@ -59,7 +59,7 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
     case 'splitter': {
       const hp = 3 + Math.floor(wave / 4);
       return baseEnemy({
-        type, x: 30 + Math.random() * (W - 60), y: -36,
+        type, x: 30 + Math.random() * (CANVAS_W - 60), y: -36,
         width: 34, height: 34, hp, maxHp: hp,
         speed: 1 + Math.random() * 0.5, shootInterval: 70, scoreValue: 220,
         movePattern: 'sine',
@@ -67,7 +67,7 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
     }
     case 'sniper':
       return baseEnemy({
-        type, x: 50 + Math.random() * (W - 100), y: -40,
+        type, x: 50 + Math.random() * (CANVAS_W - 100), y: -40,
         width: 30, height: 30, hp: 2, maxHp: 2,
         speed: 0.6, shootInterval: 110, scoreValue: 350,
         movePattern: 'straight', state: 'patrol',
@@ -75,7 +75,7 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
     case 'shielded': {
       const hp = 8 + Math.floor(wave / 2);
       return baseEnemy({
-        type, x: 40 + Math.random() * (W - 80), y: -44,
+        type, x: 40 + Math.random() * (CANVAS_W - 80), y: -44,
         width: 38, height: 38, hp, maxHp: hp,
         speed: 0.7 + Math.random() * 0.3, shootInterval: 65, scoreValue: 280,
         movePattern: 'straight',
@@ -83,14 +83,14 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
     }
     case 'kamikaze':
       return baseEnemy({
-        type, x: 20 + Math.random() * (W - 40), y: -28,
+        type, x: 20 + Math.random() * (CANVAS_W - 40), y: -28,
         width: 26, height: 26, hp: 2, maxHp: 2,
         speed: 1.4 + Math.random() * 0.6, shootInterval: 9999, scoreValue: 180,
         movePattern: 'straight', state: 'patrol',
       });
     case 'healer':
       return baseEnemy({
-        type, x: 60 + Math.random() * (W - 120), y: -36,
+        type, x: 60 + Math.random() * (CANVAS_W - 120), y: -36,
         width: 32, height: 32, hp: 4, maxHp: 4,
         speed: 0.5, shootInterval: 120, scoreValue: 400,
         movePattern: 'sine', healPulse: 0,
@@ -105,7 +105,7 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
     default: {
       const hp = 1 + Math.floor(wave / 3);
       return baseEnemy({
-        type: 'basic', x: 20 + Math.random() * (W - 40), y: -30,
+        type: 'basic', x: 20 + Math.random() * (CANVAS_W - 40), y: -30,
         width: 28, height: 28, hp, maxHp: hp,
         speed: 1.2 + Math.random() * 0.8 + wave * 0.05,
         shootInterval: Math.max(50, 90 - wave * 3), scoreValue: 100,
@@ -120,7 +120,7 @@ export function spawnEnemy(g: GameData): void {
   if (isBossWave(g) && g.enemiesSpawned === 0) {
     const hp = getBossHp(g);
     g.enemies.push(baseEnemy({
-      type: 'boss', x: W / 2, y: -60,
+      type: 'boss', x: CANVAS_W / 2, y: -60,
       width: 64, height: 56, hp, maxHp: hp,
       speed: 0.5, shootTimer: 40, shootInterval: 25,
       movePattern: 'sine', scoreValue: 2000,
@@ -144,7 +144,7 @@ export function spawnSplitterChildren(g: GameData, x: number, y: number): void {
     mini.y = y;
     g.enemies.push(mini);
   }
-  addPuff(g, x, y, '#a6f', 8);
+  addParticles(g, x, y, 8, '#a6f', 2, 'spark', [2, 4]);
 }
 
 export function blocksCenterShot(e: Enemy, shotX: number): boolean {
@@ -286,7 +286,7 @@ export function updateEnemies(g: GameData, dt: number, tm: number): void {
       e.movePattern = 'sine';
     }
 
-    e.x = Math.max(e.width / 2, Math.min(W - e.width / 2, e.x));
+    e.x = Math.max(e.width / 2, Math.min(CANVAS_W - e.width / 2, e.x));
 
     if (e.type === 'sniper') {
       updateSniperAim(g, e, tm);
@@ -312,21 +312,6 @@ export function isKamikazeBlastHit(e: Enemy, px: number, py: number): boolean {
   const dx = px - e.x;
   const dy = py - e.y;
   return dx * dx + dy * dy <= r * r;
-}
-
-function addPuff(g: GameData, x: number, y: number, color: string, count: number): void {
-  for (let i = 0; i < count; i++) {
-    g.particles.push({
-      x, y,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
-      life: 0.25 + Math.random() * 0.15,
-      maxLife: 0.4,
-      size: 2 + Math.random() * 2,
-      color,
-      type: 'spark',
-    });
-  }
 }
 
 export function drawEnemy(ctx: CanvasRenderingContext2D, g: GameData, e: Enemy, frame: number): void {

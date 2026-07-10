@@ -1,7 +1,5 @@
 import type { ChapterId, GameData, Nebula } from './types';
-
-const W = 400;
-const H = 700;
+import { CANVAS_W, CANVAS_H } from './core/constants';
 
 export interface ChapterDefinition {
   id: ChapterId;
@@ -88,8 +86,8 @@ export function buildStars(_chapter: ChapterDefinition): GameData['stars'] {
   const stars: GameData['stars'] = [];
   for (let i = 0; i < 100; i++) {
     stars.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
+      x: Math.random() * CANVAS_W,
+      y: Math.random() * CANVAS_H,
       speed: 0.3 + Math.random() * 2.2,
       brightness: 0.2 + Math.random() * 0.8,
     });
@@ -102,8 +100,8 @@ export function buildNebulae(chapter: ChapterDefinition): Nebula[] {
   const cols = chapter.nebulaColors;
   for (let i = 0; i < 6; i++) {
     nebulae.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
+      x: Math.random() * CANVAS_W,
+      y: Math.random() * CANVAS_H,
       radius: 60 + Math.random() * 100,
       color: cols[Math.floor(Math.random() * cols.length)],
       speed: 0.15 + Math.random() * 0.3,
@@ -131,12 +129,12 @@ export function drawChapterBackground(
   g: GameData,
 ): void {
   const chapter = getChapter(g.chapterId);
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
   bg.addColorStop(0, chapter.bgTop);
   bg.addColorStop(0.5, chapter.bgMid);
   bg.addColorStop(1, chapter.bgBottom);
   ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
   for (const n of g.nebulae) {
     const gr = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);

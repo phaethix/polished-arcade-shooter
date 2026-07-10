@@ -1,21 +1,16 @@
 import type { GameData, Hazard } from './types';
 import { getChapter } from './chapters';
 import * as sfx from './audio';
+import { CANVAS_W, CANVAS_H } from './core/constants';
+import { boxesOverlap } from './core/collision';
 
-const W = 400;
-const H = 700;
 const MAX_ASTEROIDS = 5;
-
-function hit(ax: number, ay: number, aw: number, ah: number,
-  bx: number, by: number, bw: number, bh: number): boolean {
-  return Math.abs(ax - bx) < (aw + bw) / 2 && Math.abs(ay - by) < (ah + bh) / 2;
-}
 
 function spawnAsteroid(g: GameData): void {
   const size = 18 + Math.random() * 16;
   g.hazards.push({
     type: 'asteroid',
-    x: 30 + Math.random() * (W - 60),
+    x: 30 + Math.random() * (CANVAS_W - 60),
     y: -size,
     width: size,
     height: size,
@@ -29,7 +24,7 @@ function spawnAsteroid(g: GameData): void {
 function spawnTurrets(g: GameData): void {
   const slots = [
     { x: 36, y: 140 },
-    { x: W - 36, y: 220 },
+    { x: CANVAS_W - 36, y: 220 },
     { x: 56, y: 320 },
   ];
   for (const slot of slots) {
@@ -41,7 +36,7 @@ function spawnTurrets(g: GameData): void {
       height: 28,
       shootTimer: 40 + Math.random() * 40,
       shootInterval: 70 + Math.random() * 30,
-      side: slot.x < W / 2 ? -1 : 1,
+      side: slot.x < CANVAS_W / 2 ? -1 : 1,
     });
   }
 }
@@ -51,7 +46,7 @@ function spawnTeleporters(g: GameData): void {
     {
       type: 'teleporter',
       x: 100,
-      y: H * 0.45,
+      y: CANVAS_H * 0.45,
       width: 44,
       height: 44,
       padId: 0,
@@ -59,8 +54,8 @@ function spawnTeleporters(g: GameData): void {
     },
     {
       type: 'teleporter',
-      x: W - 100,
-      y: H * 0.62,
+      x: CANVAS_W - 100,
+      y: CANVAS_H * 0.62,
       width: 44,
       height: 44,
       padId: 1,
@@ -146,7 +141,7 @@ export function updateHazards(g: GameData, dt: number, tm: number): void {
       h.x += (h.vx ?? 0) * tm;
       h.y += (h.vy ?? 0) * tm;
       h.rot = (h.rot ?? 0) + (h.rotSpeed ?? 0) * tm;
-      if (h.y > H + 40) g.hazards.splice(i, 1);
+      if (h.y > CANVAS_H + 40) g.hazards.splice(i, 1);
       continue;
     }
 
@@ -244,13 +239,13 @@ export function handleHazardCollisions(
   for (const h of g.hazards) {
     if (h.type === 'teleporter') {
       if ((h.cooldown ?? 0) > 0) continue;
-      if (!hit(p.x, p.y, p.width * 0.5, p.height * 0.5, h.x, h.y, h.width, h.height)) continue;
+      if (!boxesOverlap(p.x, p.y, p.width * 0.5, p.height * 0.5, h.x, h.y, h.width, h.height)) continue;
       tryTeleport(g, h);
       return { playerDied: false };
     }
 
     if (h.type === 'asteroid') {
-      if (!hit(p.x, p.y, p.width * 0.4, p.height * 0.4, h.x, h.y, h.width, h.height)) continue;
+      if (!boxesOverlap(p.x, p.y, p.width * 0.4, p.height * 0.4, h.x, h.y, h.width, h.height)) continue;
       hurtPlayer();
       return { playerDied: p.hp <= 0 };
     }
