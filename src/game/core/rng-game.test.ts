@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { EnemyType } from '../types';
 import { createGameData, resetGame } from '../engine';
 import { spawnEnemy } from '../enemies';
+import { pickDailyModifier } from '../modes';
 import { createRng } from './rng';
 
 /** Minimal in-memory localStorage mock for node test environment. */
@@ -31,6 +32,7 @@ function runSpawns(seed: number): EnemyType[] {
   resetGame(g);
   // initModeState stamps today's date onto dailySeed; pin it for the test.
   g.dailySeed = seed;
+  g.dailyModifier = pickDailyModifier(seed);
   g.rng = createRng(seed);
   g.wave = 3;
   g.enemiesPerWave = 10;
@@ -60,6 +62,7 @@ describe('daily seeded rng determinism', () => {
     g1.gameMode = 'daily';
     resetGame(g1);
     g1.dailySeed = 42;
+    g1.dailyModifier = pickDailyModifier(42);
     g1.rng = createRng(42);
     g1.wave = 3;
 
@@ -67,6 +70,7 @@ describe('daily seeded rng determinism', () => {
     g2.gameMode = 'daily';
     resetGame(g2);
     g2.dailySeed = 42;
+    g2.dailyModifier = pickDailyModifier(42);
     g2.rng = createRng(42);
     g2.wave = 3;
 
