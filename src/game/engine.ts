@@ -5,7 +5,7 @@ import { CANVAS_W, CANVAS_H } from './core/constants';
 import { createRng } from './core/rng';
 import { nextAircraft } from './aircraft';
 import { nextWeapon } from './weapons';
-import { updateEnemies, drawEnemy } from './enemies';
+import { updateEnemies } from './enemies';
 import { applyChapterToGame, drawChapterBackground } from './chapters';
 import {
   applyDailyPlayerMods,
@@ -28,6 +28,7 @@ import { drawHUD } from './render/hud';
 import { drawGameOver } from './render/gameover';
 import { drawAchievementToast } from './render/achievement-toast';
 import { drawLaserBeam, drawPlayer, drawBullet, drawPowerUp } from './render/world';
+import { drawEnemy } from './render/enemies';
 import {
   drawParticles,
   drawFlashOverlay,
