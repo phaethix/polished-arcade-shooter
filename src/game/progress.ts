@@ -49,13 +49,30 @@ function writeJson(key: string, value: unknown): void {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch {/* */}
 }
 
+// ─── In-memory cache (avoids repeated JSON.parse on every read) ───
+let coinsCache: number | null = null;
+let unlocksCache: UnlockState | null = null;
+let achievementsCache: Set<AchievementId> | null = null;
+let statsCache: LifetimeStats | null = null;
+
+/** Clear all cached values. Intended for testing only. */
+export function _resetProgressCache(): void {
+  coinsCache = null;
+  unlocksCache = null;
+  achievementsCache = null;
+  statsCache = null;
+}
+
 export function loadCoins(): number {
-  return readJson<number>(COINS_KEY, 0);
+  if (coinsCache !== null) return coinsCache;
+  coinsCache = readJson<number>(COINS_KEY, 0);
+  return coinsCache;
 }
 
 export function addCoins(amount: number): number {
   if (amount <= 0) return loadCoins();
   const total = loadCoins() + amount;
+  coinsCache = total;
   writeJson(COINS_KEY, total);
   return total;
 }
@@ -63,27 +80,34 @@ export function addCoins(amount: number): number {
 export function spendCoins(amount: number): boolean {
   const coins = loadCoins();
   if (amount <= 0 || coins < amount) return false;
+  coinsCache = coins - amount;
   writeJson(COINS_KEY, coins - amount);
   return true;
 }
 
 export function loadUnlocks(): UnlockState {
+  if (unlocksCache !== null) return unlocksCache;
   const data = readJson<UnlockState>(UNLOCKS_KEY, DEFAULT_UNLOCKS);
-  return {
+  unlocksCache = {
     aircraft: [...new Set([...DEFAULT_UNLOCKS.aircraft, ...data.aircraft])],
     weapons: [...new Set([...DEFAULT_UNLOCKS.weapons, ...data.weapons])],
   };
+  return unlocksCache;
 }
 
 function saveUnlocks(unlocks: UnlockState): void {
+  unlocksCache = unlocks;
   writeJson(UNLOCKS_KEY, unlocks);
 }
 
 export function loadLifetimeStats(): LifetimeStats {
-  return readJson<LifetimeStats>(STATS_KEY, { enemyKills: 0, bossKills: 0 });
+  if (statsCache !== null) return statsCache;
+  statsCache = readJson<LifetimeStats>(STATS_KEY, { enemyKills: 0, bossKills: 0 });
+  return statsCache;
 }
 
 function saveLifetimeStats(stats: LifetimeStats): void {
+  statsCache = stats;
   writeJson(STATS_KEY, stats);
 }
 
@@ -96,11 +120,14 @@ export function recordEnemyKill(isBoss: boolean): LifetimeStats {
 }
 
 export function loadAchievementSet(): Set<AchievementId> {
+  if (achievementsCache !== null) return achievementsCache;
   const list = readJson<AchievementId[]>(ACHIEVEMENTS_KEY, []);
-  return new Set(list);
+  achievementsCache = new Set(list);
+  return achievementsCache;
 }
 
 function saveAchievements(set: Set<AchievementId>): void {
+  achievementsCache = set;
   writeJson(ACHIEVEMENTS_KEY, [...set]);
 }
 

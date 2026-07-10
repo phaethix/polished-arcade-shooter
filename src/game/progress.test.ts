@@ -11,6 +11,7 @@ import {
   recordEnemyKill,
   loadLifetimeStats,
   ACHIEVEMENTS,
+  _resetProgressCache,
 } from "./progress";
 
 /** Minimal in-memory localStorage mock for node test environment. */
@@ -27,6 +28,7 @@ function createLocalStorage() {
 beforeEach(() => {
   const ls = createLocalStorage();
   vi.stubGlobal("localStorage", ls);
+  _resetProgressCache();
 });
 
 describe("coinRewardForEnemy", () => {
@@ -138,5 +140,44 @@ describe("lifetime stats", () => {
     recordEnemyKill(true);
     expect(loadLifetimeStats().enemyKills).toBe(1);
     expect(loadLifetimeStats().bossKills).toBe(1);
+  });
+});
+
+describe("caching", () => {
+  it("serves repeated reads from cache without touching localStorage", () => {
+    addCoins(100);
+    // Spy on getItem after the initial write
+    const spy = vi.spyOn(localStorage, "getItem");
+    loadCoins();
+    loadCoins();
+    loadCoins();
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it("reflects writes in subsequent cached reads", () => {
+    addCoins(50);
+    expect(loadCoins()).toBe(50);
+    spendCoins(20);
+    expect(loadCoins()).toBe(30);
+  });
+
+  it("forces re-read from storage after cache reset", () => {
+    addCoins(100);
+    _resetProgressCache();
+    // After reset, loadCoins should read from localStorage
+    const spy = vi.spyOn(localStorage, "getItem");
+    expect(loadCoins()).toBe(100);
+    expect(spy).toHaveBeenCalledWith("sky_blaster_coins_v1");
+    spy.mockRestore();
+  });
+
+  it("caches unlocks after first read", () => {
+    loadUnlocks();
+    const spy = vi.spyOn(localStorage, "getItem");
+    loadUnlocks();
+    loadUnlocks();
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 });
