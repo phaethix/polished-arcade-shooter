@@ -98,31 +98,62 @@ function pushStandardSpread(g: GameData, damage: number, color: string) {
   const p = g.player;
   const l = p.powerLevel;
   g.bullets.push({
-    x: p.x, y: p.y - p.height / 2 - 5, vx: 0, vy: -BULLET_SPEED,
-    width: 4, height: 14, damage, isPlayer: true, color,
+    x: p.x,
+    y: p.y - p.height / 2 - 5,
+    vx: 0,
+    vy: -BULLET_SPEED,
+    width: 4,
+    height: 14,
+    damage,
+    isPlayer: true,
+    color,
     weapon: p.weaponId,
   });
-  if (l >= 1) for (const d of [-10, 10]) {
-    g.bullets.push({
-      x: p.x + d, y: p.y - p.height / 2, vx: 0, vy: -BULLET_SPEED,
-      width: 3, height: 12, damage, isPlayer: true, color,
-      weapon: p.weaponId,
-    });
-  }
-  if (l >= 2) for (const d of [-1, 1]) {
-    g.bullets.push({
-      x: p.x + d * 8, y: p.y - p.height / 2, vx: d * 2, vy: -BULLET_SPEED,
-      width: 3, height: 10, damage, isPlayer: true, color,
-      weapon: p.weaponId,
-    });
-  }
-  if (l >= 3) for (const d of [-1, 1]) {
-    g.bullets.push({
-      x: p.x + d * 5, y: p.y - p.height / 2, vx: d * 3.5, vy: -BULLET_SPEED * 0.9,
-      width: 3, height: 10, damage, isPlayer: true, color,
-      weapon: p.weaponId,
-    });
-  }
+  if (l >= 1)
+    for (const d of [-10, 10]) {
+      g.bullets.push({
+        x: p.x + d,
+        y: p.y - p.height / 2,
+        vx: 0,
+        vy: -BULLET_SPEED,
+        width: 3,
+        height: 12,
+        damage,
+        isPlayer: true,
+        color,
+        weapon: p.weaponId,
+      });
+    }
+  if (l >= 2)
+    for (const d of [-1, 1]) {
+      g.bullets.push({
+        x: p.x + d * 8,
+        y: p.y - p.height / 2,
+        vx: d * 2,
+        vy: -BULLET_SPEED,
+        width: 3,
+        height: 10,
+        damage,
+        isPlayer: true,
+        color,
+        weapon: p.weaponId,
+      });
+    }
+  if (l >= 3)
+    for (const d of [-1, 1]) {
+      g.bullets.push({
+        x: p.x + d * 5,
+        y: p.y - p.height / 2,
+        vx: d * 3.5,
+        vy: -BULLET_SPEED * 0.9,
+        width: 3,
+        height: 10,
+        damage,
+        isPlayer: true,
+        color,
+        weapon: p.weaponId,
+      });
+    }
 }
 
 export function fireStandard(g: GameData) {
@@ -144,14 +175,28 @@ export function fireArmorPiercing(g: GameData) {
   const pierce = 3;
   const mk = (x: number, y: number, vx: number, vy: number, w: number, h: number, dmg: number) => {
     g.bullets.push({
-      x, y, vx, vy, width: w, height: h, damage: dmg,
-      isPlayer: true, color, weapon: 'armor_piercing', pierceRemaining: pierce,
+      x,
+      y,
+      vx,
+      vy,
+      width: w,
+      height: h,
+      damage: dmg,
+      isPlayer: true,
+      color,
+      weapon: 'armor_piercing',
+      pierceRemaining: pierce,
     });
   };
   mk(p.x, p.y - p.height / 2 - 5, 0, -BULLET_SPEED, 4, 14, damage);
-  if (l >= 1) for (const d of [-10, 10]) mk(p.x + d, p.y - p.height / 2, 0, -BULLET_SPEED, 3, 12, damage);
-  if (l >= 2) for (const d of [-1, 1]) mk(p.x + d * 8, p.y - p.height / 2, d * 2, -BULLET_SPEED, 3, 10, damage);
-  if (l >= 3) for (const d of [-1, 1]) mk(p.x + d * 5, p.y - p.height / 2, d * 3.5, -BULLET_SPEED * 0.9, 3, 10, damage);
+  if (l >= 1)
+    for (const d of [-10, 10]) mk(p.x + d, p.y - p.height / 2, 0, -BULLET_SPEED, 3, 12, damage);
+  if (l >= 2)
+    for (const d of [-1, 1])
+      mk(p.x + d * 8, p.y - p.height / 2, d * 2, -BULLET_SPEED, 3, 10, damage);
+  if (l >= 3)
+    for (const d of [-1, 1])
+      mk(p.x + d * 5, p.y - p.height / 2, d * 3.5, -BULLET_SPEED * 0.9, 3, 10, damage);
 }
 
 export function fireShotgun(g: GameData) {
@@ -165,11 +210,18 @@ export function fireShotgun(g: GameData) {
     const t = pellets === 1 ? 0 : (i / (pellets - 1) - 0.5) * 1.1;
     const speed = 9;
     g.bullets.push({
-      x: p.x, y: p.y - p.height / 2,
-      vx: Math.sin(t) * speed * 0.55, vy: -Math.cos(t) * speed,
-      width: 4, height: 4, damage,
-      isPlayer: true, color, weapon: 'shotgun',
-      maxTravel: 95, distanceTraveled: 0,
+      x: p.x,
+      y: p.y - p.height / 2,
+      vx: Math.sin(t) * speed * 0.55,
+      vy: -Math.cos(t) * speed,
+      width: 4,
+      height: 4,
+      damage,
+      isPlayer: true,
+      color,
+      weapon: 'shotgun',
+      maxTravel: 95,
+      distanceTraveled: 0,
     });
   }
 }
@@ -190,8 +242,12 @@ export function fireHoming(g: GameData) {
       y: p.y - p.height / 2,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      width: 5, height: 9, damage,
-      isPlayer: true, color, weapon: 'homing',
+      width: 5,
+      height: 9,
+      damage,
+      isPlayer: true,
+      color,
+      weapon: 'homing',
       homingStrength: 0.14,
     });
   }

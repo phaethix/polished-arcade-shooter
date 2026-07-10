@@ -36,7 +36,7 @@ export function updateHomingBullets(g: GameData, dt: number) {
     const dx = target.x - b.x;
     const dy = target.y - b.y;
     const current = Math.atan2(b.vy, b.vx);
-    let desired = Math.atan2(dy, dx);
+    const desired = Math.atan2(dy, dx);
     let delta = desired - current;
     while (delta > Math.PI) delta -= Math.PI * 2;
     while (delta < -Math.PI) delta += Math.PI * 2;
@@ -77,7 +77,7 @@ function activateMissileSalvo(g: GameData): boolean {
 
 function activateDash(g: GameData, moveX: number, moveY: number): boolean {
   const p = g.player;
-  let dx = moveX;
+  const dx = moveX;
   let dy = moveY;
   if (!dx && !dy) dy = -1;
 
@@ -89,10 +89,15 @@ function activateDash(g: GameData, moveX: number, moveY: number): boolean {
   sfx.playMenuSelect();
 
   g.particles.push({
-    x: p.x, y: p.y,
-    vx: -p.dashVx * 0.15, vy: -p.dashVy * 0.15,
-    life: 0.25, maxLife: 0.25,
-    size: 4, color: '#c8f', type: 'trail',
+    x: p.x,
+    y: p.y,
+    vx: -p.dashVx * 0.15,
+    vy: -p.dashVy * 0.15,
+    life: 0.25,
+    maxLife: 0.25,
+    size: 4,
+    color: '#c8f',
+    type: 'trail',
   });
 
   return true;
@@ -163,12 +168,7 @@ export function getSkillCooldownRatio(p: Player): number {
   return 1 - p.skillCooldown / craft.skillCooldown;
 }
 
-export function drawSkillIndicator(
-  ctx: CanvasRenderingContext2D,
-  p: Player,
-  x: number,
-  y: number,
-) {
+export function drawSkillIndicator(ctx: CanvasRenderingContext2D, p: Player, x: number, y: number) {
   const craft = getAircraft(p.aircraftId);
   const ready = p.skillCooldown <= 0;
   const ratio = getSkillCooldownRatio(p);

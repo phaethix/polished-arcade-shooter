@@ -69,15 +69,15 @@ Future splits (only if `engine.ts` grows again): dedicated `collision-system.ts`
 
 ## Known tech debt
 
-| Item | Notes |
-|------|-------|
-| `engine.ts` size | Reduced from ~1350 lines; still the largest file because collisions and wave logic remain centralized. |
-| Enemy rendering in `enemies.ts` | Enemy sprites stay with spawn/AI; only player-side world drawing moved to `render/world.ts`. |
-| Test coverage | Vitest unit tests cover pure functions in `core/`, `modes`, `enemies`, `weapons`, `progress`, and `chapters`. Integration and rendering tests remain a future goal. |
+| Item                            | Notes                                                                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `engine.ts` size                | Reduced from ~1350 lines; still the largest file because collisions and wave logic remain centralized.                                                              |
+| Enemy rendering in `enemies.ts` | Enemy sprites stay with spawn/AI; only player-side world drawing moved to `render/world.ts`.                                                                        |
+| Test coverage                   | Vitest unit tests cover pure functions in `core/`, `modes`, `enemies`, `weapons`, `progress`, and `chapters`. Integration and rendering tests remain a future goal. |
 
 ## Related documents
 
-| Document | Role |
-|----------|------|
-| [WHITEPAPER.md](./WHITEPAPER.md) | Product and high-level technical overview |
-| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Commit and branch workflow |
+| Document                                   | Role                                      |
+| ------------------------------------------ | ----------------------------------------- |
+| [WHITEPAPER.md](./WHITEPAPER.md)           | Product and high-level technical overview |
+| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Commit and branch workflow                |

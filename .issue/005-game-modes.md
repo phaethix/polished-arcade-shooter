@@ -10,12 +10,12 @@ Four distinct ways to play, selectable from the main menu.
 
 ## Modes
 
-| ID | Name | Description |
-|----|------|-------------|
-| `story` | Story Mode | 4 chapters × 5 stages = 20 levels with brief story beats |
-| `endless` | Endless | Current wave-based mode (default) |
-| `boss_rush` | Boss Rush | Back-to-back boss fights, escalating patterns |
-| `daily` | Daily Challenge | Seeded run with modifier (e.g. double speed, no bombs) |
+| ID          | Name            | Description                                              |
+| ----------- | --------------- | -------------------------------------------------------- |
+| `story`     | Story Mode      | 4 chapters × 5 stages = 20 levels with brief story beats |
+| `endless`   | Endless         | Current wave-based mode (default)                        |
+| `boss_rush` | Boss Rush       | Back-to-back boss fights, escalating patterns            |
+| `daily`     | Daily Challenge | Seeded run with modifier (e.g. double speed, no bombs)   |
 
 ## Menu flow
 
@@ -29,12 +29,12 @@ Main Menu
 
 ## Story structure
 
-| Stages | Chapter | Boss |
-|--------|---------|------|
-| 1–5 | Deep Space | Space Commander |
-| 6–10 | Asteroid Belt | Mining Rig |
-| 11–15 | Enemy Carrier | Carrier Core |
-| 16–20 | Wormhole | Void Entity |
+| Stages | Chapter       | Boss            |
+| ------ | ------------- | --------------- |
+| 1–5    | Deep Space    | Space Commander |
+| 6–10   | Asteroid Belt | Mining Rig      |
+| 11–15  | Enemy Carrier | Carrier Core    |
+| 16–20  | Wormhole      | Void Entity     |
 
 ## Daily challenge modifiers
 

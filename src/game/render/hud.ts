@@ -9,12 +9,14 @@ export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
   const p = g.player;
 
   // Score
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText(g.score.toLocaleString(), 10, 30);
 
   // Wave & chapter
-  ctx.font = '14px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#aac';
+  ctx.font = '14px "Segoe UI",Arial,sans-serif';
+  ctx.fillStyle = '#aac';
   ctx.fillText(getWaveLabel(g), 10, 50);
   const chapter = getChapter(g.chapterId);
   ctx.font = '11px "Segoe UI",Arial,sans-serif';
@@ -80,18 +82,26 @@ export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
   const statusY = barY + segH + 10;
   ctx.textAlign = 'right';
   if (p.powerLevel > 0) {
-    ctx.font = '11px "Segoe UI",Arial,sans-serif'; ctx.fillStyle = '#4df';
-    ctx.fillText('PWR ' + '▮'.repeat(p.powerLevel) + '▯'.repeat(3 - p.powerLevel), CANVAS_W - 10, statusY);
+    ctx.font = '11px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#4df';
+    ctx.fillText(
+      'PWR ' + '▮'.repeat(p.powerLevel) + '▯'.repeat(3 - p.powerLevel),
+      CANVAS_W - 10,
+      statusY,
+    );
   }
   if (p.shieldActive) {
-    ctx.fillStyle = '#48f'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#48f';
+    ctx.font = '11px "Segoe UI",Arial,sans-serif';
     ctx.fillText('SHIELD', CANVAS_W - 10, statusY + (p.powerLevel > 0 ? 14 : 0));
   }
 
   // Graze counter (bottom left, subtle)
   if (p.grazeCount > 0) {
-    ctx.textAlign = 'left'; ctx.font = '11px "Segoe UI",Arial,sans-serif';
-    ctx.fillStyle = '#8ac'; ctx.globalAlpha = 0.6;
+    ctx.textAlign = 'left';
+    ctx.font = '11px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#8ac';
+    ctx.globalAlpha = 0.6;
     ctx.fillText(`GRAZE ×${p.grazeCount}`, 10, CANVAS_H - 12);
     ctx.globalAlpha = 1;
   }

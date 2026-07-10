@@ -27,9 +27,17 @@ export const ACHIEVEMENTS: Record<AchievementId, AchievementDefinition> = {
   first_blood: { id: 'first_blood', name: 'First Blood', description: 'Destroy your first enemy' },
   combo_master: { id: 'combo_master', name: 'Combo Master', description: 'Reach a 20× combo' },
   graze_king: { id: 'graze_king', name: 'Graze King', description: 'Graze 50 bullets in one run' },
-  boss_slayer: { id: 'boss_slayer', name: 'Boss Slayer', description: 'Defeat 10 bosses (lifetime)' },
+  boss_slayer: {
+    id: 'boss_slayer',
+    name: 'Boss Slayer',
+    description: 'Defeat 10 bosses (lifetime)',
+  },
   survivor: { id: 'survivor', name: 'Survivor', description: 'Reach wave 10' },
-  untouchable: { id: 'untouchable', name: 'Untouchable', description: 'Clear a stage without taking damage' },
+  untouchable: {
+    id: 'untouchable',
+    name: 'Untouchable',
+    description: 'Clear a stage without taking damage',
+  },
 };
 
 const DEFAULT_UNLOCKS: UnlockState = {
@@ -41,12 +49,18 @@ function readJson<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
     if (raw) return JSON.parse(raw) as T;
-  } catch {/* */}
+  } catch {
+    /* */
+  }
   return fallback;
 }
 
 function writeJson(key: string, value: unknown): void {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {/* */}
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* */
+  }
 }
 
 // ─── In-memory cache (avoids repeated JSON.parse on every read) ───
@@ -182,16 +196,26 @@ export function tryUnlockWeapon(id: WeaponId): boolean {
 
 export function coinRewardForEnemy(type: EnemyType): number {
   switch (type) {
-    case 'boss': return 50;
-    case 'tank': return 10;
-    case 'splitter': return 8;
-    case 'sniper': return 9;
-    case 'shielded': return 9;
-    case 'healer': return 10;
-    case 'kamikaze': return 7;
-    case 'fast': return 4;
-    case 'mini': return 2;
-    default: return 3;
+    case 'boss':
+      return 50;
+    case 'tank':
+      return 10;
+    case 'splitter':
+      return 8;
+    case 'sniper':
+      return 9;
+    case 'shielded':
+      return 9;
+    case 'healer':
+      return 10;
+    case 'kamikaze':
+      return 7;
+    case 'fast':
+      return 4;
+    case 'mini':
+      return 2;
+    default:
+      return 3;
   }
 }
 

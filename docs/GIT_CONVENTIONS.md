@@ -41,16 +41,16 @@ Use this format:
 
 ### Allowed types
 
-| Type | Use for |
-|------|---------|
-| `feature` | New gameplay, UI, or product behavior |
-| `fix` | Bug fixes |
-| `docs` | Documentation-only changes |
-| `chore` | Tooling, housekeeping, non-product code |
+| Type       | Use for                                         |
+| ---------- | ----------------------------------------------- |
+| `feature`  | New gameplay, UI, or product behavior           |
+| `fix`      | Bug fixes                                       |
+| `docs`     | Documentation-only changes                      |
+| `chore`    | Tooling, housekeeping, non-product code         |
 | `refactor` | Code structure changes without behavior changes |
-| `ci` | CI/CD workflow changes |
-| `test` | Test additions or updates |
-| `hotfix` | Urgent fixes targeting `main` |
+| `ci`       | CI/CD workflow changes                          |
+| `test`     | Test additions or updates                       |
+| `hotfix`   | Urgent fixes targeting `main`                   |
 
 ### Rules
 
@@ -94,19 +94,19 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ### Allowed commit types
 
-| Type | Use for |
-|------|---------|
-| `feat` | A new feature |
-| `fix` | A bug fix |
-| `docs` | Documentation only |
-| `style` | Formatting, whitespace, no logic change |
+| Type       | Use for                                    |
+| ---------- | ------------------------------------------ |
+| `feat`     | A new feature                              |
+| `fix`      | A bug fix                                  |
+| `docs`     | Documentation only                         |
+| `style`    | Formatting, whitespace, no logic change    |
 | `refactor` | Refactoring without feature or bug changes |
-| `perf` | Performance improvements |
-| `test` | Adding or updating tests |
-| `build` | Build system or dependency changes |
-| `ci` | CI configuration changes |
-| `chore` | Other maintenance tasks |
-| `revert` | Reverting a previous commit |
+| `perf`     | Performance improvements                   |
+| `test`     | Adding or updating tests                   |
+| `build`    | Build system or dependency changes         |
+| `ci`       | CI configuration changes                   |
+| `chore`    | Other maintenance tasks                    |
+| `revert`   | Reverting a previous commit                |
 
 ### Scope (optional)
 

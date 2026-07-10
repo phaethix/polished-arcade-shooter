@@ -5,8 +5,9 @@ let warmupDone = false;
 
 function getCtx(): AudioContext {
   if (!audioCtx) {
-    const AC = window.AudioContext
-      ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AC =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AC) throw new Error('Web Audio API unavailable');
     audioCtx = new AC();
   }
@@ -33,7 +34,9 @@ export function resumeAudio() {
     const ctx = getCtx();
     warmupContext(ctx);
     if (ctx.state === 'suspended') void ctx.resume();
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 }
 
 /** Attach capture-phase listeners so the first screen tap unlocks audio on iOS. */
@@ -54,8 +57,12 @@ async function ensureRunning(ctx: AudioContext) {
 
 function scheduleTone(
   c: AudioContext,
-  freq: number, dur: number, type: OscillatorType,
-  vol: number, freqEnd?: number, delay = 0,
+  freq: number,
+  dur: number,
+  type: OscillatorType,
+  vol: number,
+  freqEnd?: number,
+  delay = 0,
 ) {
   const t0 = c.currentTime + delay;
   const o = c.createOscillator();
@@ -74,8 +81,12 @@ function scheduleTone(
 }
 
 function tone(
-  freq: number, dur: number, type: OscillatorType = 'square',
-  vol = 0.1, freqEnd?: number, delay = 0,
+  freq: number,
+  dur: number,
+  type: OscillatorType = 'square',
+  vol = 0.1,
+  freqEnd?: number,
+  delay = 0,
 ) {
   try {
     const c = getCtx();
@@ -87,14 +98,19 @@ function tone(
       await ensureRunning(c);
       if (c.state === 'running') scheduleTone(c, freq, dur, type, vol, freqEnd, delay);
     })();
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 }
 
-export const playShoot      = () => tone(880, 0.08, 'square', 0.08, 440);
+export const playShoot = () => tone(880, 0.08, 'square', 0.08, 440);
 export const playEnemyShoot = () => tone(330, 0.1, 'sawtooth', 0.04, 220);
-export const playHit        = () => tone(300, 0.1, 'square', 0.08, 150);
-export const playCombo      = () => tone(1047, 0.08, 'sine', 0.07);
-export const playMenuSelect = () => { tone(660, 0.1, 'sine', 0.1); tone(880, 0.15, 'sine', 0.1, undefined, 0.08); };
+export const playHit = () => tone(300, 0.1, 'square', 0.08, 150);
+export const playCombo = () => tone(1047, 0.08, 'sine', 0.07);
+export const playMenuSelect = () => {
+  tone(660, 0.1, 'sine', 0.1);
+  tone(880, 0.15, 'sine', 0.1, undefined, 0.08);
+};
 
 export function playExplosion() {
   tone(200, 0.3, 'sawtooth', 0.12, 30);

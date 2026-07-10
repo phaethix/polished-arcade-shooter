@@ -10,13 +10,13 @@ Switchable weapons that change bullet behavior. Standard blaster remains the def
 
 ## Weapons
 
-| ID | Name | Behavior |
-|----|------|----------|
-| `standard` | Standard | Current spread-power behavior |
+| ID               | Name           | Behavior                                                    |
+| ---------------- | -------------- | ----------------------------------------------------------- |
+| `standard`       | Standard       | Current spread-power behavior                               |
 | `armor_piercing` | Armor Piercing | Bullets pass through enemies (diminished damage per pierce) |
-| `shotgun` | Shotgun | Wide fan, short range, high burst damage |
-| `laser` | Laser | Continuous beam while firing, ramps DPS |
-| `homing` | Homing | Slow missiles track nearest enemy |
+| `shotgun`        | Shotgun        | Wide fan, short range, high burst damage                    |
+| `laser`          | Laser          | Continuous beam while firing, ramps DPS                     |
+| `homing`         | Homing         | Slow missiles track nearest enemy                           |
 
 ## Bullet extensions (planned)
 
