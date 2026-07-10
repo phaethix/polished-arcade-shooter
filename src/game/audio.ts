@@ -1,4 +1,4 @@
-// Tiny sound synthesizer — Web Audio API, zero external files
+/** Procedural sound effects synthesized with the Web Audio API (no asset files). */
 let audioCtx: AudioContext | null = null;
 let unlockBound = false;
 let warmupDone = false;
