@@ -10,11 +10,11 @@ Three playable ships with distinct stats and active skills. Falcon is unlocked b
 
 ## Aircraft
 
-| ID | Name | Role | Speed | HP | Skill |
-|----|------|------|-------|-----|-------|
-| `falcon` | Falcon | Balanced | 6 | 3/5 | Missile Salvo |
-| `phantom` | Phantom | Agile | 8 | 2/4 | Dash (brief invincibility) |
-| `fortress` | Fortress | Tank | 4 | 5/6 | Energy Shield (absorb → attack boost) |
+| ID         | Name     | Role     | Speed | HP  | Skill                                 |
+| ---------- | -------- | -------- | ----- | --- | ------------------------------------- |
+| `falcon`   | Falcon   | Balanced | 6     | 3/5 | Missile Salvo                         |
+| `phantom`  | Phantom  | Agile    | 8     | 2/4 | Dash (brief invincibility)            |
+| `fortress` | Fortress | Tank     | 4     | 5/6 | Energy Shield (absorb → attack boost) |
 
 ## Skill details
 

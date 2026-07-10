@@ -10,12 +10,12 @@ Four visual environments with unique hazards layered on top of the core shooter 
 
 ## Chapters
 
-| ID | Name | Background | Special mechanic |
-|----|------|------------|------------------|
-| `space` | Deep Space | Stars + nebula | Standard (current) |
-| `asteroid` | Asteroid Belt | Rocky debris field | Dodge falling asteroids |
-| `carrier` | Enemy Carrier | Mechanical interior | Fixed laser turrets |
-| `wormhole` | Wormhole | Distorted space | Random teleport pads |
+| ID         | Name          | Background          | Special mechanic        |
+| ---------- | ------------- | ------------------- | ----------------------- |
+| `space`    | Deep Space    | Stars + nebula      | Standard (current)      |
+| `asteroid` | Asteroid Belt | Rocky debris field  | Dodge falling asteroids |
+| `carrier`  | Enemy Carrier | Mechanical interior | Fixed laser turrets     |
+| `wormhole` | Wormhole      | Distorted space     | Random teleport pads    |
 
 ## Data model (planned)
 

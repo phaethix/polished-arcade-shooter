@@ -4,10 +4,10 @@
 
 Security fixes are applied to the latest code on the `main` branch.
 
-| Version | Supported |
-| ------- | --------- |
-| latest `main` | yes |
-| older commits | no |
+| Version       | Supported |
+| ------------- | --------- |
+| latest `main` | yes       |
+| older commits | no        |
 
 ## Reporting a vulnerability
 

@@ -1,15 +1,15 @@
 # Sky Blaster — Project Whitepaper
 
-| | |
-|---|---|
-| **Project** | Sky Blaster (polished-arcade-shooter) |
-| **Game version** | v0.7.0 |
-| **Document version** | 1.2.2 |
-| **Last updated** | 2026-07-07 22:10 (UTC+8) |
-| **Status** | Expansion complete (Phases 1–6) |
-| **License** | MIT |
-| **Live demo** | https://phaethix.github.io/polished-arcade-shooter/ |
-| **Repository** | https://github.com/phaethix/polished-arcade-shooter |
+|                      |                                                     |
+| -------------------- | --------------------------------------------------- |
+| **Project**          | Sky Blaster (polished-arcade-shooter)               |
+| **Game version**     | v0.7.0                                              |
+| **Document version** | 1.2.2                                               |
+| **Last updated**     | 2026-07-07 22:10 (UTC+8)                            |
+| **Status**           | Expansion complete (Phases 1–6)                     |
+| **License**          | MIT                                                 |
+| **Live demo**        | https://phaethix.github.io/polished-arcade-shooter/ |
+| **Repository**       | https://github.com/phaethix/polished-arcade-shooter |
 
 > **Living document.** This whitepaper is updated alongside major product or architecture changes. See [Appendix D — Document revision history](#appendix-d--document-revision-history) for the full changelog.
 
@@ -27,7 +27,7 @@ The result is a self-contained, zero-install game that runs at 60 fps on desktop
 
 ### 1.1 Background
 
-Classic vertical shooters — *Raiden*, *1942*, *Touhou* — share a deceptively simple formula: move, shoot, dodge, survive. Modern web platforms make it possible to deliver that experience instantly, but many browser games stop at a proof-of-concept: one ship, one enemy type, no persistence, no reason to return.
+Classic vertical shooters — _Raiden_, _1942_, _Touhou_ — share a deceptively simple formula: move, shoot, dodge, survive. Modern web platforms make it possible to deliver that experience instantly, but many browser games stop at a proof-of-concept: one ship, one enemy type, no persistence, no reason to return.
 
 Sky Blaster was conceived as an exercise in **polish and incremental depth**: prove that a small TypeScript codebase can absorb substantial feature growth while remaining maintainable, testable, and fun at every intermediate release.
 
@@ -73,20 +73,20 @@ All sound is **procedurally synthesized** via the Web Audio API; no external aud
 
 Four modes share the same combat engine but differ in structure and goals:
 
-| Mode | Purpose |
-|------|---------|
-| **Story** | A 20-stage campaign (4 chapters × 5 stages) with narrative boss encounters and a mission-complete ending. |
-| **Endless** | The original survival loop — infinite waves, escalating difficulty, chapter rotation every 5 waves. |
-| **Boss Rush** | Skill check — consecutive boss fights with scaling HP and no filler waves. |
+| Mode                | Purpose                                                                                                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Story**           | A 20-stage campaign (4 chapters × 5 stages) with narrative boss encounters and a mission-complete ending.                                |
+| **Endless**         | The original survival loop — infinite waves, escalating difficulty, chapter rotation every 5 waves.                                      |
+| **Boss Rush**       | Skill check — consecutive boss fights with scaling HP and no filler waves.                                                               |
 | **Daily Challenge** | Retention hook — a date-seeded modifier (double speed, no power-ups, single HP, or kamikaze swarm) shared by all players on a given day. |
 
 ### 3.3 Loadout depth
 
 **Three aircraft** trade speed, durability, and active skills:
 
-- *Falcon* — balanced; missile salvo.
-- *Phantom* — fast and fragile; dash with invincibility frames.
-- *Fortress* — slow and tanky; energy shield that absorbs hits and empowers attacks.
+- _Falcon_ — balanced; missile salvo.
+- _Phantom_ — fast and fragile; dash with invincibility frames.
+- _Fortress_ — slow and tanky; energy shield that absorbs hits and empowers attacks.
 
 **Five weapons** alter the firing model: standard spread, armor-piercing pierce, shotgun burst, sustained laser ramp, and homing missiles. Weapons are selectable on the menu and discoverable as in-run drops.
 
@@ -147,15 +147,15 @@ New players start with the Falcon and Standard Blaster, learn endless mode, and 
 
 ### 5.1 Stack
 
-| Layer | Choice | Rationale |
-|-------|--------|-----------|
-| UI shell | React 19 | Minimal wrapper; game state lives outside the React tree in refs |
-| Language | TypeScript 5.9 | Shared types across all game modules |
-| Build | Vite 7 + single-file plugin | One HTML artifact for GitHub Pages |
-| Rendering | Canvas 2D API | Full control over draw order, particles, and blend modes |
-| Audio | Web Audio API | Zero asset weight; instant load |
-| Styling | Tailwind CSS 4 | Full-screen layout only; gameplay is canvas-drawn |
-| Persistence | `localStorage` | No backend; offline-capable progression |
+| Layer       | Choice                      | Rationale                                                        |
+| ----------- | --------------------------- | ---------------------------------------------------------------- |
+| UI shell    | React 19                    | Minimal wrapper; game state lives outside the React tree in refs |
+| Language    | TypeScript 5.9              | Shared types across all game modules                             |
+| Build       | Vite 7 + single-file plugin | One HTML artifact for GitHub Pages                               |
+| Rendering   | Canvas 2D API               | Full control over draw order, particles, and blend modes         |
+| Audio       | Web Audio API               | Zero asset weight; instant load                                  |
+| Styling     | Tailwind CSS 4              | Full-screen layout only; gameplay is canvas-drawn                |
+| Persistence | `localStorage`              | No backend; offline-capable progression                          |
 
 ### 5.2 Runtime model
 
@@ -188,13 +188,13 @@ menu ──start──▶ playing ◀──resume── paused
 
 ### 5.5 Persistence schema
 
-| Storage key | Data |
-|-------------|------|
-| `sky_blaster_hs_v2` | High scores (top 10) |
-| `sky_blaster_coins_v1` | Coin balance |
-| `sky_blaster_unlocks_v1` | Unlocked aircraft and weapon IDs |
-| `sky_blaster_achievements_v1` | Unlocked achievement IDs |
-| `sky_blaster_stats_v1` | Lifetime kill counters |
+| Storage key                   | Data                             |
+| ----------------------------- | -------------------------------- |
+| `sky_blaster_hs_v2`           | High scores (top 10)             |
+| `sky_blaster_coins_v1`        | Coin balance                     |
+| `sky_blaster_unlocks_v1`      | Unlocked aircraft and weapon IDs |
+| `sky_blaster_achievements_v1` | Unlocked achievement IDs         |
+| `sky_blaster_stats_v1`        | Lifetime kill counters           |
 
 Version suffixes in keys allow future migrations without corrupting existing saves.
 
@@ -206,27 +206,27 @@ Version suffixes in keys allow future migrations without corrupting existing sav
 
 The project followed a published roadmap (`.issue/roadmap.md`) of six phases:
 
-| Phase | Theme | Outcome |
-|-------|-------|---------|
-| 1 | Aircraft foundation | Three playable ships with unique skills |
-| 2 | Weapons | Five weapons, menu + in-run switching |
-| 3 | New enemies | Five advanced enemy behaviors |
-| 4 | Chapters & environments | Four visual chapters with hazards |
-| 5 | Game modes | Story, endless, boss rush, daily |
-| 6 | Meta progression | Coins, unlocks, achievements |
+| Phase | Theme                   | Outcome                                 |
+| ----- | ----------------------- | --------------------------------------- |
+| 1     | Aircraft foundation     | Three playable ships with unique skills |
+| 2     | Weapons                 | Five weapons, menu + in-run switching   |
+| 3     | New enemies             | Five advanced enemy behaviors           |
+| 4     | Chapters & environments | Four visual chapters with hazards       |
+| 5     | Game modes              | Story, endless, boss rush, daily        |
+| 6     | Meta progression        | Coins, unlocks, achievements            |
 
 Each phase was specified in `.issue/00x-*.md`, implemented across multiple small commits, reviewed via pull request, tagged on merge, and deployed automatically.
 
 ### 6.2 Release cadence
 
-| Tag | Milestone |
-|-----|-----------|
-| v0.2.0 | Aircraft + skills |
+| Tag    | Milestone                           |
+| ------ | ----------------------------------- |
+| v0.2.0 | Aircraft + skills                   |
 | v0.3.0 | Weapons + enemy expansion (partial) |
-| v0.4.0 | Advanced enemy types |
-| v0.5.0 | Chapter environments |
-| v0.6.0 | Game modes |
-| v0.7.0 | Meta progression |
+| v0.4.0 | Advanced enemy types                |
+| v0.5.0 | Chapter environments                |
+| v0.6.0 | Game modes                          |
+| v0.7.0 | Meta progression                    |
 
 Tags trigger the `release.yml` workflow, which builds the production bundle and publishes a GitHub Release. Pushes to `main` trigger CI (typecheck + build) and GitHub Pages deployment.
 
@@ -268,7 +268,7 @@ Phases 1–6 are complete. The following items remain in the backlog as optional
 - **Accessibility** — colorblind-friendly palettes for enemies and pickups.
 - **Controller support** — gamepad mapping alongside keyboard and touch.
 
-These are documented in `.issue/roadmap.md` under *Supplementary ideas* and can be prioritized based on player feedback.
+These are documented in `.issue/roadmap.md` under _Supplementary ideas_ and can be prioritized based on player feedback.
 
 ---
 
@@ -282,33 +282,33 @@ The project is **feature-complete** against its original expansion plan. It is p
 
 ## Appendix A — Story campaign structure
 
-| Stages | Chapter | Boss |
-|--------|---------|------|
-| 1–5 | Deep Space | Space Commander |
-| 6–10 | Asteroid Belt | Mining Rig |
-| 11–15 | Enemy Carrier | Carrier Core |
-| 16–20 | Wormhole | Void Entity |
+| Stages | Chapter       | Boss            |
+| ------ | ------------- | --------------- |
+| 1–5    | Deep Space    | Space Commander |
+| 6–10   | Asteroid Belt | Mining Rig      |
+| 11–15  | Enemy Carrier | Carrier Core    |
+| 16–20  | Wormhole      | Void Entity     |
 
 ## Appendix B — Unlock costs
 
-| Item | Cost (coins) |
-|------|----------------|
-| Phantom | 500 |
-| Fortress | 800 |
-| Armor Piercing | 300 |
-| Shotgun | 400 |
-| Laser | 600 |
-| Homing | 600 |
+| Item           | Cost (coins) |
+| -------------- | ------------ |
+| Phantom        | 500          |
+| Fortress       | 800          |
+| Armor Piercing | 300          |
+| Shotgun        | 400          |
+| Laser          | 600          |
+| Homing         | 600          |
 
 ## Appendix C — Related documents
 
-| Document | Role |
-|----------|------|
-| [README.md](../README.md) | Quick start and player-facing summary |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Source layout and dependency rules |
-| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Contributor git workflow |
-| [.issue/roadmap.md](../.issue/roadmap.md) | Phase checklist and backlog |
-| [.issue/001–006](../.issue/) | Per-feature specification notes |
+| Document                                   | Role                                  |
+| ------------------------------------------ | ------------------------------------- |
+| [README.md](../README.md)                  | Quick start and player-facing summary |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)       | Source layout and dependency rules    |
+| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Contributor git workflow              |
+| [.issue/roadmap.md](../.issue/roadmap.md)  | Phase checklist and backlog           |
+| [.issue/001–006](../.issue/)               | Per-feature specification notes       |
 
 ## Appendix D — Document revision history
 
@@ -327,13 +327,12 @@ When you change product scope, architecture, or methodology described here:
 
 ### Changelog
 
-| Doc version | Updated at (UTC+8) | Game version | Changes |
-|-------------|-------------------|--------------|---------|
-| **1.2.2** | 2026-07-07 22:10 | v0.7.0 | §5.3 condensed to a layer summary; full module tree deferred to [ARCHITECTURE.md](./ARCHITECTURE.md). |
-| **1.2.1** | 2026-07-07 22:09 | v0.7.0 | §5.3 module tree expanded to list all `render/` files; aligned with [ARCHITECTURE.md](./ARCHITECTURE.md) and current `src/` layout. |
-| **1.2.0** | 2026-07-07 22:05 | v0.7.0 | §5.3 updated for `core/`, `render/`, `app/`, and `storage/` split; added [ARCHITECTURE.md](./ARCHITECTURE.md) to Appendix C. |
-| **1.1.1** | 2026-07-07 21:57 | v0.7.0 | **Last updated** now records time to the minute; changelog **Updated at** column uses the same format. |
-| **1.1.0** | 2026-07-07 21:56 | v0.7.0 | Added living-document notice, header metadata (`Document version`, `Last updated`), and this revision history appendix with maintainer guidelines. |
-| **1.0.0** | 2026-07-07 21:54 | v0.7.0 | Initial project whitepaper: abstract, design philosophy, product overview, player journey, technical architecture, development methodology, content economy, future direction, and appendices. Replaced the earlier `GAME_OVERVIEW.md` reference draft. |
-| **0.1.0** | 2026-07-07 21:50 | v0.7.0 | Draft `docs/GAME_OVERVIEW.md` — v0.7.0 feature reference (tables for modes, controls, enemies, persistence). Superseded by v1.0.0 whitepaper. |
-
+| Doc version | Updated at (UTC+8) | Game version | Changes                                                                                                                                                                                                                                                 |
+| ----------- | ------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1.2.2**   | 2026-07-07 22:10   | v0.7.0       | §5.3 condensed to a layer summary; full module tree deferred to [ARCHITECTURE.md](./ARCHITECTURE.md).                                                                                                                                                   |
+| **1.2.1**   | 2026-07-07 22:09   | v0.7.0       | §5.3 module tree expanded to list all `render/` files; aligned with [ARCHITECTURE.md](./ARCHITECTURE.md) and current `src/` layout.                                                                                                                     |
+| **1.2.0**   | 2026-07-07 22:05   | v0.7.0       | §5.3 updated for `core/`, `render/`, `app/`, and `storage/` split; added [ARCHITECTURE.md](./ARCHITECTURE.md) to Appendix C.                                                                                                                            |
+| **1.1.1**   | 2026-07-07 21:57   | v0.7.0       | **Last updated** now records time to the minute; changelog **Updated at** column uses the same format.                                                                                                                                                  |
+| **1.1.0**   | 2026-07-07 21:56   | v0.7.0       | Added living-document notice, header metadata (`Document version`, `Last updated`), and this revision history appendix with maintainer guidelines.                                                                                                      |
+| **1.0.0**   | 2026-07-07 21:54   | v0.7.0       | Initial project whitepaper: abstract, design philosophy, product overview, player journey, technical architecture, development methodology, content economy, future direction, and appendices. Replaced the earlier `GAME_OVERVIEW.md` reference draft. |
+| **0.1.0**   | 2026-07-07 21:50   | v0.7.0       | Draft `docs/GAME_OVERVIEW.md` — v0.7.0 feature reference (tables for modes, controls, enemies, persistence). Superseded by v1.0.0 whitepaper.                                                                                                           |

@@ -10,13 +10,13 @@ Five advanced enemies that add tactical variety beyond basic/fast/tank/boss.
 
 ## Enemies
 
-| ID | Name | Behavior | Priority |
-|----|------|----------|----------|
-| `splitter` | Splitter | Splits into 2 mini enemies on death | Medium |
-| `sniper` | Sniper | Long-range aimed shot, stays at top | High (kill first) |
-| `shielded` | Shield Bearer | Frontal shield blocks bullets | Medium |
-| `kamikaze` | Kamikaze | Rushes player, explodes on contact | High |
-| `healer` | Healer | Heals nearby enemies in aura | Critical |
+| ID         | Name          | Behavior                            | Priority          |
+| ---------- | ------------- | ----------------------------------- | ----------------- |
+| `splitter` | Splitter      | Splits into 2 mini enemies on death | Medium            |
+| `sniper`   | Sniper        | Long-range aimed shot, stays at top | High (kill first) |
+| `shielded` | Shield Bearer | Frontal shield blocks bullets       | Medium            |
+| `kamikaze` | Kamikaze      | Rushes player, explodes on contact  | High              |
+| `healer`   | Healer        | Heals nearby enemies in aura        | Critical          |
 
 ## Spawn rules (draft)
 

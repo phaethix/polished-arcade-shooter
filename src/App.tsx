@@ -42,7 +42,7 @@ export default function App() {
     if (!cvs) return;
     const ctx = cvs.getContext('2d')!;
     const DT = 1 / 60;
-    const MAX_FRAME_DELTA = 0.1;   // clamp to prevent spiral after tab switch
+    const MAX_FRAME_DELTA = 0.1; // clamp to prevent spiral after tab switch
     let last = performance.now();
     let accumulator = 0;
 
@@ -60,7 +60,7 @@ export default function App() {
         if (game.state === 'playing') {
           update(game, input, DT);
         } else {
-          updateBackground(game, DT);  // stars, particles, shake/flash decay
+          updateBackground(game, DT); // stars, particles, shake/flash decay
         }
         accumulator -= DT;
       }
@@ -90,7 +90,8 @@ export default function App() {
       const g = gameRef.current;
 
       switch (e.code) {
-        case 'ArrowUp': case 'KeyW':
+        case 'ArrowUp':
+        case 'KeyW':
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleGameModeSelection(g, -1);
@@ -98,8 +99,11 @@ export default function App() {
             e.preventDefault();
             break;
           }
-          inp.up = down; e.preventDefault(); break;
-        case 'ArrowDown': case 'KeyS':
+          inp.up = down;
+          e.preventDefault();
+          break;
+        case 'ArrowDown':
+        case 'KeyS':
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleGameModeSelection(g, 1);
@@ -107,8 +111,11 @@ export default function App() {
             e.preventDefault();
             break;
           }
-          inp.down = down; e.preventDefault(); break;
-        case 'ArrowLeft': case 'KeyA':
+          inp.down = down;
+          e.preventDefault();
+          break;
+        case 'ArrowLeft':
+        case 'KeyA':
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleAircraftSelection(g, -1);
@@ -116,8 +123,11 @@ export default function App() {
             e.preventDefault();
             break;
           }
-          inp.left = down; e.preventDefault(); break;
-        case 'ArrowRight': case 'KeyD':
+          inp.left = down;
+          e.preventDefault();
+          break;
+        case 'ArrowRight':
+        case 'KeyD':
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleAircraftSelection(g, 1);
@@ -125,7 +135,9 @@ export default function App() {
             e.preventDefault();
             break;
           }
-          inp.right = down; e.preventDefault(); break;
+          inp.right = down;
+          e.preventDefault();
+          break;
 
         case 'KeyU':
           if (g.state === 'menu' && down) {
@@ -137,26 +149,35 @@ export default function App() {
           }
           break;
 
-        case 'Space': case 'KeyZ':
+        case 'Space':
+        case 'KeyZ':
           e.preventDefault();
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
               if (g.state === 'menu' && !canStartGame(g)) break;
-              playMenuSelect(); resetGame(g);
+              playMenuSelect();
+              resetGame(g);
             } else {
               inp.shoot = true;
             }
-          } else { inp.shoot = false; }
+          } else {
+            inp.shoot = false;
+          }
           break;
 
-        case 'KeyX': case 'KeyB':
+        case 'KeyX':
+        case 'KeyB':
           if (down && g.state === 'playing') inp.bomb = true;
-          e.preventDefault(); break;
+          e.preventDefault();
+          break;
 
-        case 'KeyC': case 'ShiftLeft': case 'ShiftRight':
+        case 'KeyC':
+        case 'ShiftLeft':
+        case 'ShiftRight':
           if (down && g.state === 'playing') inp.skill = true;
-          e.preventDefault(); break;
+          e.preventDefault();
+          break;
 
         case 'BracketLeft':
           if (g.state === 'menu' && down) {
@@ -175,12 +196,14 @@ export default function App() {
           }
           break;
 
-        case 'Escape': case 'KeyP':
+        case 'Escape':
+        case 'KeyP':
           if (down) {
             if (g.state === 'playing') g.state = 'paused';
             else if (g.state === 'paused') g.state = 'playing';
           }
-          e.preventDefault(); break;
+          e.preventDefault();
+          break;
       }
     };
 
@@ -188,7 +211,10 @@ export default function App() {
     const ku = (e: KeyboardEvent) => handle(e, false);
     window.addEventListener('keydown', kd);
     window.addEventListener('keyup', ku);
-    return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); };
+    return () => {
+      window.removeEventListener('keydown', kd);
+      window.removeEventListener('keyup', ku);
+    };
   }, []);
 
   // ── Touch / Mouse ─────────────────────────────────────────
@@ -238,7 +264,12 @@ export default function App() {
               cycleWeaponSelection(g, 1);
               playMenuSelect();
             }
-          } else if (pt.y >= 388 && pt.y < 420 && pt.x > CANVAS_W / 3 && pt.x < (CANVAS_W * 2) / 3) {
+          } else if (
+            pt.y >= 388 &&
+            pt.y < 420 &&
+            pt.x > CANVAS_W / 3 &&
+            pt.x < (CANVAS_W * 2) / 3
+          ) {
             if (canStartGame(g)) {
               playMenuSelect();
               resetGame(g);
@@ -248,10 +279,16 @@ export default function App() {
         return;
       }
       if (g.state === 'gameover') {
-        if (canStartGame(g)) { playMenuSelect(); resetGame(g); }
+        if (canStartGame(g)) {
+          playMenuSelect();
+          resetGame(g);
+        }
         return;
       }
-      if (g.state === 'paused') { g.state = 'playing'; return; }
+      if (g.state === 'paused') {
+        g.state = 'playing';
+        return;
+      }
 
       const pt = toGame(cx, cy);
       if (g.state === 'playing' && pt) {
@@ -262,7 +299,12 @@ export default function App() {
         }
       }
 
-      if (pt) { inp.touchX = pt.x; inp.touchY = pt.y; inp.prevTouchX = pt.x; inp.prevTouchY = pt.y; }
+      if (pt) {
+        inp.touchX = pt.x;
+        inp.touchY = pt.y;
+        inp.prevTouchX = pt.x;
+        inp.prevTouchY = pt.y;
+      }
       inp.touchActive = true;
     };
 
@@ -270,7 +312,10 @@ export default function App() {
       const inp = inputRef.current;
       if (!inp.touchActive) return;
       const pt = toGame(cx, cy);
-      if (pt) { inp.touchX = pt.x; inp.touchY = pt.y; }
+      if (pt) {
+        inp.touchX = pt.x;
+        inp.touchY = pt.y;
+      }
     };
 
     const endInput = () => {
@@ -280,9 +325,18 @@ export default function App() {
     };
 
     // Touch events
-    const onTS = (e: TouchEvent) => { e.preventDefault(); startInput(e.touches[0].clientX, e.touches[0].clientY); };
-    const onTM = (e: TouchEvent) => { e.preventDefault(); moveInput(e.touches[0].clientX, e.touches[0].clientY); };
-    const onTE = (e: TouchEvent) => { e.preventDefault(); endInput(); };
+    const onTS = (e: TouchEvent) => {
+      e.preventDefault();
+      startInput(e.touches[0].clientX, e.touches[0].clientY);
+    };
+    const onTM = (e: TouchEvent) => {
+      e.preventDefault();
+      moveInput(e.touches[0].clientX, e.touches[0].clientY);
+    };
+    const onTE = (e: TouchEvent) => {
+      e.preventDefault();
+      endInput();
+    };
 
     cvs.addEventListener('touchstart', onTS, { passive: false });
     cvs.addEventListener('touchmove', onTM, { passive: false });

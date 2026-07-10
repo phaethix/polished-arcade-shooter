@@ -93,7 +93,7 @@ function fireTurret(g: GameData, h: Hazard): void {
 }
 
 function tryTeleport(g: GameData, pad: Hazard): void {
-  const other = g.hazards.find(h => h.type === 'teleporter' && h.padId !== pad.padId);
+  const other = g.hazards.find((h) => h.type === 'teleporter' && h.padId !== pad.padId);
   if (!other) return;
   const p = g.player;
   p.x = other.x;
@@ -123,7 +123,7 @@ export function updateHazards(g: GameData, dt: number, tm: number): void {
 
   if (chapter.hazardType === 'asteroid') {
     g.hazardSpawnTimer -= tm;
-    const count = g.hazards.filter(h => h.type === 'asteroid').length;
+    const count = g.hazards.filter((h) => h.type === 'asteroid').length;
     if (g.hazardSpawnTimer <= 0 && count < MAX_ASTEROIDS) {
       spawnAsteroid(g);
       g.hazardSpawnTimer = 50 + Math.random() * 40;
@@ -239,13 +239,15 @@ export function handleHazardCollisions(
   for (const h of g.hazards) {
     if (h.type === 'teleporter') {
       if ((h.cooldown ?? 0) > 0) continue;
-      if (!boxesOverlap(p.x, p.y, p.width * 0.5, p.height * 0.5, h.x, h.y, h.width, h.height)) continue;
+      if (!boxesOverlap(p.x, p.y, p.width * 0.5, p.height * 0.5, h.x, h.y, h.width, h.height))
+        continue;
       tryTeleport(g, h);
       return { playerDied: false };
     }
 
     if (h.type === 'asteroid') {
-      if (!boxesOverlap(p.x, p.y, p.width * 0.4, p.height * 0.4, h.x, h.y, h.width, h.height)) continue;
+      if (!boxesOverlap(p.x, p.y, p.width * 0.4, p.height * 0.4, h.x, h.y, h.width, h.height))
+        continue;
       hurtPlayer();
       return { playerDied: p.hp <= 0 };
     }

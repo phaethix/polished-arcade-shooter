@@ -10,77 +10,77 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 
 ## Phase 1 — Aircraft foundation
 
-| # | Item | Status |
-|---|------|--------|
-| 1.1 | Expansion type definitions | done |
-| 1.2 | Aircraft configuration data | done |
-| 1.3 | Aircraft stats on player spawn | done |
-| 1.4 | Menu aircraft picker | done |
-| 1.5 | Aircraft-specific visuals | done |
-| 1.6 | Falcon — missile salvo skill | done |
-| 1.7 | Phantom — dash skill | done |
-| 1.8 | Fortress — energy shield skill | done |
+| #   | Item                           | Status |
+| --- | ------------------------------ | ------ |
+| 1.1 | Expansion type definitions     | done   |
+| 1.2 | Aircraft configuration data    | done   |
+| 1.3 | Aircraft stats on player spawn | done   |
+| 1.4 | Menu aircraft picker           | done   |
+| 1.5 | Aircraft-specific visuals      | done   |
+| 1.6 | Falcon — missile salvo skill   | done   |
+| 1.7 | Phantom — dash skill           | done   |
+| 1.8 | Fortress — energy shield skill | done   |
 
 ## Phase 2 — Weapons
 
-| # | Item | Status |
-|---|------|--------|
-| 2.1 | Weapon type definitions + config | done |
-| 2.2 | Weapon switching (in-run pickup or menu) | done |
-| 2.3 | Armor-piercing bullets | done |
-| 2.4 | Shotgun spread pattern | done |
-| 2.5 | Laser beam (sustained DPS) | done |
-| 2.6 | Homing missiles | done |
+| #   | Item                                     | Status |
+| --- | ---------------------------------------- | ------ |
+| 2.1 | Weapon type definitions + config         | done   |
+| 2.2 | Weapon switching (in-run pickup or menu) | done   |
+| 2.3 | Armor-piercing bullets                   | done   |
+| 2.4 | Shotgun spread pattern                   | done   |
+| 2.5 | Laser beam (sustained DPS)               | done   |
+| 2.6 | Homing missiles                          | done   |
 
 ## Phase 3 — New enemies
 
-| # | Item | Status |
-|---|------|--------|
-| 3.1 | Splitter (spawns mini enemies on death) | done |
-| 3.2 | Sniper (long-range aimed shots) | done |
-| 3.3 | Shielded (frontal immunity) | done |
-| 3.4 | Kamikaze (rush + explode) | done |
-| 3.5 | Healer (aura heal nearby enemies) | done |
+| #   | Item                                    | Status |
+| --- | --------------------------------------- | ------ |
+| 3.1 | Splitter (spawns mini enemies on death) | done   |
+| 3.2 | Sniper (long-range aimed shots)         | done   |
+| 3.3 | Shielded (frontal immunity)             | done   |
+| 3.4 | Kamikaze (rush + explode)               | done   |
+| 3.5 | Healer (aura heal nearby enemies)       | done   |
 
 ## Phase 4 — Chapters & environments
 
-| # | Item | Status |
-|---|------|--------|
-| 4.1 | Chapter data model | done |
-| 4.2 | Deep space (current visuals, baseline) | done |
-| 4.3 | Asteroid belt (dodging hazards) | done |
-| 4.4 | Enemy carrier (turret obstacles) | done |
-| 4.5 | Wormhole (teleport pads) | done |
+| #   | Item                                   | Status |
+| --- | -------------------------------------- | ------ |
+| 4.1 | Chapter data model                     | done   |
+| 4.2 | Deep space (current visuals, baseline) | done   |
+| 4.3 | Asteroid belt (dodging hazards)        | done   |
+| 4.4 | Enemy carrier (turret obstacles)       | done   |
+| 4.5 | Wormhole (teleport pads)               | done   |
 
 ## Phase 5 — Game modes
 
-| # | Item | Status |
-|---|------|--------|
-| 5.1 | Mode selection on menu | done |
-| 5.2 | Story mode (4 chapters × 5 stages) | done |
-| 5.3 | Endless mode (existing, polished) | done |
-| 5.4 | Boss rush | done |
-| 5.5 | Daily challenge (seeded modifiers) | done |
+| #   | Item                               | Status |
+| --- | ---------------------------------- | ------ |
+| 5.1 | Mode selection on menu             | done   |
+| 5.2 | Story mode (4 chapters × 5 stages) | done   |
+| 5.3 | Endless mode (existing, polished)  | done   |
+| 5.4 | Boss rush                          | done   |
+| 5.5 | Daily challenge (seeded modifiers) | done   |
 
 ## Phase 6 — Meta progression
 
-| # | Item | Status |
-|---|------|--------|
-| 6.1 | Coin economy + persistence | done |
-| 6.2 | Unlock aircraft with coins | done |
-| 6.3 | Unlock weapons with coins | done |
-| 6.4 | Achievement tracking | done |
-| 6.5 | Achievement notifications | done |
+| #   | Item                       | Status |
+| --- | -------------------------- | ------ |
+| 6.1 | Coin economy + persistence | done   |
+| 6.2 | Unlock aircraft with coins | done   |
+| 6.3 | Unlock weapons with coins  | done   |
+| 6.4 | Achievement tracking       | done   |
+| 6.5 | Achievement notifications  | done   |
 
 ## Post-expansion — Architecture
 
-| # | Item | Status |
-|---|------|--------|
-| 7.1 | Split `engine.ts` into `core/`, `render/`, `storage/`, `effects` | done |
-| 7.2 | Move input to `app/` layer | done |
-| 7.3 | Architecture guide + whitepaper | done |
+| #   | Item                                                             | Status |
+| --- | ---------------------------------------------------------------- | ------ |
+| 7.1 | Split `engine.ts` into `core/`, `render/`, `storage/`, `effects` | done   |
+| 7.2 | Move input to `app/` layer                                       | done   |
+| 7.3 | Architecture guide + whitepaper                                  | done   |
 
-**Status:** Phases 1–6 and post-expansion architecture work are **complete**. The game is feature-complete against the original expansion plan. Further work is optional — see *Supplementary ideas* below.
+**Status:** Phases 1–6 and post-expansion architecture work are **complete**. The game is feature-complete against the original expansion plan. Further work is optional — see _Supplementary ideas_ below.
 
 ## Supplementary ideas (backlog)
 
@@ -92,12 +92,12 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 
 ## Version targets
 
-| Version | Scope |
-|---------|-------|
-| v0.2.0 | Aircraft selection + 3 skills |
-| v0.3.0 | Weapons + 2 new enemy types |
-| v0.4.0 | Chapters + story mode skeleton |
-| v0.5.0 | Chapters + environments |
-| v0.6.0 | Boss rush, daily challenge, game modes |
-| v0.7.0 | Coins, unlocks, achievements |
-| v0.7.1 | Architecture refactor (layered modules, docs) |
+| Version | Scope                                         |
+| ------- | --------------------------------------------- |
+| v0.2.0  | Aircraft selection + 3 skills                 |
+| v0.3.0  | Weapons + 2 new enemy types                   |
+| v0.4.0  | Chapters + story mode skeleton                |
+| v0.5.0  | Chapters + environments                       |
+| v0.6.0  | Boss rush, daily challenge, game modes        |
+| v0.7.0  | Coins, unlocks, achievements                  |
+| v0.7.1  | Architecture refactor (layered modules, docs) |

@@ -124,10 +124,7 @@ export function syncChapterForWave(g: GameData): void {
   applyChapterToGame(g, next);
 }
 
-export function drawChapterBackground(
-  ctx: CanvasRenderingContext2D,
-  g: GameData,
-): void {
+export function drawChapterBackground(ctx: CanvasRenderingContext2D, g: GameData): void {
   const chapter = getChapter(g.chapterId);
   const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
   bg.addColorStop(0, chapter.bgTop);

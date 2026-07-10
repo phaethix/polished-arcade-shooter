@@ -45,10 +45,14 @@ export function pickDailyModifier(seed: number): DailyModifier {
 
 export function getDailyModifierLabel(mod: DailyModifier): string {
   switch (mod) {
-    case 'double_speed': return '2× enemy speed';
-    case 'no_powerups': return 'No power-ups';
-    case 'single_hp': return 'Single HP';
-    case 'kamikaze_only': return 'Kamikaze swarm';
+    case 'double_speed':
+      return '2× enemy speed';
+    case 'no_powerups':
+      return 'No power-ups';
+    case 'single_hp':
+      return 'Single HP';
+    case 'kamikaze_only':
+      return 'Kamikaze swarm';
   }
 }
 

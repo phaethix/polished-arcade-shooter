@@ -17,7 +17,10 @@ function buildSpawnPool(g: GameData): EnemyType[] {
   const w = g.wave;
   const pool: EnemyType[] = ['basic', 'basic', 'basic'];
   if (w >= 2) pool.push('fast');
-  if (w >= 3) { pool.push('tank'); pool.push('kamikaze'); }
+  if (w >= 3) {
+    pool.push('tank');
+    pool.push('kamikaze');
+  }
   if (w >= 4) pool.push('splitter');
   if (w >= 5) pool.push('shielded');
   if (w >= 6 && !isBossWave(g) && !g.specialSpawns.sniper) pool.push('sniper');
@@ -25,7 +28,22 @@ function buildSpawnPool(g: GameData): EnemyType[] {
   return pool;
 }
 
-function baseEnemy(partial: Partial<Enemy> & Pick<Enemy, 'type' | 'x' | 'y' | 'width' | 'height' | 'hp' | 'maxHp' | 'speed' | 'shootInterval' | 'scoreValue'>): Enemy {
+function baseEnemy(
+  partial: Partial<Enemy> &
+    Pick<
+      Enemy,
+      | 'type'
+      | 'x'
+      | 'y'
+      | 'width'
+      | 'height'
+      | 'hp'
+      | 'maxHp'
+      | 'speed'
+      | 'shootInterval'
+      | 'scoreValue'
+    >,
+): Enemy {
   return {
     shootTimer: 60 + Math.random() * 60,
     movePattern: 'straight',
@@ -42,73 +60,138 @@ function createEnemy(type: EnemyType, wave: number): Enemy {
   switch (type) {
     case 'fast':
       return baseEnemy({
-        type, x: 30 + Math.random() * (CANVAS_W - 60), y: -30,
-        width: 24, height: 24, hp: 1, maxHp: 1,
-        speed: 3 + Math.random(), shootInterval: 80, scoreValue: 150,
+        type,
+        x: 30 + Math.random() * (CANVAS_W - 60),
+        y: -30,
+        width: 24,
+        height: 24,
+        hp: 1,
+        maxHp: 1,
+        speed: 3 + Math.random(),
+        shootInterval: 80,
+        scoreValue: 150,
         movePattern: pat,
       });
     case 'tank': {
       const hp = 5 + Math.floor(wave / 2);
       return baseEnemy({
-        type, x: 40 + Math.random() * (CANVAS_W - 80), y: -40,
-        width: 40, height: 40, hp, maxHp: hp,
-        speed: 0.8 + Math.random() * 0.5, shootInterval: 50, scoreValue: 300,
+        type,
+        x: 40 + Math.random() * (CANVAS_W - 80),
+        y: -40,
+        width: 40,
+        height: 40,
+        hp,
+        maxHp: hp,
+        speed: 0.8 + Math.random() * 0.5,
+        shootInterval: 50,
+        scoreValue: 300,
         movePattern: 'straight',
       });
     }
     case 'splitter': {
       const hp = 3 + Math.floor(wave / 4);
       return baseEnemy({
-        type, x: 30 + Math.random() * (CANVAS_W - 60), y: -36,
-        width: 34, height: 34, hp, maxHp: hp,
-        speed: 1 + Math.random() * 0.5, shootInterval: 70, scoreValue: 220,
+        type,
+        x: 30 + Math.random() * (CANVAS_W - 60),
+        y: -36,
+        width: 34,
+        height: 34,
+        hp,
+        maxHp: hp,
+        speed: 1 + Math.random() * 0.5,
+        shootInterval: 70,
+        scoreValue: 220,
         movePattern: 'sine',
       });
     }
     case 'sniper':
       return baseEnemy({
-        type, x: 50 + Math.random() * (CANVAS_W - 100), y: -40,
-        width: 30, height: 30, hp: 2, maxHp: 2,
-        speed: 0.6, shootInterval: 110, scoreValue: 350,
-        movePattern: 'straight', state: 'patrol',
+        type,
+        x: 50 + Math.random() * (CANVAS_W - 100),
+        y: -40,
+        width: 30,
+        height: 30,
+        hp: 2,
+        maxHp: 2,
+        speed: 0.6,
+        shootInterval: 110,
+        scoreValue: 350,
+        movePattern: 'straight',
+        state: 'patrol',
       });
     case 'shielded': {
       const hp = 8 + Math.floor(wave / 2);
       return baseEnemy({
-        type, x: 40 + Math.random() * (CANVAS_W - 80), y: -44,
-        width: 38, height: 38, hp, maxHp: hp,
-        speed: 0.7 + Math.random() * 0.3, shootInterval: 65, scoreValue: 280,
+        type,
+        x: 40 + Math.random() * (CANVAS_W - 80),
+        y: -44,
+        width: 38,
+        height: 38,
+        hp,
+        maxHp: hp,
+        speed: 0.7 + Math.random() * 0.3,
+        shootInterval: 65,
+        scoreValue: 280,
         movePattern: 'straight',
       });
     }
     case 'kamikaze':
       return baseEnemy({
-        type, x: 20 + Math.random() * (CANVAS_W - 40), y: -28,
-        width: 26, height: 26, hp: 2, maxHp: 2,
-        speed: 1.4 + Math.random() * 0.6, shootInterval: 9999, scoreValue: 180,
-        movePattern: 'straight', state: 'patrol',
+        type,
+        x: 20 + Math.random() * (CANVAS_W - 40),
+        y: -28,
+        width: 26,
+        height: 26,
+        hp: 2,
+        maxHp: 2,
+        speed: 1.4 + Math.random() * 0.6,
+        shootInterval: 9999,
+        scoreValue: 180,
+        movePattern: 'straight',
+        state: 'patrol',
       });
     case 'healer':
       return baseEnemy({
-        type, x: 60 + Math.random() * (CANVAS_W - 120), y: -36,
-        width: 32, height: 32, hp: 4, maxHp: 4,
-        speed: 0.5, shootInterval: 120, scoreValue: 400,
-        movePattern: 'sine', healPulse: 0,
+        type,
+        x: 60 + Math.random() * (CANVAS_W - 120),
+        y: -36,
+        width: 32,
+        height: 32,
+        hp: 4,
+        maxHp: 4,
+        speed: 0.5,
+        shootInterval: 120,
+        scoreValue: 400,
+        movePattern: 'sine',
+        healPulse: 0,
       });
     case 'mini':
       return baseEnemy({
-        type, x: 0, y: 0,
-        width: 16, height: 16, hp: 1, maxHp: 1,
-        speed: 2.5 + Math.random(), shootInterval: 100, scoreValue: 75,
+        type,
+        x: 0,
+        y: 0,
+        width: 16,
+        height: 16,
+        hp: 1,
+        maxHp: 1,
+        speed: 2.5 + Math.random(),
+        shootInterval: 100,
+        scoreValue: 75,
         movePattern: 'zigzag',
       });
     default: {
       const hp = 1 + Math.floor(wave / 3);
       return baseEnemy({
-        type: 'basic', x: 20 + Math.random() * (CANVAS_W - 40), y: -30,
-        width: 28, height: 28, hp, maxHp: hp,
+        type: 'basic',
+        x: 20 + Math.random() * (CANVAS_W - 40),
+        y: -30,
+        width: 28,
+        height: 28,
+        hp,
+        maxHp: hp,
         speed: 1.2 + Math.random() * 0.8 + wave * 0.05,
-        shootInterval: Math.max(50, 90 - wave * 3), scoreValue: 100,
+        shootInterval: Math.max(50, 90 - wave * 3),
+        scoreValue: 100,
         movePattern: pat,
       });
     }
@@ -119,12 +202,22 @@ export function spawnEnemy(g: GameData): void {
   const w = g.wave;
   if (isBossWave(g) && g.enemiesSpawned === 0) {
     const hp = getBossHp(g);
-    g.enemies.push(baseEnemy({
-      type: 'boss', x: CANVAS_W / 2, y: -60,
-      width: 64, height: 56, hp, maxHp: hp,
-      speed: 0.5, shootTimer: 40, shootInterval: 25,
-      movePattern: 'sine', scoreValue: 2000,
-    }));
+    g.enemies.push(
+      baseEnemy({
+        type: 'boss',
+        x: CANVAS_W / 2,
+        y: -60,
+        width: 64,
+        height: 56,
+        hp,
+        maxHp: hp,
+        speed: 0.5,
+        shootTimer: 40,
+        shootInterval: 25,
+        movePattern: 'sine',
+        scoreValue: 2000,
+      }),
+    );
     g.enemiesSpawned++;
     return;
   }
@@ -159,15 +252,28 @@ export function isFrontalShieldBlock(e: Enemy, b: Bullet): boolean {
   return blocksCenterShot(e, b.x);
 }
 
-function fireEnemyBullet(g: GameData, e: Enemy, speed: number, damage = 1, size = 5, color = '#f64') {
+function fireEnemyBullet(
+  g: GameData,
+  e: Enemy,
+  speed: number,
+  damage = 1,
+  size = 5,
+  color = '#f64',
+) {
   const p = g.player;
   const dx = p.x - e.x;
   const dy = p.y - e.y;
   const d = Math.sqrt(dx * dx + dy * dy) || 1;
   g.bullets.push({
-    x: e.x, y: e.y + e.height / 2,
-    vx: (dx / d) * speed, vy: (dy / d) * speed,
-    width: size, height: size, damage, isPlayer: false, color,
+    x: e.x,
+    y: e.y + e.height / 2,
+    vx: (dx / d) * speed,
+    vy: (dy / d) * speed,
+    width: size,
+    height: size,
+    damage,
+    isPlayer: false,
+    color,
   });
 }
 
@@ -181,9 +287,15 @@ export function enemyShoot(g: GameData, e: Enemy): void {
     for (let i = -2; i <= 2; i++) {
       const a = Math.atan2(dy, dx) + i * 0.25;
       g.bullets.push({
-        x: e.x, y: e.y + e.height / 2,
-        vx: Math.cos(a) * s, vy: Math.sin(a) * s,
-        width: 6, height: 6, damage: 1, isPlayer: false, color: '#f46',
+        x: e.x,
+        y: e.y + e.height / 2,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        width: 6,
+        height: 6,
+        damage: 1,
+        isPlayer: false,
+        color: '#f46',
       });
     }
     return;
@@ -200,7 +312,7 @@ export function enemyShoot(g: GameData, e: Enemy): void {
 }
 
 function tickHealerAuras(g: GameData, dt: number): void {
-  const healers = g.enemies.filter(e => e.type === 'healer');
+  const healers = g.enemies.filter((e) => e.type === 'healer');
   if (healers.length === 0) return;
 
   for (const healer of healers) {
@@ -270,7 +382,8 @@ export function updateEnemies(g: GameData, dt: number, tm: number): void {
     } else {
       e.y += e.speed * tm * speedMult;
       if (e.movePattern === 'sine') e.x += Math.sin(e.movePhase) * 2 * tm * speedMult;
-      else if (e.movePattern === 'zigzag') e.x += (Math.sin(e.movePhase * 2) > 0 ? 1.5 : -1.5) * tm * speedMult;
+      else if (e.movePattern === 'zigzag')
+        e.x += (Math.sin(e.movePhase * 2) > 0 ? 1.5 : -1.5) * tm * speedMult;
     }
 
     if (e.type === 'boss' && e.y > 100) {
@@ -314,7 +427,12 @@ export function isKamikazeBlastHit(e: Enemy, px: number, py: number): boolean {
   return dx * dx + dy * dy <= r * r;
 }
 
-export function drawEnemy(ctx: CanvasRenderingContext2D, g: GameData, e: Enemy, frame: number): void {
+export function drawEnemy(
+  ctx: CanvasRenderingContext2D,
+  g: GameData,
+  e: Enemy,
+  frame: number,
+): void {
   ctx.save();
   ctx.translate(e.x, e.y);
   const f = e.flashTimer > 0;
@@ -323,11 +441,16 @@ export function drawEnemy(ctx: CanvasRenderingContext2D, g: GameData, e: Enemy, 
   ctx.globalAlpha = 0.2;
   ctx.globalCompositeOperation = 'lighter';
   const eg = ctx.createRadialGradient(0, -e.height / 3, 0, 0, -e.height / 3, e.width * 0.4);
-  const glow = e.type === 'boss' ? '#ff2244'
-    : e.type === 'healer' ? '#4f8'
-    : e.type === 'kamikaze' ? '#fa4'
-    : e.type === 'sniper' ? '#f6a'
-    : '#ff8844';
+  const glow =
+    e.type === 'boss'
+      ? '#ff2244'
+      : e.type === 'healer'
+        ? '#4f8'
+        : e.type === 'kamikaze'
+          ? '#fa4'
+          : e.type === 'sniper'
+            ? '#f6a'
+            : '#ff8844';
   eg.addColorStop(0, glow);
   eg.addColorStop(1, 'transparent');
   ctx.fillStyle = eg;
