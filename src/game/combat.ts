@@ -189,11 +189,16 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
 
 export function activateBomb(g: GameData): void {
   g.bullets = g.bullets.filter((b) => b.isPlayer);
-  for (const e of g.enemies) {
+  for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
+    const e = g.enemies[ei];
     e.hp -= 3;
     g.damageDealt += 3;
     e.flashTimer = 0.15;
     addParticles(g, e.x, e.y, 8, '#fff', 4, 'spark');
+    if (e.hp <= 0) {
+      onEnemyKilled(g, e, e.x, e.y);
+      g.enemies.splice(ei, 1);
+    }
   }
   g.flashAlpha = 0.6;
   g.flashColor = '#fff';
