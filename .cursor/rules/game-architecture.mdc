@@ -1,0 +1,47 @@
+---
+description: "Sky Blaster game layer architecture and dependency rules"
+globs: src/game/**/*
+alwaysApply: false
+---
+Read `docs/ARCHITECTURE.md` for the full module map. Follow these rules when changing game code.
+
+# Dependency rules
+
+1. **`engine.ts` is the hub** — imports domain modules and render helpers; domain modules must not import `engine.ts`.
+2. **Render modules are pure drawing** — receive `CanvasRenderingContext2D` and read-only game state; do not mutate `GameData` or advance simulation.
+3. **`app/` is outside the game domain** — input collection stays next to `App.tsx` so `src/game/` stays testable without React.
+4. **Data modules stay side-effect free** — `aircraft.ts`, `weapons.ts`, `chapters.ts`, `modes.ts` export config and pure helpers only.
+
+# Runtime flow
+
+```text
+App.tsx (RAF)
+  ├─ inputRef  ← keyboard / pointer handlers
+  ├─ update() or updateBackground()  ← engine.ts
+  └─ render()  ← engine.ts
+        ├─ chapters / hazards / enemies (domain draw)
+        └─ render/* (UI and overlays)
+```
+
+`GameData` is a single mutable struct passed through update and render.
+
+# Where to put new code
+
+| Concern | Location |
+| --- | --- |
+| State machine, collisions, waves | `engine.ts` (or future split modules) |
+| HUD, menu, overlays, game-over | `render/` |
+| Spawn AI, enemy types | `enemies.ts` |
+| Weapons, firing patterns | `weapons.ts` |
+| Active abilities | `skills.ts` |
+| Mode rules, daily modifiers | `modes.ts` |
+| Coins, unlocks, achievements | `progress.ts` |
+| Tuning numbers | `core/constants.ts` |
+
+# Touch / menu layout
+
+Menu drawing lives in `render/menu.ts`. If you change menu layout, update matching touch hit zones in `App.tsx` — they use Y-range constants that must stay in sync.
+
+# Testing
+
+Add Vitest coverage for new **pure** logic. Rendering and full engine integration are lower priority unless explicitly requested.

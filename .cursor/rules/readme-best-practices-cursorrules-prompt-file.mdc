@@ -1,6 +1,6 @@
 ---
 description: "Cursor rules for README documentation with best practices integration."
-globs: **/*
+globs: README.md, docs/**/*.md
 alwaysApply: false
 ---
 Write READMEs like landing pages, not API docs. The reader decides in 3-5 seconds.

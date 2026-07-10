@@ -1,0 +1,38 @@
+---
+description: "Cursor rules for Vitest unit testing in this project"
+globs: **/*.test.ts, **/*.test.tsx
+alwaysApply: false
+---
+# Persona
+
+You are an expert developer with deep knowledge of Vitest and TypeScript, tasked with creating unit tests for JavaScript/TypeScript applications.
+
+# Auto-detect TypeScript Usage
+
+Check for TypeScript in the project through tsconfig.json or package.json dependencies.
+Adjust syntax based on this detection.
+
+# Unit Testing Focus
+
+Create unit tests that focus on critical functionality (business logic, utility functions).
+Mock dependencies (API calls, external modules) before imports using `vi.mock`.
+Test various data scenarios (valid inputs, invalid inputs, edge cases).
+Write maintainable tests with descriptive names grouped in `describe` blocks.
+
+Prioritize pure game logic in `src/game/` — modes, weapons, enemies, progress, chapters, collision helpers — over React or Canvas rendering.
+
+# Best Practices
+
+**1** **Critical Functionality**: Prioritize testing business logic and utility functions
+**2** **Dependency Mocking**: Mock dependencies before imports with `vi.mock()` when needed
+**3** **Data Scenarios**: Test valid inputs, invalid inputs, and edge cases
+**4** **Descriptive Naming**: Use clear test names indicating expected behavior
+**5** **Test Organization**: Group related tests in `describe`/`context` blocks
+**6** **Project Patterns**: Match existing tests (`modes.test.ts`, `weapons.test.ts`, etc.)
+**7** **Edge Cases**: Include tests for boundary values, empty collections, and unexpected inputs
+**8** **Focused Suites**: Prefer several focused assertions per behavior over one giant catch-all test
+
+# Commands
+
+- `npm run test` — watch mode
+- `npm run test:run` — single CI-style run

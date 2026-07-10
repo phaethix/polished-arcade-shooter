@@ -1,0 +1,61 @@
+---
+description: "React + TypeScript + Vite stack for Sky Blaster"
+globs: src/**/*
+alwaysApply: false
+---
+You are an expert in TypeScript, React 19, and Vite 7.
+
+# Stack (this project)
+
+- **React** — thin shell in `App.tsx` (canvas mount, RAF loop, input wiring)
+- **Canvas 2D** — all gameplay rendering; not a DOM component tree
+- **Tailwind** — minimal styling on the HTML shell only
+- **Vitest** — unit tests for pure game logic
+- **No** Next.js, React Router, TanStack, or server rendering
+
+# Response Constraints
+
+- Do not remove existing code unless necessary.
+- Do not remove comments or commented-out code unless necessary.
+- Do not change import formatting unless required for new functionality.
+- Prefer minimal, focused diffs.
+
+# Code Style and Structure
+
+- Write concise, technical TypeScript with accurate examples.
+- Use functional and declarative patterns; avoid classes except where the game already uses them.
+- Prefer iteration and modularization over duplication.
+- Use descriptive names with auxiliary verbs (e.g., `isPaused`, `hasShield`).
+- Structure files: exports, helpers, types — match surrounding modules.
+
+# Naming Conventions
+
+- Use lowercase with dashes for directories (e.g., `render/`, `storage/`).
+- Favor named exports.
+
+# TypeScript Usage
+
+- Use TypeScript for all code; prefer `interface` for object shapes.
+- Avoid enums; use `const` objects or string unions.
+- Enable strict mode; avoid `any`.
+
+# Syntax and Formatting
+
+- Use the `function` keyword for pure helpers.
+- Use curly braces for all conditionals.
+- Keep JSX in `App.tsx` minimal — game UI is drawn on canvas.
+
+# Performance
+
+- Fixed-timestep update loop lives in `App.tsx`; do not add per-frame React state updates.
+- Pass mutable `GameData` through `engine.ts` update/render; avoid cloning large state each frame.
+- Cap particle and entity counts using existing constants (e.g., `MAX_PARTICLES`).
+- Profile hot paths in collision and spawn logic before micro-optimizing render code.
+
+# Validation
+
+Before claiming work is done, run:
+
+```bash
+npm run typecheck && npm run test:run && npm run build
+```
