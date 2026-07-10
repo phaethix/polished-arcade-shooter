@@ -1,4 +1,4 @@
-import type { ChapterId, DailyModifier, EnemyType, GameData, GameMode } from './types';
+import type { ChapterId, DailyModifier, Difficulty, EnemyType, GameData, GameMode } from './types';
 import { applyChapterToGame, CHAPTER_ORDER, getChapter, getChapterForWave } from './chapters';
 
 export type { DailyModifier };
@@ -11,6 +11,21 @@ export const MODE_INFO: Record<GameMode, { name: string; tagline: string }> = {
   boss_rush: { name: 'Boss Rush', tagline: 'Back-to-back boss fights' },
   daily: { name: 'Daily Challenge', tagline: 'Seeded run with a twist' },
 };
+
+export const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'normal', 'hard'];
+
+export const DIFFICULTY_INFO: Record<Difficulty, { name: string; tagline: string; color: string }> =
+  {
+    easy: { name: 'Easy', tagline: 'Slower enemies, +1 HP', color: '#4f8' },
+    normal: { name: 'Normal', tagline: 'Balanced challenge', color: '#8df' },
+    hard: { name: 'Hard', tagline: 'Faster, tankier, relentless', color: '#f88' },
+  };
+
+export function nextDifficulty(diff: Difficulty, direction: -1 | 1): Difficulty {
+  const idx = DIFFICULTY_ORDER.indexOf(diff);
+  const next = (idx + direction + DIFFICULTY_ORDER.length) % DIFFICULTY_ORDER.length;
+  return DIFFICULTY_ORDER[next];
+}
 
 const DAILY_MODIFIERS: DailyModifier[] = [
   'double_speed',
@@ -160,8 +175,28 @@ export function powerUpsEnabled(g: GameData): boolean {
 }
 
 export function getEnemySpeedMult(g: GameData): number {
-  if (g.gameMode === 'daily' && g.dailyModifier === 'double_speed') return 2;
+  let mult = 1;
+  if (g.difficulty === 'easy') mult = 0.75;
+  else if (g.difficulty === 'hard') mult = 1.3;
+  if (g.gameMode === 'daily' && g.dailyModifier === 'double_speed') mult *= 2;
+  return mult;
+}
+
+export function getEnemyHpMult(g: GameData): number {
+  if (g.difficulty === 'easy') return 0.75;
+  if (g.difficulty === 'hard') return 1.25;
   return 1;
+}
+
+export function getSpawnIntervalMult(g: GameData): number {
+  if (g.difficulty === 'easy') return 1.3;
+  if (g.difficulty === 'hard') return 0.8;
+  return 1;
+}
+
+export function getPlayerHpBonus(g: GameData): number {
+  if (g.difficulty === 'easy') return 1;
+  return 0;
 }
 
 export function getSpawnPoolOverride(g: GameData): EnemyType[] | null {
@@ -172,6 +207,6 @@ export function getSpawnPoolOverride(g: GameData): EnemyType[] | null {
 }
 
 export function getBossHp(g: GameData): number {
-  if (g.gameMode === 'boss_rush') return 18 + g.wave * 10;
-  return 20 + g.wave * 5;
+  const base = g.gameMode === 'boss_rush' ? 18 + g.wave * 10 : 20 + g.wave * 5;
+  return Math.round(base * getEnemyHpMult(g));
 }

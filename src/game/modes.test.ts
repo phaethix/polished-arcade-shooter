@@ -9,10 +9,15 @@ import {
   getWaveLabel,
   powerUpsEnabled,
   getEnemySpeedMult,
+  getEnemyHpMult,
+  getSpawnIntervalMult,
+  getPlayerHpBonus,
   getSpawnPoolOverride,
   nextGameMode,
+  nextDifficulty,
   isStoryComplete,
   MODE_ORDER,
+  DIFFICULTY_ORDER,
 } from './modes';
 
 /** Build a minimal GameData with only the fields the mode helpers read. */
@@ -196,5 +201,78 @@ describe('isStoryComplete', () => {
 
   it('returns false in other modes regardless of wave', () => {
     expect(isStoryComplete(mkGame({ gameMode: 'endless', wave: 100 }))).toBe(false);
+  });
+});
+
+describe('difficulty multipliers', () => {
+  it('easy reduces enemy speed to 0.75', () => {
+    expect(getEnemySpeedMult(mkGame({ difficulty: 'easy' }))).toBe(0.75);
+  });
+
+  it('hard increases enemy speed to 1.3', () => {
+    expect(getEnemySpeedMult(mkGame({ difficulty: 'hard' }))).toBe(1.3);
+  });
+
+  it('normal has speed mult 1', () => {
+    expect(getEnemySpeedMult(mkGame({ difficulty: 'normal' }))).toBe(1);
+  });
+
+  it('daily double_speed stacks with difficulty', () => {
+    expect(
+      getEnemySpeedMult(
+        mkGame({ difficulty: 'hard', gameMode: 'daily', dailyModifier: 'double_speed' }),
+      ),
+    ).toBe(2.6);
+  });
+
+  it('easy reduces enemy HP to 0.75', () => {
+    expect(getEnemyHpMult(mkGame({ difficulty: 'easy' }))).toBe(0.75);
+  });
+
+  it('hard increases enemy HP to 1.25', () => {
+    expect(getEnemyHpMult(mkGame({ difficulty: 'hard' }))).toBe(1.25);
+  });
+
+  it('easy gives +1 player HP bonus', () => {
+    expect(getPlayerHpBonus(mkGame({ difficulty: 'easy' }))).toBe(1);
+  });
+
+  it('normal and hard give no HP bonus', () => {
+    expect(getPlayerHpBonus(mkGame({ difficulty: 'normal' }))).toBe(0);
+    expect(getPlayerHpBonus(mkGame({ difficulty: 'hard' }))).toBe(0);
+  });
+
+  it('easy increases spawn interval to 1.3 (slower spawns)', () => {
+    expect(getSpawnIntervalMult(mkGame({ difficulty: 'easy' }))).toBe(1.3);
+  });
+
+  it('hard decreases spawn interval to 0.8 (faster spawns)', () => {
+    expect(getSpawnIntervalMult(mkGame({ difficulty: 'hard' }))).toBe(0.8);
+  });
+
+  it('boss HP scales with difficulty', () => {
+    const easyBoss = getBossHp(mkGame({ gameMode: 'endless', wave: 5, difficulty: 'easy' }));
+    const normalBoss = getBossHp(mkGame({ gameMode: 'endless', wave: 5, difficulty: 'normal' }));
+    const hardBoss = getBossHp(mkGame({ gameMode: 'endless', wave: 5, difficulty: 'hard' }));
+    expect(easyBoss).toBeLessThan(normalBoss);
+    expect(hardBoss).toBeGreaterThan(normalBoss);
+  });
+});
+
+describe('nextDifficulty', () => {
+  it('cycles forward through all difficulties', () => {
+    let diff = DIFFICULTY_ORDER[0];
+    const visited: string[] = [diff];
+    for (let i = 0; i < DIFFICULTY_ORDER.length; i++) {
+      diff = nextDifficulty(diff, 1);
+      visited.push(diff);
+    }
+    expect(diff).toBe(DIFFICULTY_ORDER[0]);
+    expect(new Set(visited).size).toBe(DIFFICULTY_ORDER.length);
+  });
+
+  it('cycles backward', () => {
+    expect(nextDifficulty('easy', -1)).toBe('hard');
+    expect(nextDifficulty('normal', -1)).toBe('easy');
   });
 });

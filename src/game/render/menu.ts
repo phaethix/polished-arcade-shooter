@@ -3,7 +3,13 @@ import { CANVAS_W, CANVAS_H } from '../core/constants';
 import { loadHighScores } from '../storage/highscores';
 import { AIRCRAFT } from '../aircraft';
 import { getWeapon } from '../weapons';
-import { MODE_INFO, getDailyModifierLabel, getDailySeed, pickDailyModifier } from '../modes';
+import {
+  MODE_INFO,
+  DIFFICULTY_INFO,
+  getDailyModifierLabel,
+  getDailySeed,
+  pickDailyModifier,
+} from '../modes';
 import { isAircraftUnlocked, isWeaponUnlocked, canAffordUnlock, loadCoins } from '../progress';
 
 export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
@@ -99,22 +105,34 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.fillText(weapon.tagline, CANVAS_W / 2, 376);
   }
 
+  const diff = DIFFICULTY_INFO[g.difficulty];
+  ctx.fillStyle = '#fd4';
+  ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
+  ctx.fillText('DIFFICULTY', CANVAS_W / 2, 394);
+  ctx.fillStyle = diff.color;
+  ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(`◀  ${diff.name.toUpperCase()}  ▶`, CANVAS_W / 2, 414);
+  ctx.fillStyle = '#889';
+  ctx.font = '10px "Segoe UI",Arial,sans-serif';
+  ctx.fillText(diff.tagline, CANVAS_W / 2, 428);
+
   const ready = isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
   ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
   ctx.fillStyle = ready ? '#fff' : '#f88';
   ctx.font = `${ready ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
-  ctx.fillText(ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START', CANVAS_W / 2, 402);
+  ctx.fillText(ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START', CANVAS_W / 2, 452);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [
     ['↑ / ↓', 'Choose mode'],
     ['← / →', 'Choose aircraft'],
     ['[ / ]', 'Choose weapon'],
+    ['Q', 'Choose difficulty'],
     ['U', 'Unlock selection'],
     ['SPACE / Z', 'Shoot / Start'],
     ['X / B', 'Bomb'],
   ];
-  const controlsTop = 424;
+  const controlsTop = 474;
   const controlsStep = 15;
   lines.forEach(([k, v], i) => {
     const y = controlsTop + i * controlsStep;
