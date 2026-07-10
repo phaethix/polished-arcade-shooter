@@ -7,17 +7,17 @@ import { boxesOverlap } from './core/collision';
 const MAX_ASTEROIDS = 5;
 
 function spawnAsteroid(g: GameData): void {
-  const size = 18 + Math.random() * 16;
+  const size = 18 + g.rng.next() * 16;
   g.hazards.push({
     type: 'asteroid',
-    x: 30 + Math.random() * (CANVAS_W - 60),
+    x: 30 + g.rng.next() * (CANVAS_W - 60),
     y: -size,
     width: size,
     height: size,
-    vx: (Math.random() - 0.5) * 1.2,
-    vy: 2 + Math.random() * 2,
-    rot: Math.random() * Math.PI * 2,
-    rotSpeed: (Math.random() - 0.5) * 0.06,
+    vx: (g.rng.next() - 0.5) * 1.2,
+    vy: 2 + g.rng.next() * 2,
+    rot: g.rng.next() * Math.PI * 2,
+    rotSpeed: (g.rng.next() - 0.5) * 0.06,
   });
 }
 
@@ -34,8 +34,8 @@ function spawnTurrets(g: GameData): void {
       y: slot.y,
       width: 28,
       height: 28,
-      shootTimer: 40 + Math.random() * 40,
-      shootInterval: 70 + Math.random() * 30,
+      shootTimer: 40 + g.rng.next() * 40,
+      shootInterval: 70 + g.rng.next() * 30,
       side: slot.x < CANVAS_W / 2 ? -1 : 1,
     });
   }
@@ -126,7 +126,7 @@ export function updateHazards(g: GameData, dt: number, tm: number): void {
     const count = g.hazards.filter((h) => h.type === 'asteroid').length;
     if (g.hazardSpawnTimer <= 0 && count < MAX_ASTEROIDS) {
       spawnAsteroid(g);
-      g.hazardSpawnTimer = 50 + Math.random() * 40;
+      g.hazardSpawnTimer = 50 + g.rng.next() * 40;
     }
   }
 

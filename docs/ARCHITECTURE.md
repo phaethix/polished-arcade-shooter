@@ -34,11 +34,16 @@ src/
     │   ├── gameover.ts     End-of-run screen
     │   ├── achievement-toast.ts
     │   ├── world.ts        Player, bullets, power-ups, laser beam
-    │   └── overlays.ts     Particles, flash, combo, pause, slow-mo
+    │   ├── overlays.ts     Particles, flash, combo, pause, slow-mo
+    │   └── enemies.ts      Enemy sprite rendering (drawEnemy)
     ├── aircraft.ts         Aircraft stats and visuals
     ├── weapons.ts          Firing patterns and weapon config
     ├── skills.ts           Active abilities per aircraft
-    ├── enemies.ts          Spawn logic, AI, rendering
+    ├── enemies/
+    │   ├── index.ts        Public barrel (spawn, AI, and helper exports)
+    │   ├── spawn.ts        Spawn pool, enemy construction, splitter children
+    │   ├── ai.ts            Per-tick enemy movement and shooting AI
+    │   └── helpers.ts       Shield-block and kamikaze-blast pure helpers
     ├── chapters.ts         Background themes and chapter rotation
     ├── hazards.ts          Environmental threats per chapter
     ├── modes.ts            Per-mode wave rules and daily modifiers
@@ -60,7 +65,7 @@ App.tsx (RAF)
   ├─ inputRef  ← keyboard / pointer handlers
   ├─ update() or updateBackground()  ← engine.ts
   └─ render()  ← engine.ts
-        ├─ chapters / hazards / enemies (domain draw)
+        ├─ chapters / hazards / render/enemies (domain draw)
         └─ render/* (UI and overlays)
 ```
 
@@ -78,11 +83,11 @@ Combat helpers live in `combat.ts`; run rewards and achievements in `run-progres
 
 ## Known tech debt
 
-| Item                            | Notes                                                                                                                                                               |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `engine.ts` size                | Reduced to ~280 lines; simulation logic lives in `systems/` and `combat.ts`.                                                                                        |
-| Enemy rendering in `enemies.ts` | Enemy sprites stay with spawn/AI; only player-side world drawing moved to `render/world.ts`.                                                                        |
-| Test coverage                   | Vitest unit tests cover pure functions in `core/`, `modes`, `enemies`, `weapons`, `progress`, and `chapters`. Integration and rendering tests remain a future goal. |
+| Item                                   | Notes                                                                                                                                                               |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `engine.ts` size                       | Reduced to ~280 lines; simulation logic lives in `systems/` and `combat.ts`.                                                                                        |
+| Enemy rendering in `render/enemies.ts` | Enemy sprite drawing lives in `render/`, alongside `render/world.ts`, separate from spawn/AI in `enemies/`.                                                         |
+| Test coverage                          | Vitest unit tests cover pure functions in `core/`, `modes`, `enemies`, `weapons`, `progress`, and `chapters`. Integration and rendering tests remain a future goal. |
 
 ## Related documents
 

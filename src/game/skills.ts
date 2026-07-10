@@ -69,6 +69,7 @@ function activateMissileSalvo(g: GameData): boolean {
       color: '#f84',
       homingStrength: targets.length ? 0.12 : 0.04,
     });
+    g.shotsFired++;
   }
 
   startSkillCooldown(p);

@@ -2,9 +2,10 @@ import type { GameData } from './types';
 import type { InputState } from '../app/input';
 import { createInputState } from '../app/input';
 import { CANVAS_W, CANVAS_H } from './core/constants';
+import { createRng } from './core/rng';
 import { nextAircraft } from './aircraft';
 import { nextWeapon } from './weapons';
-import { updateEnemies, drawEnemy } from './enemies';
+import { updateEnemies } from './enemies';
 import { applyChapterToGame, drawChapterBackground } from './chapters';
 import {
   applyDailyPlayerMods,
@@ -27,6 +28,7 @@ import { drawHUD } from './render/hud';
 import { drawGameOver } from './render/gameover';
 import { drawAchievementToast } from './render/achievement-toast';
 import { drawLaserBeam, drawPlayer, drawBullet, drawPowerUp } from './render/world';
+import { drawEnemy } from './render/enemies';
 import {
   drawParticles,
   drawFlashOverlay,
@@ -93,6 +95,11 @@ export function createGameData(): GameData {
     dailyBonusAwarded: false,
     runCoinsEarned: 0,
     achievementToast: null,
+    rng: createRng(0),
+    shotsFired: 0,
+    shotsHit: 0,
+    damageDealt: 0,
+    enemiesKilled: 0,
   };
   ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');
@@ -189,8 +196,16 @@ export function resetGame(g: GameData): void {
     dailyBonusAwarded: false,
     runCoinsEarned: 0,
     achievementToast: null,
+    shotsFired: 0,
+    shotsHit: 0,
+    damageDealt: 0,
+    enemiesKilled: 0,
     state: 'playing' as const,
   });
+  g.rng =
+    g.gameMode === 'daily'
+      ? createRng(g.dailySeed)
+      : createRng((Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0);
   applyDailyPlayerMods(g);
   const hpBonus = getPlayerHpBonus(g);
   if (hpBonus > 0) {

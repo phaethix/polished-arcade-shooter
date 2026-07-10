@@ -19,12 +19,12 @@ function tryPowerUp(g: GameData, x: number, y: number): void {
   if (!powerUpsEnabled(g)) {
     return;
   }
-  if (Math.random() > 0.18) {
+  if (g.rng.next() > 0.18) {
     return;
   }
   const types: PowerUp['type'][] = ['spread', 'speed', 'shield', 'bomb', 'heal'];
   const wts = [0.28, 0.2, 0.17, 0.15, 0.2];
-  let r = Math.random();
+  let r = g.rng.next();
   let t: PowerUp['type'] = 'spread';
   for (let i = 0; i < types.length; i++) {
     r -= wts[i];
@@ -40,11 +40,11 @@ function tryWeaponDrop(g: GameData, x: number, y: number): void {
   if (!powerUpsEnabled(g)) {
     return;
   }
-  if (Math.random() > 0.07) {
+  if (g.rng.next() > 0.07) {
     return;
   }
   const alts: WeaponId[] = ['armor_piercing', 'shotgun', 'laser', 'homing'];
-  const weaponId = alts[Math.floor(Math.random() * alts.length)];
+  const weaponId = alts[Math.floor(g.rng.next() * alts.length)];
   g.powerUps.push({ x, y, width: 22, height: 22, type: 'weapon', weaponId, vy: 1.4 });
 }
 
@@ -79,6 +79,7 @@ export function playerHitFromEnemy(g: GameData): boolean {
 }
 
 export function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number): void {
+  g.enemiesKilled++;
   const boss = e.type === 'boss';
   const cols = boss ? ['#f40', '#fa0', '#f60', '#fff', '#f20'] : ['#f60', '#fa0', '#f30', '#fff'];
   for (const c of cols) {
@@ -147,6 +148,7 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
     return;
   }
   p.laserRamp = Math.min(3, p.laserRamp + dt * 2.5);
+  g.shotsFired++;
   const dps = 0.35 + p.laserRamp * 0.45;
   const damage = dps * dt * 60;
   const beamW = 10 + p.powerLevel * 2;
@@ -163,6 +165,8 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
       continue;
     }
     e.hp -= damage;
+    g.shotsHit++;
+    g.damageDealt += damage;
     e.flashTimer = 0.05;
     if (e.hp <= 0) {
       onEnemyKilled(g, e, e.x, e.y);
@@ -185,10 +189,16 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
 
 export function activateBomb(g: GameData): void {
   g.bullets = g.bullets.filter((b) => b.isPlayer);
-  for (const e of g.enemies) {
+  for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
+    const e = g.enemies[ei];
     e.hp -= 3;
+    g.damageDealt += 3;
     e.flashTimer = 0.15;
     addParticles(g, e.x, e.y, 8, '#fff', 4, 'spark');
+    if (e.hp <= 0) {
+      onEnemyKilled(g, e, e.x, e.y);
+      g.enemies.splice(ei, 1);
+    }
   }
   g.flashAlpha = 0.6;
   g.flashColor = '#fff';

@@ -42,6 +42,8 @@ export function updateCollisions(g: GameData): boolean {
       if (!boxesOverlap(b.x, b.y, b.width, b.height, e.x, e.y, e.width, e.height)) continue;
       if (isFrontalShieldBlock(e, b)) continue;
       e.hp -= b.damage;
+      g.shotsHit++;
+      g.damageDealt += b.damage;
       e.flashTimer = 0.08;
       sfx.playHit();
       addParticles(g, b.x, b.y, 4, b.color, 2, 'spark', [1, 3]);

@@ -6,12 +6,12 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 
 ## Game modes
 
-| Mode                | Goal                                                                                                     |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Story**           | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending              |
-| **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                        |
-| **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                               |
-| **Daily Challenge** | Same seeded modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm) |
+| Mode                | Goal                                                                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Story**           | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending                                                                                                                    |
+| **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                                                                                                                              |
+| **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                     |
+| **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream |
 
 ---
 
@@ -121,3 +121,4 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 | **Coins**        | Earned from kills, bosses, story clears, and daily milestones; spent on unlocks                |
 | **Achievements** | Six goals (first kill, 20× combo, 50 grazes, 10 boss kills lifetime, wave 10, no-damage stage) |
 | **High scores**  | Top 10 saved locally with wave and date                                                        |
+| **Run stats**    | Game over screen shows accuracy, total damage dealt, and kills for the run                     |
