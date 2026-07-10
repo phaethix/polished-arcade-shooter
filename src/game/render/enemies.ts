@@ -1,5 +1,5 @@
 import type { Enemy, GameData } from '../types';
-import { HEAL_RADIUS, SNIPER_AIM_FRAMES } from '../enemies/ai';
+import { HEAL_RADIUS, SNIPER_AIM_FRAMES } from '../enemies/constants';
 
 export function drawEnemy(
   ctx: CanvasRenderingContext2D,

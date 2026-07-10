@@ -65,7 +65,7 @@ App.tsx (RAF)
   ├─ inputRef  ← keyboard / pointer handlers
   ├─ update() or updateBackground()  ← engine.ts
   └─ render()  ← engine.ts
-        ├─ chapters / hazards / enemies (domain draw)
+        ├─ chapters / hazards / render/enemies (domain draw)
         └─ render/* (UI and overlays)
 ```
 

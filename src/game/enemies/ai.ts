@@ -2,12 +2,13 @@ import type { Enemy, GameData } from '../types';
 import * as sfx from '../audio';
 import { getEnemySpeedMult } from '../modes';
 import { CANVAS_W } from '../core/constants';
-
-export const HEAL_RADIUS = 100;
-export const HEAL_INTERVAL = 2;
-export const KAMIKAZE_RUSH_SPEED = 5.5;
-export const KAMIKAZE_TRIGGER_DIST = 160;
-export const SNIPER_AIM_FRAMES = 50;
+import {
+  HEAL_INTERVAL,
+  HEAL_RADIUS,
+  KAMIKAZE_RUSH_SPEED,
+  KAMIKAZE_TRIGGER_DIST,
+  SNIPER_AIM_FRAMES,
+} from './constants';
 
 function fireEnemyBullet(
   g: GameData,
