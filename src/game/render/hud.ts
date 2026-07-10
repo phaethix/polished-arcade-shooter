@@ -89,4 +89,12 @@ export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
 
   drawSkillIndicator(ctx, p, CANVAS_W / 2, CANVAS_H - 36);
   drawWeaponLabel(ctx, p.weaponId, 10, CANVAS_H - 36);
+  if (g.autoFire) {
+    ctx.textAlign = 'right';
+    ctx.font = '11px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#4f8';
+    ctx.globalAlpha = 0.85;
+    ctx.fillText('AUTO', CANVAS_W - 10, CANVAS_H - 12);
+    ctx.globalAlpha = 1;
+  }
 }

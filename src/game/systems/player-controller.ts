@@ -53,7 +53,7 @@ export function updatePlayerFromInput(g: GameData, input: InputState, dt: number
       : 0);
   p.tilt += (targetTilt - p.tilt) * 0.15;
 
-  const shooting = input.shoot || input.touchActive;
+  const shooting = g.autoFire || input.shoot || input.touchActive;
   if (p.weaponId === 'laser') {
     updateLaserFire(g, shooting, dt);
   } else if (shooting) {

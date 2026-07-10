@@ -213,4 +213,5 @@ export interface GameData {
   shotsHit: number;
   damageDealt: number;
   enemiesKilled: number;
+  autoFire: boolean; // when true the player fires continuously without holding shoot
 }
