@@ -82,9 +82,15 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 
 **Status:** Phases 1–6 and post-expansion architecture work are **complete**. The game is feature-complete against the original expansion plan. Further work is optional — see _Supplementary ideas_ below.
 
+## Supplementary completed
+
+| Item | Status |
+| --- | --- |
+| Difficulty tiers (Easy / Normal / Hard) | done (#33) |
+| Daily seeded gameplay RNG | done |
+
 ## Supplementary ideas (backlog)
 
-- **Difficulty tiers** — Easy / Normal / Hard affecting enemy density and bullet speed
 - **Practice mode** — Sandbox with invincibility toggle
 - **Run statistics screen** — DPS, accuracy, graze rate after game over
 - **Colorblind palettes** — Accessible enemy and power-up colors
