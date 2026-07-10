@@ -13,6 +13,7 @@
 ## Test plan
 
 - [ ] `npm run typecheck`
+- [ ] `npm run test:run`
 - [ ] `npm run build`
 - [ ] Manual gameplay check (controls, waves, audio, mobile/touch if applicable)
 
