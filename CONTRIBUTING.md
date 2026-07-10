@@ -21,6 +21,8 @@ Thank you for your interest in contributing. This project is a browser-based arc
 
    ```bash
    npm run typecheck
+   npm run lint
+   npm run format:check
    npm run test:run
    npm run build
    ```
@@ -32,6 +34,21 @@ Thank you for your interest in contributing. This project is a browser-based arc
 - Prefer small, readable functions over large refactors unless discussed first.
 - Avoid adding external assets unless there is a clear reason; the project currently uses procedural audio and canvas rendering.
 - Update documentation when behavior, controls, or setup steps change.
+
+## Linting and formatting
+
+Code quality is enforced by **ESLint** and formatting by **Prettier**. Both run in CI.
+
+```bash
+npm run lint          # check for lint errors
+npm run lint:fix      # auto-fix lint errors
+npm run format        # format all files with Prettier
+npm run format:check  # verify formatting (CI uses this)
+```
+
+- Prettier config lives in `.prettierrc` — single quotes, semicolons, 2-space indent, 100 char width.
+- ESLint uses the flat config in `eslint.config.js` with `@typescript-eslint` recommended rules.
+- Unused parameters prefixed with `_` (e.g. `_chapter`) are allowed.
 
 ## Testing
 
