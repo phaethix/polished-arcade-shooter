@@ -58,6 +58,9 @@ export { CANVAS_W, CANVAS_H };
 export function createGameData(): GameData {
   const g: GameData = {
     player: createPlayer('falcon'),
+    player2: null,
+    coopRole: null,
+    coopRoomCode: '',
     bullets: [],
     enemies: [],
     particles: [],

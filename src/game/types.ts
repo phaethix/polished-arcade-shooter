@@ -10,7 +10,7 @@ export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
 
 export type BossPatternId = 'fan' | 'rain' | 'broadside' | 'ring';
 
-export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice';
+export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice' | 'coop_endless';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
@@ -175,6 +175,12 @@ export interface Hazard {
 
 export interface GameData {
   player: Player;
+  /** Co-op second ship; null in solo modes. */
+  player2: Player | null;
+  /** Co-op session role; null in solo modes. */
+  coopRole: 'host' | 'guest' | null;
+  /** Co-op PartyKit room code; empty string when not in a session. */
+  coopRoomCode: string;
   bullets: Bullet[];
   enemies: Enemy[];
   particles: Particle[];
