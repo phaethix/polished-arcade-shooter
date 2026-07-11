@@ -94,6 +94,30 @@ export function isPracticeInvincible(g: GameData): boolean {
   return isPracticeMode(g) && g.practiceInvincible;
 }
 
+export const PRACTICE_START_WAVE_MIN = 1;
+export const PRACTICE_START_WAVE_MAX = 20;
+
+/** Clamp a practice start wave into the allowed menu range. */
+export function clampPracticeStartWave(wave: number): number {
+  if (!Number.isFinite(wave)) return PRACTICE_START_WAVE_MIN;
+  return Math.min(PRACTICE_START_WAVE_MAX, Math.max(PRACTICE_START_WAVE_MIN, Math.floor(wave)));
+}
+
+/** Cycle practice start wave with wrap-around. */
+export function nextPracticeStartWave(wave: number, direction: -1 | 1): number {
+  const cur = clampPracticeStartWave(wave);
+  const span = PRACTICE_START_WAVE_MAX - PRACTICE_START_WAVE_MIN + 1;
+  return PRACTICE_START_WAVE_MIN + ((cur - PRACTICE_START_WAVE_MIN + direction + span) % span);
+}
+
+/** Menu tagline: chapter name, plus boss hint on Endless/Practice boss cadence. */
+export function practiceStartWaveLabel(wave: number): string {
+  const w = clampPracticeStartWave(wave);
+  const chapter = getChapter(getChapterForWave(w));
+  const isBoss = w % 5 === 0 && w >= 5;
+  return isBoss ? `${chapter.name} · boss` : chapter.name;
+}
+
 export function applyDailyPlayerMods(g: GameData): void {
   if (g.gameMode === 'daily' && g.dailyModifier === 'single_hp') {
     g.player.maxHp = 1;

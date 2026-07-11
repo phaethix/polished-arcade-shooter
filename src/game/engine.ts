@@ -9,11 +9,13 @@ import { updateEnemies } from './enemies';
 import { applyChapterToGame, drawChapterBackground } from './chapters';
 import {
   applyDailyPlayerMods,
+  clampPracticeStartWave,
   getEnemiesPerWave,
   getPlayerHpBonus,
   initModeState,
   nextDifficulty,
   nextGameMode,
+  nextPracticeStartWave,
   syncChapterForMode,
 } from './modes';
 import {
@@ -102,6 +104,7 @@ export function createGameData(): GameData {
     enemiesKilled: 0,
     autoFire: true,
     practiceInvincible: false,
+    practiceStartWave: 1,
   };
   ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');
@@ -164,6 +167,11 @@ export function cycleDifficultySelection(g: GameData, direction: -1 | 1): void {
   g.difficulty = nextDifficulty(g.difficulty, direction);
 }
 
+export function cyclePracticeStartWave(g: GameData, direction: -1 | 1): void {
+  if (g.gameMode !== 'practice') return;
+  g.practiceStartWave = nextPracticeStartWave(g.practiceStartWave, direction);
+}
+
 export function resetGame(g: GameData): void {
   if (!canStartGame(g)) return;
   const aircraft = g.selectedAircraft;
@@ -176,7 +184,7 @@ export function resetGame(g: GameData): void {
     particles: [],
     powerUps: [],
     score: 0,
-    wave: 1,
+    wave: g.gameMode === 'practice' ? clampPracticeStartWave(g.practiceStartWave) : 1,
     waveTimer: 25,
     waveDelay: 90,
     enemiesSpawned: 0,

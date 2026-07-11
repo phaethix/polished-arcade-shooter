@@ -6,13 +6,13 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 
 ## Game modes
 
-| Mode                | Goal                                                                                                                                                                                                           |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Story**           | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending                                                                                                                    |
-| **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                                                                                                                              |
-| **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                     |
-| **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream |
-| **Practice**        | Endless-like waves with invincibility on by default (`I` toggles); no coins, achievements, or high scores                                                                                                      |
+| Mode                | Goal                                                                                                                                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Story**           | Clear 20 stages across 4 chapters; defeat chapter bosses and earn a mission-complete ending                                                                                                                                |
+| **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                                                                                                                                          |
+| **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                                 |
+| **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream             |
+| **Practice**        | Endless-like waves with invincibility on by default (`I` toggles); choose a start wave (1–20) on the menu; chapter follows Endless rotation with bosses on waves 5, 10, 15, and 20; no coins, achievements, or high scores |
 
 ---
 
@@ -76,10 +76,13 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 | `←` / `→`     | Cycle aircraft                                   |
 | `[` / `]`     | Cycle weapon                                     |
 | `,` / `.`     | Cycle difficulty                                 |
+| `-` / `=`     | Cycle Practice start wave (1–20; Practice only)  |
 | `U`           | Unlock selected aircraft or weapon (costs coins) |
 | `Space` / `Z` | Start game                                       |
 
-**Touch / mouse:** tap each menu row to cycle — mode (upper/lower half), aircraft, weapon, and difficulty (left/right half, including the ◀ ▶ glyphs). Tap **TAP or PRESS SPACE** to start.
+**Practice start wave:** When Practice is selected, a **START WAVE** row appears between Difficulty and Start. Use `-` / `=` (or tap the row) to pick wave 1–20; the tagline shows the chapter name (same rotation as Endless) and **· boss** on waves 5, 10, 15, and 20.
+
+**Touch / mouse:** tap each menu row to cycle — mode (upper/lower half), aircraft, weapon, difficulty, and Practice start wave (left/right half, including the ◀ ▶ glyphs). Tap **TAP or PRESS SPACE** to start.
 
 > On mobile, tap the screen once if audio is silent — Web Audio unlocks on the first user gesture.
 

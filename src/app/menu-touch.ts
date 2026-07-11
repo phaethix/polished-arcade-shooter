@@ -5,6 +5,7 @@ import {
   cycleWeaponSelection,
   cycleGameModeSelection,
   cycleDifficultySelection,
+  cyclePracticeStartWave,
 } from '../game/engine';
 import { resolveMenuTouch } from '../game/render/menu-layout';
 import { playMenuSelect } from '../game/audio';
@@ -21,7 +22,7 @@ export function handleMenuTouchAction(
     return;
   }
 
-  const action = resolveMenuTouch(pt.x, pt.y);
+  const action = resolveMenuTouch(pt.x, pt.y, g.gameMode === 'practice');
   if (!action) {
     return;
   }
@@ -41,6 +42,10 @@ export function handleMenuTouchAction(
       break;
     case 'cycle_difficulty':
       cycleDifficultySelection(g, action.direction);
+      playMenuSelect();
+      break;
+    case 'cycle_practice_start_wave':
+      cyclePracticeStartWave(g, action.direction);
       playMenuSelect();
       break;
     case 'start':

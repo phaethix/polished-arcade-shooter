@@ -45,6 +45,55 @@ export const MENU_LAYOUT = {
   },
 } as const;
 
+export const PRACTICE_MENU_OFFSET = 46;
+
+export interface MenuLayoutView {
+  titleY: number;
+  subtitleY: number;
+  mode: (typeof MENU_LAYOUT)['mode'];
+  aircraft: (typeof MENU_LAYOUT)['aircraft'];
+  weapon: (typeof MENU_LAYOUT)['weapon'];
+  difficulty: (typeof MENU_LAYOUT)['difficulty'];
+  startWave: {
+    labelY: number;
+    valueY: number;
+    taglineY: number;
+    hitYMin: number;
+    hitYMax: number;
+  };
+  start: { textY: number; hitYMin: number; hitYMax: number };
+  controls: { topY: number; step: number };
+}
+
+/** Build menu geometry; when showPracticeStartWave, insert row and shift start/controls. */
+export function getMenuLayout(showPracticeStartWave: boolean): MenuLayoutView {
+  const offset = showPracticeStartWave ? PRACTICE_MENU_OFFSET : 0;
+  return {
+    titleY: MENU_LAYOUT.titleY,
+    subtitleY: MENU_LAYOUT.subtitleY,
+    mode: MENU_LAYOUT.mode,
+    aircraft: MENU_LAYOUT.aircraft,
+    weapon: MENU_LAYOUT.weapon,
+    difficulty: MENU_LAYOUT.difficulty,
+    startWave: {
+      labelY: 446,
+      valueY: 466,
+      taglineY: 480,
+      hitYMin: 440,
+      hitYMax: 440 + PRACTICE_MENU_OFFSET,
+    },
+    start: {
+      textY: MENU_LAYOUT.start.textY + offset,
+      hitYMin: MENU_LAYOUT.start.hitYMin + offset,
+      hitYMax: MENU_LAYOUT.start.hitYMax + offset,
+    },
+    controls: {
+      topY: MENU_LAYOUT.controls.topY + offset,
+      step: MENU_LAYOUT.controls.step,
+    },
+  };
+}
+
 /** Outer thirds reserved for start-button centering (not loadout row arrows). */
 export const MENU_ROW_LEFT_X = CANVAS_W / 3;
 export const MENU_ROW_RIGHT_X = (CANVAS_W * 2) / 3;
@@ -57,6 +106,7 @@ export type MenuTouchAction =
   | { kind: 'cycle_aircraft'; direction: -1 | 1 }
   | { kind: 'cycle_weapon'; direction: -1 | 1 }
   | { kind: 'cycle_difficulty'; direction: -1 | 1 }
+  | { kind: 'cycle_practice_start_wave'; direction: -1 | 1 }
   | { kind: 'start' };
 
 /** Half-row split so centered ◀ / ▶ glyphs (near mid-canvas) are clickable. */
@@ -69,8 +119,13 @@ function isMenuRowCenter(x: number): boolean {
 }
 
 /** Map a game-space pointer position on the title screen to a menu action. */
-export function resolveMenuTouch(x: number, y: number): MenuTouchAction | null {
-  const { mode, aircraft, weapon, difficulty, start } = MENU_LAYOUT;
+export function resolveMenuTouch(
+  x: number,
+  y: number,
+  showPracticeStartWave = false,
+): MenuTouchAction | null {
+  const { mode, aircraft, weapon, difficulty, startWave, start } =
+    getMenuLayout(showPracticeStartWave);
 
   if (y >= mode.hitYMin && y < mode.hitYMax) {
     return { kind: 'cycle_mode', direction: y < mode.splitY ? -1 : 1 };
@@ -83,6 +138,9 @@ export function resolveMenuTouch(x: number, y: number): MenuTouchAction | null {
   }
   if (y >= difficulty.hitYMin && y < difficulty.hitYMax) {
     return { kind: 'cycle_difficulty', direction: rowCycleDirection(x) };
+  }
+  if (showPracticeStartWave && y >= startWave.hitYMin && y < startWave.hitYMax) {
+    return { kind: 'cycle_practice_start_wave', direction: rowCycleDirection(x) };
   }
   if (y >= start.hitYMin && y < start.hitYMax && isMenuRowCenter(x)) {
     return { kind: 'start' };
