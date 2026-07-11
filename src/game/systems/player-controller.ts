@@ -21,10 +21,10 @@ export function updatePlayerFromInput(g: GameData, input: InputState, dt: number
 
   let mx = 0;
   let my = 0;
-  if (input.left) mx--;
-  if (input.right) mx++;
-  if (input.up) my--;
-  if (input.down) my++;
+  if (input.left || input.padLeft) mx--;
+  if (input.right || input.padRight) mx++;
+  if (input.up || input.padUp) my--;
+  if (input.down || input.padDown) my++;
 
   if (mx || my) {
     const l = Math.sqrt(mx * mx + my * my);
@@ -53,7 +53,7 @@ export function updatePlayerFromInput(g: GameData, input: InputState, dt: number
       : 0);
   p.tilt += (targetTilt - p.tilt) * 0.15;
 
-  const shooting = g.autoFire || input.shoot || input.touchActive;
+  const shooting = g.autoFire || input.shoot || input.padShoot || input.touchActive;
   if (p.weaponId === 'laser') {
     updateLaserFire(g, shooting, dt);
   } else if (shooting) {

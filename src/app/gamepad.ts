@@ -65,7 +65,7 @@ export function pickStandardGamepad(pads: Array<Gamepad | null>): Gamepad | null
 
 /**
  * Apply one gamepad snapshot to InputState.
- * Move/shoot only set true; never clear. Bomb/skill rising-edge.
+ * Move/shoot use pad* level flags (cleared each frame). Bomb/skill rising-edge.
  * Pause handled via togglePause.
  */
 export function applyGamepadToInput(
@@ -87,6 +87,11 @@ export function applyGamepadToInput(
   prev.pause = pauseDown;
 
   if (g.state !== 'playing') {
+    input.padLeft = false;
+    input.padRight = false;
+    input.padUp = false;
+    input.padDown = false;
+    input.padShoot = false;
     prev.bomb = bombDown;
     prev.skill = skillDown;
     return;
@@ -98,15 +103,14 @@ export function applyGamepadToInput(
   const up = stick.up || isButtonDown(pad, GP.DPAD_UP);
   const down = stick.down || isButtonDown(pad, GP.DPAD_DOWN);
 
-  if (left) input.left = true;
-  if (right) input.right = true;
-  if (up) input.up = true;
-  if (down) input.down = true;
+  input.padLeft = left;
+  input.padRight = right;
+  input.padUp = up;
+  input.padDown = down;
 
-  if (isButtonDown(pad, GP.A) || isButtonDown(pad, GP.RT)) {
-    input.shoot = true;
-    resumeAudio();
-  }
+  const shoot = isButtonDown(pad, GP.A) || isButtonDown(pad, GP.RT);
+  input.padShoot = shoot;
+  if (shoot) resumeAudio();
 
   if (risingEdge(bombDown, prev.bomb)) {
     input.bomb = true;

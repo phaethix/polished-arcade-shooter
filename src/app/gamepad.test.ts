@@ -89,7 +89,7 @@ describe('applyGamepadToInput', () => {
     return { state: 'playing' } as GameData;
   }
 
-  it('sets move and shoot from stick and A without clearing other flags', () => {
+  it('sets pad move and shoot from stick and A without clearing keyboard flags', () => {
     const input = createInputState();
     input.left = true;
     const prev: GamepadButtonPrev = { bomb: false, skill: false, pause: false };
@@ -98,9 +98,21 @@ describe('applyGamepadToInput', () => {
       buttons: [{ pressed: true }, { pressed: false }, { pressed: false }],
     });
     applyGamepadToInput(mkPlaying(), input, pad, prev);
-    expect(input.right).toBe(true);
+    expect(input.padRight).toBe(true);
     expect(input.left).toBe(true);
-    expect(input.shoot).toBe(true);
+    expect(input.padShoot).toBe(true);
+  });
+
+  it('clears padRight when stick returns to center', () => {
+    const input = createInputState();
+    const prev: GamepadButtonPrev = { bomb: false, skill: false, pause: false };
+    const padRight = fakePad({ axes: [0.5, 0] });
+    applyGamepadToInput(mkPlaying(), input, padRight, prev);
+    expect(input.padRight).toBe(true);
+
+    const padCenter = fakePad({ axes: [0, 0] });
+    applyGamepadToInput(mkPlaying(), input, padCenter, prev);
+    expect(input.padRight).toBe(false);
   });
 
   it('triggers bomb on rising edge only while playing', () => {
@@ -126,8 +138,8 @@ describe('applyGamepadToInput', () => {
       buttons: [{ pressed: true }, { pressed: true }, { pressed: true }],
     });
     applyGamepadToInput({ state: 'menu' } as GameData, input, pad, prev);
-    expect(input.right).toBe(false);
-    expect(input.shoot).toBe(false);
+    expect(input.padRight).toBe(false);
+    expect(input.padShoot).toBe(false);
     expect(input.bomb).toBe(false);
     expect(input.skill).toBe(false);
   });
