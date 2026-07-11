@@ -30,12 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Inject the deployed PartyKit host into the production build.
+      # Inject the deployed co-op host into the production build.
       # Set VITE_PARTYKIT_HOST as a *repository variable*
       # (Settings → Secrets and variables → Actions → Variables), e.g.
-      #   sky-blaster-coop.<user>.partykit.dev
-      # obtained from `npx partykit deploy`. Without it the client falls back
-      # to localhost:1999 and co-op connections fail in production.
+      #   sky-blaster-coop.<subdomain>.workers.dev
+      # obtained from `npx wrangler deploy`. Without it the client falls back
+      # to localhost:8787 and co-op connections fail in production.
       - name: Build for GitHub Pages
         run: npm run build:pages
         env:
@@ -56,3 +56,29 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-coop:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: coop-server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Deploy the co-op room server to Cloudflare Workers.
+      # Requires repository secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
+      # PARTYKIT_HOST is the client origin allowed to open WebSocket handshakes.
+      - name: Deploy co-op room server
+        run: npx wrangler deploy --var PARTYKIT_HOST:${{ vars.VITE_PARTYKIT_HOST }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
