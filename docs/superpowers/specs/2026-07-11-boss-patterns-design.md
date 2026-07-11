@@ -1,7 +1,7 @@
 # Design: Chapter boss attack patterns
 
 **Date:** 2026-07-11  
-**Status:** Approved for implementation (approach 1)  
+**Status:** Implemented  
 **Branch:** `feature/boss-patterns`
 
 ---
