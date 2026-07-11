@@ -1,7 +1,7 @@
 # Design: Auto-fire toggle
 
 **Date:** 2026-07-11  
-**Status:** Approved
+**Status:** Implemented
 
 ## Goal
 

@@ -1,7 +1,7 @@
 # Design: Practice mode
 
 **Date:** 2026-07-11  
-**Status:** Approved for implementation (approach 1 — lean sandbox)  
+**Status:** Implemented  
 **Branch naming:** `feature/practice-mode` (CI requires `feature/`, not `feat/`)
 
 ---

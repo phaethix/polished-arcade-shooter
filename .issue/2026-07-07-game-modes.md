@@ -6,16 +6,17 @@
 
 ## Summary
 
-Four distinct ways to play, selectable from the main menu.
+Five distinct ways to play, selectable from the main menu.
 
 ## Modes
 
-| ID          | Name            | Description                                              |
-| ----------- | --------------- | -------------------------------------------------------- |
-| `story`     | Story Mode      | 4 chapters × 5 stages = 20 levels with brief story beats |
-| `endless`   | Endless         | Current wave-based mode (default)                        |
-| `boss_rush` | Boss Rush       | Back-to-back boss fights, escalating patterns            |
-| `daily`     | Daily Challenge | Seeded run with modifier (e.g. double speed, no bombs)   |
+| ID          | Name            | Description                                                              |
+| ----------- | --------------- | ------------------------------------------------------------------------ |
+| `story`     | Story Mode      | 4 chapters × 5 stages = 20 levels with brief story beats                 |
+| `endless`   | Endless         | Current wave-based mode (default)                                        |
+| `boss_rush` | Boss Rush       | Back-to-back boss fights, escalating patterns                            |
+| `daily`     | Daily Challenge | Date-seeded modifier + date-seeded gameplay RNG                          |
+| `practice`  | Practice        | Endless-like sandbox; invincibility on by default (`I`); no meta rewards |
 
 ## Menu flow
 
@@ -45,10 +46,11 @@ Main Menu
 
 ## Implementation
 
-- `src/game/modes.ts` — mode config, daily seed, wave/boss rules
+- `src/game/modes.ts` — mode config, daily seed, wave/boss rules, practice helpers
 - Menu mode picker (↑/↓ or tap mode row)
 - Story victory screen after stage 20
 - Endless behavior unchanged from prior releases
+- Practice invincibility toggle (`I`) and meta isolation (no coins / achievements / high scores)
 
 ## Acceptance criteria
 
@@ -57,3 +59,4 @@ Main Menu
 - [x] Boss rush is playable
 - [x] Story mode 20-stage progression with chapter bosses
 - [x] Daily challenge uses date-seeded modifier
+- [x] Practice mode with invincibility and no meta rewards

@@ -1,7 +1,7 @@
 # Design: Daily seeded RNG, enemies split, run stats
 
 **Date:** 2026-07-11  
-**Status:** Approved for implementation (A → B → C)  
+**Status:** Implemented  
 **Scope:** Three sequential slices; each ships playable and reviewable on its own.
 
 ---

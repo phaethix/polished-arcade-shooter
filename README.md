@@ -69,8 +69,8 @@ npm run build
 
 1. Open the **[live demo](https://phaethix.github.io/polished-arcade-shooter/)** or run `npm run dev`.
 2. On the title screen, choose **mode**, **aircraft**, **weapon**, and **difficulty**.
-3. **Move** with WASD / arrow keys (or drag on touch). **Shoot** with Space / Z (auto-fire on touch).
-4. Use **bombs** (`X` / `B`), **skills** (`C` / `Shift` or the on-screen skill zone), and power-ups to survive waves and bosses.
+3. **Move** with WASD / arrow keys (or drag on touch). **Shoot** with Space / Z (`F` toggles keyboard auto-fire; touch auto-fires while held).
+4. Use **bombs** (`X` / `B`), **skills** (`C` / `Shift` or the on-screen skill zone), and power-ups to survive waves and bosses. In Practice, `I` toggles invincibility.
 
 Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md)**.
 
@@ -97,23 +97,25 @@ Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md
 src/
 ├── main.tsx              # Vite entry
 ├── index.css             # Tailwind global styles
-├── App.tsx               # React shell — game loop and input wiring
-├── app/
-│   └── input.ts          # Keyboard / touch state
+├── App.tsx               # React shell — canvas + hook wiring
+├── app/                  # Input state, game loop, keyboard/pointer hooks
 └── game/
-    ├── engine.ts         # Update loop, collisions, state machine
+    ├── engine.ts         # Update/render orchestrator, state machine
+    ├── combat.ts         # Damage, kills, bombs, laser
     ├── types.ts          # Shared interfaces
-    ├── core/             # Constants, collision helpers
-    ├── storage/          # High-score persistence
+    ├── core/             # Constants, collision, seeded RNG
+    ├── systems/          # Per-tick simulation slices
+    ├── enemies/          # Spawn, AI, chapter boss patterns
     ├── render/           # Menu, HUD, overlays, game-over, world
+    ├── storage/          # High-score persistence
     ├── modes.ts          # Modes, difficulty, wave rules
-    ├── enemies.ts        # Spawn logic, AI
     ├── weapons.ts        # Firing patterns
-    ├── skills.ts         # Active abilities
+    ├── skills.ts         # Active abilities + homing steering
     ├── aircraft.ts       # Ship stats
     ├── chapters.ts       # Chapter themes
     ├── hazards.ts        # Environmental threats
     ├── progress.ts       # Coins, unlocks, achievements
+    ├── run-stats.ts      # Game-over accuracy / damage / kills
     ├── effects.ts        # Particles, screen shake
     ├── audio.ts          # Procedural SFX
     └── *.test.ts         # Co-located Vitest suites
@@ -154,7 +156,7 @@ Module boundaries and dependency rules: **[docs/ARCHITECTURE.md](docs/ARCHITECTU
 Contributions are welcome. This repository follows the [GitHub community standards](https://github.com/phaethix/polished-arcade-shooter/community) for healthy open source projects.
 
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md).
-2. Fork the repo and create a branch (`feat/…`, `fix/…`, etc.).
+2. Fork the repo and create a branch (`feature/…`, `fix/…`, `docs/…`, etc.).
 3. Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
 4. Open a pull request using the [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 5. Ensure CI passes (`typecheck`, `lint`, `format:check`, `test:run`, `build`).
