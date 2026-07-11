@@ -78,13 +78,15 @@ export function handleCoopMessage(g: GameData, msg: NetMessage, session: CoopSes
 }
 
 /** Exported for unit tests; also used internally to wire `CoopSession` handlers below. */
-export function handleCoopClose(g: GameData): void {
+export function handleCoopClose(g: GameData, session: CoopSession): void {
   if (isCoopRunActive(g)) {
     endCoopRunForDisconnect(g);
     return;
   }
   if (g.coopLobbyStatus === 'error') return;
-  applyCoopError(g, 'disconnected');
+  // If the socket never opened, the server was unreachable (e.g. a missing or
+  // wrong VITE_PARTYKIT_HOST in production) rather than a mid-session drop.
+  applyCoopError(g, session.isOpen() ? 'disconnected' : 'connection_failed');
 }
 
 /** Host flow: generate a room code, connect, and announce as host. */
@@ -95,7 +97,7 @@ export function hostCoopEndless(g: GameData, session: CoopSession): void {
   g.coopLobbyStatus = 'connecting';
   session.connect(g.coopRoomCode, {
     onMessage: (msg) => handleCoopMessage(g, msg, session),
-    onClose: () => handleCoopClose(g),
+    onClose: () => handleCoopClose(g, session),
   });
   session.sendHello('host', localLoadout(g));
 }
@@ -151,7 +153,7 @@ export function submitJoinCoopCode(g: GameData, session: CoopSession): boolean {
   g.coopLobbyStatus = 'connecting';
   session.connect(code, {
     onMessage: (msg) => handleCoopMessage(g, msg, session),
-    onClose: () => handleCoopClose(g),
+    onClose: () => handleCoopClose(g, session),
   });
   session.sendHello('guest', localLoadout(g));
   return true;

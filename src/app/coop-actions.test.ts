@@ -322,7 +322,7 @@ describe('handleCoopMessage', () => {
 describe('handleCoopClose', () => {
   it('ends an in-progress coop run when the local socket closes', () => {
     const g = coopHost();
-    handleCoopClose(g);
+    handleCoopClose(g, new CoopSession());
     expect(g.state).toBe('gameover');
   });
 
@@ -330,7 +330,31 @@ describe('handleCoopClose', () => {
     const g = createGameData();
     g.coopRole = 'host';
     g.coopLobbyStatus = 'connecting';
-    handleCoopClose(g);
+    const session = new CoopSession();
+    vi.spyOn(session, 'isOpen').mockReturnValue(true);
+    handleCoopClose(g, session);
+    expect(g.coopLobbyStatus).toBe('error');
+    expect(g.coopError).toBe('disconnected');
+  });
+
+  it('reports connection_failed when the socket never opened', () => {
+    const g = createGameData();
+    g.coopRole = 'host';
+    g.coopLobbyStatus = 'connecting';
+    const session = new CoopSession();
+    vi.spyOn(session, 'isOpen').mockReturnValue(false);
+    handleCoopClose(g, session);
+    expect(g.coopLobbyStatus).toBe('error');
+    expect(g.coopError).toBe('connection_failed');
+  });
+
+  it('reports disconnected when the socket dropped after opening', () => {
+    const g = createGameData();
+    g.coopRole = 'host';
+    g.coopLobbyStatus = 'connecting';
+    const session = new CoopSession();
+    vi.spyOn(session, 'isOpen').mockReturnValue(true);
+    handleCoopClose(g, session);
     expect(g.coopLobbyStatus).toBe('error');
     expect(g.coopError).toBe('disconnected');
   });

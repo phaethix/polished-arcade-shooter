@@ -110,6 +110,7 @@ const COOP_ERROR_LABELS: Record<string, string> = {
   game_started: 'That room already started',
   invalid_code: 'Enter a valid 6-character code',
   disconnected: 'Disconnected from room',
+  connection_failed: 'Could not reach co-op server — check VITE_PARTYKIT_HOST',
 };
 
 /** Human-readable text for a coop `error` message code. */

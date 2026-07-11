@@ -30,8 +30,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Inject the deployed PartyKit host into the production build.
+      # Set VITE_PARTYKIT_HOST as a *repository variable*
+      # (Settings → Secrets and variables → Actions → Variables), e.g.
+      #   sky-blaster-coop.<user>.partykit.dev
+      # obtained from `npx partykit deploy`. Without it the client falls back
+      # to localhost:1999 and co-op connections fail in production.
       - name: Build for GitHub Pages
         run: npm run build:pages
+        env:
+          VITE_PARTYKIT_HOST: ${{ vars.VITE_PARTYKIT_HOST }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
