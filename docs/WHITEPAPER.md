@@ -49,7 +49,7 @@ Three principles governed every expansion phase:
 
 **Incremental vertical slices.** Each phase delivered a complete, playable layer — not a half-wired feature waiting for a future PR. Players could always launch the game and enjoy a coherent experience.
 
-**Extend, never replace.** Endless mode, the original core loop, remained intact throughout development. Story, boss rush, and daily challenge are overlays on shared engine primitives, not parallel codebases.
+**Extend, never replace.** Endless mode, the original core loop, remained intact throughout development. Story, boss rush, daily challenge, and practice are overlays on shared engine primitives, not parallel codebases.
 
 **One concern per commit.** Types, data definitions, game logic, UI, and documentation landed in separate commits. This kept reviews small, bisects clean, and history readable — enforced in CI via Conventional Commits.
 
@@ -71,14 +71,15 @@ All sound is **procedurally synthesized** via the Web Audio API; no external aud
 
 ### 3.2 Play modes
 
-Four modes share the same combat engine but differ in structure and goals:
+Five modes share the same combat engine but differ in structure and goals:
 
-| Mode                | Purpose                                                                                                                                  |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Story**           | A 20-stage campaign (4 chapters × 5 stages) with narrative boss encounters and a mission-complete ending.                                |
-| **Endless**         | The original survival loop — infinite waves, escalating difficulty, chapter rotation every 5 waves.                                      |
-| **Boss Rush**       | Skill check — consecutive boss fights with scaling HP and no filler waves.                                                               |
-| **Daily Challenge** | Retention hook — a date-seeded modifier (double speed, no power-ups, single HP, or kamikaze swarm) shared by all players on a given day. |
+| Mode                | Purpose                                                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Story**           | A 20-stage campaign (4 chapters × 5 stages) with narrative boss encounters and a mission-complete ending.                             |
+| **Endless**         | The original survival loop — infinite waves, escalating difficulty, chapter rotation every 5 waves.                                   |
+| **Boss Rush**       | Skill check — consecutive boss fights with scaling HP and no filler waves.                                                            |
+| **Daily Challenge** | Retention hook — a date-seeded modifier (double speed, no power-ups, single HP, or kamikaze swarm); gameplay RNG is also date-seeded. |
+| **Practice**        | Invincible sandbox (toggle with `I`) for loadout and pattern training; no coins, achievements, or high scores.                        |
 
 ### 3.3 Loadout depth
 
@@ -90,6 +91,8 @@ Four modes share the same combat engine but differ in structure and goals:
 
 **Five weapons** alter the firing model: standard spread, armor-piercing pierce, shotgun burst, sustained laser ramp, and homing missiles. Weapons are selectable on the menu and discoverable as in-run drops.
 
+**Difficulty tiers** (Easy / Normal / Hard) scale enemy speed, HP, spawn rate, and starting HP. Keyboard auto-fire defaults on and toggles with `F`.
+
 ### 3.4 Enemy ecology
 
 Ten enemy archetypes create escalating tactical pressure:
@@ -97,7 +100,7 @@ Ten enemy archetypes create escalating tactical pressure:
 - **Foundation** — basic, fast, tank, boss.
 - **Behavioral** — splitter (spawns minis), sniper (aimed shots), shielded (directional armor), kamikaze (rush explosion), healer (aura support).
 
-Spawn pools widen as waves advance; boss waves replace the full wave with a single high-HP target.
+Spawn pools widen as waves advance; boss waves replace the full wave with a single high-HP target. Each chapter’s boss uses a distinct attack pattern and hull accent (fan, rain, broadside, ring).
 
 ### 3.5 Environmental chapters
 
@@ -215,7 +218,7 @@ The project followed a published roadmap (`.issue/2026-07-07-roadmap.md`) of six
 | 5     | Game modes              | Story, endless, boss rush, daily        |
 | 6     | Meta progression        | Coins, unlocks, achievements            |
 
-Each phase was specified in `.issue/00x-*.md`, implemented across multiple small commits, reviewed via pull request, tagged on merge, and deployed automatically.
+Each phase was specified in `.issue/YYYY-MM-DD-*.md`, implemented across multiple small commits, reviewed via pull request, tagged on merge, and deployed automatically.
 
 ### 6.2 Release cadence
 
@@ -233,6 +236,7 @@ Tags trigger the `release.yml` workflow, which builds the production bundle and 
 ### 6.3 Quality gates
 
 - **TypeScript** — `npm run typecheck` on every CI run.
+- **Lint / format / tests** — ESLint, Prettier (`format:check`), and Vitest (`test:run`) run in CI.
 - **Commit lint** — Husky + Commitlint enforce Conventional Commits locally; `git-conventions.yml` validates on PR.
 - **Single-file build** — production output is one HTML file, eliminating path issues on GitHub Pages.
 
@@ -260,15 +264,13 @@ Toast notifications celebrate unlocks without interrupting gameplay, reinforcing
 
 ## 8. Future direction
 
-Phases 1–6 are complete. The following items remain in the backlog as optional extensions — none are required for the current product to stand alone:
+Phases 1–6 are complete. Post-expansion work already shipped includes difficulty tiers, Practice mode, run statistics on game over, Daily seeded gameplay RNG, auto-fire toggle, and chapter-specific boss attack patterns.
 
-- **Difficulty tiers** — Easy / Normal / Hard scaling enemy density and bullet speed.
-- **Practice mode** — sandbox with invincibility toggle for pattern learning.
-- **Run statistics** — post-game DPS, accuracy, and graze-rate summary.
+Optional backlog items (see `.issue/2026-07-07-roadmap.md`):
+
+- **Practice wave select** — jump to a starting wave inside Practice.
 - **Accessibility** — colorblind-friendly palettes for enemies and pickups.
 - **Controller support** — gamepad mapping alongside keyboard and touch.
-
-These are documented in `.issue/2026-07-07-roadmap.md` under _Supplementary ideas_ and can be prioritized based on player feedback.
 
 ---
 
