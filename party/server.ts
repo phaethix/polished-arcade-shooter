@@ -73,7 +73,7 @@ export default class CoopRoom implements Party.Server {
 
   private handleHello(
     data: Extract<NetMessage, { type: 'hello' }>,
-    sender: Party.Connection<ConnState>
+    sender: Party.Connection<ConnState>,
   ): void {
     for (const connection of this.room.getConnections<ConnState>()) {
       if (connection.id === sender.id) continue;
@@ -111,7 +111,7 @@ export default class CoopRoom implements Party.Server {
         canStart: hostPresent && guestPresent,
         hostLoadout,
         guestLoadout,
-      })
+      }),
     );
   }
 }

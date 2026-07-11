@@ -40,3 +40,7 @@ yarn-error.log*
 
 # partykit
 .partykit/
+
+# local agent / indexing tooling (never commit)
+.codegraph/
+.superpowers/

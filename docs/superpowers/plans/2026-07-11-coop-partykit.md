@@ -16,37 +16,37 @@
 
 ## File map
 
-| File | Responsibility |
-| --- | --- |
-| `src/net/protocol.ts` | Shared message types + parse/serialize helpers |
-| `src/net/protocol.test.ts` | Protocol unit tests |
-| `src/net/room-code.ts` | Generate / validate short room codes |
-| `src/net/room-code.test.ts` | Room-code unit tests |
-| `src/net/snapshot.ts` | Build/apply host→guest snapshots |
-| `src/net/snapshot.test.ts` | Snapshot round-trip tests |
-| `src/net/coop-session.ts` | PartySocket client: connect, send, handlers |
-| `party/server.ts` | PartyKit room: join cap, role, relay |
-| `partykit.json` | PartyKit project config |
-| `src/game/types.ts` | `coop_endless` mode; `player2`; coop session fields |
-| `src/game/modes.ts` | Mode order/info; treat coop like endless for waves |
-| `src/game/modes.test.ts` | Coop mode helpers |
-| `src/game/coop.ts` | `isCoopMode`, `activePlayers`, team-wipe helper |
-| `src/game/coop.test.ts` | Team-wipe / activePlayers tests |
-| `src/game/combat.ts` | `hurtPlayer(g, player)` + team wipe |
-| `src/game/systems/collision-system.ts` | Collide both ships in coop |
-| `src/game/systems/player-controller.ts` | Update both players from two inputs |
-| `src/game/systems/power-up-system.ts` | Either ship can collect |
-| `src/game/engine.ts` | Coop reset / start from lobby payload |
-| `src/game/render/*` | Draw P2; lobby UI strings |
-| `src/game/render/menu-layout.ts` | Host / Join / room-code rows when coop |
-| `src/app/use-game-loop.ts` | Host snapshot tick; guest apply-only path |
-| `src/app/use-keyboard-input.ts` | Coop menu actions (host/join/start) |
-| `src/App.tsx` | Wire session ref if needed |
-| `.env.example` | `VITE_PARTYKIT_HOST` |
-| `package.json` | `partykit`, `partysocket` deps + scripts |
-| `docs/PLAYER_GUIDE.md` | Co-op controls / room flow |
-| `README.md` | PartyKit deploy note |
-| Spec status → Implemented | After verify |
+| File                                    | Responsibility                                      |
+| --------------------------------------- | --------------------------------------------------- |
+| `src/net/protocol.ts`                   | Shared message types + parse/serialize helpers      |
+| `src/net/protocol.test.ts`              | Protocol unit tests                                 |
+| `src/net/room-code.ts`                  | Generate / validate short room codes                |
+| `src/net/room-code.test.ts`             | Room-code unit tests                                |
+| `src/net/snapshot.ts`                   | Build/apply host→guest snapshots                    |
+| `src/net/snapshot.test.ts`              | Snapshot round-trip tests                           |
+| `src/net/coop-session.ts`               | PartySocket client: connect, send, handlers         |
+| `party/server.ts`                       | PartyKit room: join cap, role, relay                |
+| `partykit.json`                         | PartyKit project config                             |
+| `src/game/types.ts`                     | `coop_endless` mode; `player2`; coop session fields |
+| `src/game/modes.ts`                     | Mode order/info; treat coop like endless for waves  |
+| `src/game/modes.test.ts`                | Coop mode helpers                                   |
+| `src/game/coop.ts`                      | `isCoopMode`, `activePlayers`, team-wipe helper     |
+| `src/game/coop.test.ts`                 | Team-wipe / activePlayers tests                     |
+| `src/game/combat.ts`                    | `hurtPlayer(g, player)` + team wipe                 |
+| `src/game/systems/collision-system.ts`  | Collide both ships in coop                          |
+| `src/game/systems/player-controller.ts` | Update both players from two inputs                 |
+| `src/game/systems/power-up-system.ts`   | Either ship can collect                             |
+| `src/game/engine.ts`                    | Coop reset / start from lobby payload               |
+| `src/game/render/*`                     | Draw P2; lobby UI strings                           |
+| `src/game/render/menu-layout.ts`        | Host / Join / room-code rows when coop              |
+| `src/app/use-game-loop.ts`              | Host snapshot tick; guest apply-only path           |
+| `src/app/use-keyboard-input.ts`         | Coop menu actions (host/join/start)                 |
+| `src/App.tsx`                           | Wire session ref if needed                          |
+| `.env.example`                          | `VITE_PARTYKIT_HOST`                                |
+| `package.json`                          | `partykit`, `partysocket` deps + scripts            |
+| `docs/PLAYER_GUIDE.md`                  | Co-op controls / room flow                          |
+| `README.md`                             | PartyKit deploy note                                |
+| Spec status → Implemented               | After verify                                        |
 
 ---
 
@@ -429,13 +429,7 @@ describe('coop', () => {
 In `types.ts`:
 
 ```typescript
-export type GameMode =
-  | 'story'
-  | 'endless'
-  | 'boss_rush'
-  | 'daily'
-  | 'practice'
-  | 'coop_endless';
+export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice' | 'coop_endless';
 
 // On GameData:
 player2: Player | null;
@@ -761,7 +755,7 @@ When `coopRole === 'guest'` and playing:
 
 - [ ] **Step 4: Meta** — wrap `awardRunCoins` / `saveHighScore` so only host persists in coop (`if (isCoopMode(g) && g.coopRole !== 'host') return` early in those paths).
 
-- [ ] **Step 5: `npm run typecheck` && `npm run test:run`
+- [ ] \*\*Step 5: `npm run typecheck` && `npm run test:run`
 
 - [ ] **Step 6: Commit**
 
@@ -785,7 +779,7 @@ git commit -m "feat(game): host authoritative coop loop and guest snapshot rende
 
 PLAYER_GUIDE: Co-op Endless, H/J/Space, team wipe, PartyKit required for co-op only.
 
-README:  
+README:
 
 ```bash
 npm run party:dev   # terminal 1
@@ -813,18 +807,18 @@ git commit -m "docs: document coop endless partykit play and deploy"
 
 ## Spec coverage checklist
 
-| Spec item | Task |
-| --- | --- |
-| Solo offline | Task 4/9 (no socket unless coop) |
-| Room codes | Task 1, 8 |
-| PartyKit relay, cap 2 | Task 3 |
-| Host authority | Task 9 |
-| Team wipe | Task 5 |
-| Co-op Endless only | Task 4 |
-| Snapshot ~10–20Hz | Task 6, 9 |
-| Host-only meta | Task 9 |
-| Docs / deploy | Task 10 |
-| No Cloudflare required | Task 3/10 (partykit.dev) |
+| Spec item              | Task                             |
+| ---------------------- | -------------------------------- |
+| Solo offline           | Task 4/9 (no socket unless coop) |
+| Room codes             | Task 1, 8                        |
+| PartyKit relay, cap 2  | Task 3                           |
+| Host authority         | Task 9                           |
+| Team wipe              | Task 5                           |
+| Co-op Endless only     | Task 4                           |
+| Snapshot ~10–20Hz      | Task 6, 9                        |
+| Host-only meta         | Task 9                           |
+| Docs / deploy          | Task 10                          |
+| No Cloudflare required | Task 3/10 (partykit.dev)         |
 
 ---
 

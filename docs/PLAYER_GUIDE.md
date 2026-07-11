@@ -13,7 +13,7 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 | **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                                 |
 | **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream             |
 | **Practice**        | Endless-like waves with invincibility on by default (`I` toggles); choose a start wave (1–20) on the menu; chapter follows Endless rotation with bosses on waves 5, 10, 15, and 20; no coins, achievements, or high scores |
-| **Co-op Endless**   | 2-player online Endless via a room code; same wave/chapter rules as Endless; **team wipe** — if either ship reaches 0 HP, the run ends for both; requires a PartyKit room server (solo modes do not) |
+| **Co-op Endless**   | 2-player online Endless via a room code; same wave/chapter rules as Endless; **team wipe** — if either ship reaches 0 HP, the run ends for both; requires a PartyKit room server (solo modes do not)                       |
 
 ---
 
@@ -33,9 +33,9 @@ Touch: the lobby row uses the same left/right split as other menu rows — left 
 
 ### In run
 
-| Role  | Simulation | Notes |
-| ----- | ---------- | ----- |
-| Host  | Runs the full game loop; sends snapshots to the guest | Coins, achievements, and high scores save to **host** `localStorage` only |
+| Role  | Simulation                                                | Notes                                                                                                                               |
+| ----- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Host  | Runs the full game loop; sends snapshots to the guest     | Coins, achievements, and high scores save to **host** `localStorage` only                                                           |
 | Guest | Sends input; renders host snapshots (no local combat sim) | Move (keyboard **or** mouse/touch drag), shoot, bomb, and pause requests work; **active skills (C / Shift) do not** yet (host-only) |
 
 ### Team wipe and disconnects
@@ -107,17 +107,17 @@ Menu navigation, auto-fire toggle, Practice invincibility, and unlocks remain ke
 
 ### Menu
 
-| Key           | Action                                           |
-| ------------- | ------------------------------------------------ |
-| `↑` / `↓`     | Cycle game mode                                  |
-| `←` / `→`     | Cycle aircraft                                   |
-| `[` / `]`     | Cycle weapon                                     |
-| `,` / `.`     | Cycle difficulty                                 |
-| `-` / `=`     | Cycle Practice start wave (1–20; Practice only)  |
-| `U`           | Unlock selected aircraft or weapon (costs coins) |
+| Key           | Action                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| `↑` / `↓`     | Cycle game mode                                                  |
+| `←` / `→`     | Cycle aircraft                                                   |
+| `[` / `]`     | Cycle weapon                                                     |
+| `,` / `.`     | Cycle difficulty                                                 |
+| `-` / `=`     | Cycle Practice start wave (1–20; Practice only)                  |
+| `U`           | Unlock selected aircraft or weapon (costs coins)                 |
 | `Space` / `Z` | Start game (solo); **host starts co-op run** when lobby is ready |
-| `H`           | Host co-op lobby (Co-op Endless only)            |
-| `J`           | Join co-op — type 6-char code on screen, Enter   |
+| `H`           | Host co-op lobby (Co-op Endless only)                            |
+| `J`           | Join co-op — type 6-char code on screen, Enter                   |
 
 **Practice start wave:** When Practice is selected, a **START WAVE** row appears between Difficulty and Start. Use `-` / `=` (or tap the row) to pick wave 1–20; the tagline shows the chapter name (same rotation as Endless) and **· boss** on waves 5, 10, 15, and 20.
 

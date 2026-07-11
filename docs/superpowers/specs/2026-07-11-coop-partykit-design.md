@@ -18,20 +18,20 @@ Pages remains a static client. Realtime needs a small room service — **PartyKi
 
 ## Decisions (locked)
 
-| Topic | Choice |
-| --- | --- |
-| Mode | Cooperative only (not PvP) |
-| Join | Room code (host creates, guest enters code) |
-| Simulation authority | **Host browser** runs `update()`; PartyKit is a dumb relay |
-| Lives / fail | **Team wipe** — either player's `hp ≤ 0` ends the run |
-| Modes in v1 | **Co-op Endless only**; all other modes stay solo |
-| Solo | Unchanged; no WebSocket unless Co-op path selected |
-| Backend | PartyKit free Individual deploy (`npx partykit deploy`) |
-| Cloudflare | **Not required** for v1; optional later for own account / custom domain |
-| Matchmaking | Out of scope |
-| WebRTC / lockstep | Out of scope |
-| Guest client prediction | Out of scope in v1 (snapshot render only) |
-| Player count | Hard cap **2** |
+| Topic                   | Choice                                                                  |
+| ----------------------- | ----------------------------------------------------------------------- |
+| Mode                    | Cooperative only (not PvP)                                              |
+| Join                    | Room code (host creates, guest enters code)                             |
+| Simulation authority    | **Host browser** runs `update()`; PartyKit is a dumb relay              |
+| Lives / fail            | **Team wipe** — either player's `hp ≤ 0` ends the run                   |
+| Modes in v1             | **Co-op Endless only**; all other modes stay solo                       |
+| Solo                    | Unchanged; no WebSocket unless Co-op path selected                      |
+| Backend                 | PartyKit free Individual deploy (`npx partykit deploy`)                 |
+| Cloudflare              | **Not required** for v1; optional later for own account / custom domain |
+| Matchmaking             | Out of scope                                                            |
+| WebRTC / lockstep       | Out of scope                                                            |
+| Guest client prediction | Out of scope in v1 (snapshot render only)                               |
+| Player count            | Hard cap **2**                                                          |
 
 ---
 
@@ -64,21 +64,21 @@ Existing mode / aircraft / weapon / difficulty / start. No PartyKit connect.
 
 Add a distinct menu entry (e.g. game mode **Co-op Endless**, or Endless with Solo/Co-op sub-choice). Recommended: new mode id `coop_endless` so layout stays clear.
 
-| Action | Behavior |
-| --- | --- |
-| Host | Connect to PartyKit → create room with a short alphanumeric **room code** (also the PartyKit room `id`) → show code → wait in lobby |
-| Guest | Enter room code → join Party room with that `id` → lobby |
-| Loadout | Each player picks aircraft/weapon locally; host's **difficulty** applies to the run |
-| Start | When **2 players** are in the room, **only host** can start; no separate Ready step in v1 |
-| Lock | After start, reject further joins |
+| Action  | Behavior                                                                                                                            |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Host    | Connect to PartyKit → create room with a short alphanumeric **room code** (also the PartyKit room `id`) → show code → wait in lobby |
+| Guest   | Enter room code → join Party room with that `id` → lobby                                                                            |
+| Loadout | Each player picks aircraft/weapon locally; host's **difficulty** applies to the run                                                 |
+| Start   | When **2 players** are in the room, **only host** can start; no separate Ready step in v1                                           |
+| Lock    | After start, reject further joins                                                                                                   |
 
 ### Disconnect (v1)
 
-| Event | Result |
-| --- | --- |
-| Host disconnect (lobby or run) | Session ends; guest sees “host disconnected” |
-| Guest disconnect during run | Run ends (team wipe style; no 1P continuation) |
-| Guest disconnect in lobby | Host returns to waiting for a guest |
+| Event                          | Result                                         |
+| ------------------------------ | ---------------------------------------------- |
+| Host disconnect (lobby or run) | Session ends; guest sees “host disconnected”   |
+| Guest disconnect during run    | Run ends (team wipe style; no 1P continuation) |
+| Guest disconnect in lobby      | Host returns to waiting for a guest            |
 
 ---
 
@@ -88,21 +88,21 @@ JSON messages over PartyKit WebSocket (PartySocket on the client).
 
 ### Lobby
 
-| Type | Direction | Payload (conceptual) |
-| --- | --- | --- |
-| `hello` | client → room | `{ role: 'host' \| 'guest', loadout }` |
-| `lobby` | room → clients | `{ players, canStart }` |
-| `start` | host → room → all | `{ difficulty, seed, loadouts }` |
+| Type    | Direction         | Payload (conceptual)                   |
+| ------- | ----------------- | -------------------------------------- |
+| `hello` | client → room     | `{ role: 'host' \| 'guest', loadout }` |
+| `lobby` | room → clients    | `{ players, canStart }`                |
+| `start` | host → room → all | `{ difficulty, seed, loadouts }`       |
 
 Room assigns the first connection as host if using host-created room id; guest joins by room id = code.
 
 ### In run
 
-| Type | Direction | Rate / notes |
-| --- | --- | --- |
-| `input` | guest → host (via room) | Throttled; axes/buttons: move, shoot, bomb, skill, pause request |
-| `snapshot` | host → guest | ~10–20 Hz; gameplay state without heavy cosmetics |
-| `gameover` | host → guest | Team wipe or disconnect reason |
+| Type       | Direction               | Rate / notes                                                     |
+| ---------- | ----------------------- | ---------------------------------------------------------------- |
+| `input`    | guest → host (via room) | Throttled; axes/buttons: move, shoot, bomb, skill, pause request |
+| `snapshot` | host → guest            | ~10–20 Hz; gameplay state without heavy cosmetics                |
+| `gameover` | host → guest            | Team wipe or disconnect reason                                   |
 
 ### Snapshot contents (v1)
 
@@ -143,9 +143,9 @@ Client Party URL via `import.meta.env` (dev: `localhost:1999` / PartyKit dev; pr
 
 ### Deploy
 
-| Artifact | How |
-| --- | --- |
-| Game | Existing `pages.yml` → GitHub Pages |
+| Artifact    | How                                                                    |
+| ----------- | ---------------------------------------------------------------------- |
+| Game        | Existing `pages.yml` → GitHub Pages                                    |
 | Room server | `npx partykit deploy` per [docs](https://docs.partykit.io/quickstart/) |
 
 ---

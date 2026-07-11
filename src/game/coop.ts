@@ -61,10 +61,7 @@ const COOP_SEAT_PALETTE: Record<CoopSeat, ShipPalette> = {
 };
 
 /** Resolves draw colors for a ship; coop seats override craft hull tints. */
-export function resolveCoopShipPalette(
-  aircraftId: AircraftId,
-  seat: CoopSeat | null,
-): ShipPalette {
+export function resolveCoopShipPalette(aircraftId: AircraftId, seat: CoopSeat | null): ShipPalette {
   if (seat) return COOP_SEAT_PALETTE[seat];
   const craft = getAircraft(aircraftId);
   return {

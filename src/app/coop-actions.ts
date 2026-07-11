@@ -6,7 +6,12 @@ import type { InputState } from './input';
 import { CoopSession } from '../net/coop-session';
 import type { NetMessage } from '../net/protocol';
 import { applySnapshot, buildSnapshot, type GameSnapshot } from '../net/snapshot';
-import { generateRoomCode, isRoomCodeChar, isValidRoomCode, normalizeRoomCode } from '../net/room-code';
+import {
+  generateRoomCode,
+  isRoomCodeChar,
+  isValidRoomCode,
+  normalizeRoomCode,
+} from '../net/room-code';
 
 function localLoadout(g: GameData) {
   return { aircraftId: g.selectedAircraft, weaponId: g.selectedWeapon };

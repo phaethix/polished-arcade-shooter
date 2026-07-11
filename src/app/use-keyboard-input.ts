@@ -40,12 +40,7 @@ export function useKeyboardInput(
       const g = gameRef.current;
       const session = sessionRef.current;
 
-      if (
-        down &&
-        g.state === 'menu' &&
-        isCoopMode(g) &&
-        g.coopLobbyStatus === 'entering_code'
-      ) {
+      if (down && g.state === 'menu' && isCoopMode(g) && g.coopLobbyStatus === 'entering_code') {
         if (e.code === 'Escape') {
           cancelJoinCoopCodeEntry(g);
           playMenuSelect();
