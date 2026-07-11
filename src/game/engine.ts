@@ -1,4 +1,4 @@
-import type { GameData } from './types';
+import type { CoopLoadout, Difficulty, GameData } from './types';
 import type { InputState } from '../app/input';
 import { createInputState } from '../app/input';
 import { CANVAS_W, CANVAS_H } from './core/constants';
@@ -62,6 +62,13 @@ export function createGameData(): GameData {
     coopRole: null,
     coopRoomCode: '',
     coopGuestInput: createInputState(),
+    coopLobbyStatus: 'idle',
+    coopHostPresent: false,
+    coopGuestPresent: false,
+    coopLobbyCanStart: false,
+    coopHostLoadout: null,
+    coopGuestLoadout: null,
+    coopError: null,
     bullets: [],
     enemies: [],
     particles: [],
@@ -230,6 +237,33 @@ export function resetGame(g: GameData): void {
   syncChapterForMode(g);
   g.enemiesPerWave = getEnemiesPerWave(g);
   initChapterHazards(g);
+}
+
+export interface CoopStartPayload {
+  difficulty: Difficulty;
+  seed: number;
+  hostLoadout: CoopLoadout;
+  guestLoadout: CoopLoadout;
+}
+
+/**
+ * Minimal coop run bootstrap for Task 8: applies the host's `start` payload to local
+ * menu state and resets into `playing` with both ships created. Host/guest input
+ * separation and snapshot sync are wired in Task 9.
+ */
+export function beginCoopRun(g: GameData, payload: CoopStartPayload): void {
+  g.gameMode = 'coop_endless';
+  g.difficulty = payload.difficulty;
+  const isHost = g.coopRole === 'host';
+  const localLoadout = isHost ? payload.hostLoadout : payload.guestLoadout;
+  const remoteLoadout = isHost ? payload.guestLoadout : payload.hostLoadout;
+  g.selectedAircraft = localLoadout.aircraftId;
+  g.selectedWeapon = localLoadout.weaponId;
+  if (!canStartGame(g)) return;
+  resetGame(g);
+  g.rng = createRng(payload.seed);
+  g.player2 = createPlayer(remoteLoadout.aircraftId, remoteLoadout.weaponId);
+  g.coopLobbyStatus = 'ready';
 }
 
 /** Advances one fixed-timestep simulation tick while the run is active. */

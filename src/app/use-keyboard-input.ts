@@ -11,25 +11,37 @@ import {
   cyclePracticeStartWave,
   togglePause,
 } from '../game/engine';
+import { isCoopMode } from '../game/coop';
 import { resumeAudio, playMenuSelect } from '../game/audio';
 import type { GameData } from '../game/types';
 import type { InputState } from './input';
+import type { CoopSession } from '../net/coop-session';
+import {
+  hostCoopEndless,
+  joinCoopEndless,
+  leaveCoopEndless,
+  startCoopEndlessRun,
+} from './coop-actions';
 
 export function useKeyboardInput(
   gameRef: RefObject<GameData>,
   inputRef: RefObject<InputState>,
+  sessionRef: RefObject<CoopSession>,
 ): void {
   useEffect(() => {
     const handle = (e: KeyboardEvent, down: boolean) => {
       const inp = inputRef.current;
       const g = gameRef.current;
+      const session = sessionRef.current;
 
       switch (e.code) {
         case 'ArrowUp':
         case 'KeyW':
           if (g.state === 'menu' && down) {
             resumeAudio();
+            const wasCoop = isCoopMode(g);
             cycleGameModeSelection(g, -1);
+            if (wasCoop && !isCoopMode(g)) leaveCoopEndless(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -41,7 +53,9 @@ export function useKeyboardInput(
         case 'KeyS':
           if (g.state === 'menu' && down) {
             resumeAudio();
+            const wasCoop = isCoopMode(g);
             cycleGameModeSelection(g, 1);
+            if (wasCoop && !isCoopMode(g)) leaveCoopEndless(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -86,12 +100,34 @@ export function useKeyboardInput(
           }
           break;
 
+        case 'KeyH':
+          if (g.state === 'menu' && isCoopMode(g) && down) {
+            resumeAudio();
+            hostCoopEndless(g, session);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
+        case 'KeyJ':
+          if (g.state === 'menu' && isCoopMode(g) && down) {
+            resumeAudio();
+            joinCoopEndless(g, session);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
         case 'Space':
         case 'KeyZ':
           e.preventDefault();
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
+              if (g.state === 'menu' && isCoopMode(g)) {
+                if (startCoopEndlessRun(g, session)) playMenuSelect();
+                break;
+              }
               if (g.state === 'menu' && !canStartGame(g)) {
                 break;
               }
@@ -207,5 +243,5 @@ export function useKeyboardInput(
       window.removeEventListener('keydown', kd);
       window.removeEventListener('keyup', ku);
     };
-  }, [gameRef, inputRef]);
+  }, [gameRef, inputRef, sessionRef]);
 }

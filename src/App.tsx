@@ -5,6 +5,7 @@ import { CANVAS_W, CANVAS_H } from './game/core/constants';
 import { useGameLoop } from './app/use-game-loop';
 import { useKeyboardInput } from './app/use-keyboard-input';
 import { usePointerInput } from './app/use-pointer-input';
+import { CoopSession } from './net/coop-session';
 import type { GameData } from './game/types';
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
   const gameRef = useRef<GameData>(createGameData());
   const inputRef = useRef(createInputState());
   const rafRef = useRef<number>(0);
+  const sessionRef = useRef(new CoopSession());
 
   const getCanvasScale = useCallback(() => {
     const canvas = canvasRef.current;
@@ -29,8 +31,8 @@ export default function App() {
   }, []);
 
   useGameLoop(canvasRef, gameRef, inputRef, rafRef);
-  useKeyboardInput(gameRef, inputRef);
-  usePointerInput(canvasRef, gameRef, inputRef, getCanvasScale);
+  useKeyboardInput(gameRef, inputRef, sessionRef);
+  usePointerInput(canvasRef, gameRef, inputRef, sessionRef, getCanvasScale);
 
   return (
     <div

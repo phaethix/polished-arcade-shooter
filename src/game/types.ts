@@ -135,6 +135,21 @@ export interface Player {
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
 
+/** A player's aircraft/weapon choice, shared over the coop wire protocol. */
+export interface CoopLoadout {
+  aircraftId: AircraftId;
+  weaponId: WeaponId;
+}
+
+/** Menu-facing lobby phase for the coop host/join flow. */
+export type CoopLobbyStatus =
+  | 'idle'
+  | 'connecting'
+  | 'waiting_for_guest'
+  | 'waiting_for_host'
+  | 'ready'
+  | 'error';
+
 export interface HighScore {
   score: number;
   date: string;
@@ -184,6 +199,16 @@ export interface GameData {
   coopRoomCode: string;
   /** Latest input snapshot for the guest ship, applied to `player2` on the host sim. */
   coopGuestInput: InputState;
+  /** Menu-only lobby phase driving the host/join UI copy. */
+  coopLobbyStatus: CoopLobbyStatus;
+  coopHostPresent: boolean;
+  coopGuestPresent: boolean;
+  /** True once the room has both a host and a guest; only the host may start. */
+  coopLobbyCanStart: boolean;
+  coopHostLoadout: CoopLoadout | null;
+  coopGuestLoadout: CoopLoadout | null;
+  /** Last `error` message from the room (e.g. `room_full`, `role_taken`, `game_started`). */
+  coopError: string | null;
   bullets: Bullet[];
   enemies: Enemy[];
   particles: Particle[];
