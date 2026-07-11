@@ -30,7 +30,7 @@ export default function App() {
     };
   }, []);
 
-  useGameLoop(canvasRef, gameRef, inputRef, rafRef);
+  useGameLoop(canvasRef, gameRef, inputRef, rafRef, sessionRef);
   useKeyboardInput(gameRef, inputRef, sessionRef);
   usePointerInput(canvasRef, gameRef, inputRef, sessionRef, getCanvasScale);
 

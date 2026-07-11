@@ -12,6 +12,8 @@ export interface InputState {
   padShoot: boolean;
   bomb: boolean;
   skill: boolean;
+  /** Coop guest only: rising-edge pause request relayed to the host over the wire. */
+  pause: boolean;
   touchX: number | null;
   touchY: number | null;
   touchActive: boolean;
@@ -33,6 +35,7 @@ export function createInputState(): InputState {
     padShoot: false,
     bomb: false,
     skill: false,
+    pause: false,
     touchX: null,
     touchY: null,
     touchActive: false,

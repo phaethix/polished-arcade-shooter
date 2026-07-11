@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 import { resetGame, canStartGame, resumeFromPause } from '../game/engine';
+import { isCoopMode } from '../game/coop';
 import { isInSkillZone } from '../game/render/menu-layout';
 import { resumeAudio, playMenuSelect } from '../game/audio';
 import type { GameData } from '../game/types';
@@ -55,7 +56,11 @@ export function usePointerInput(
         return;
       }
       if (g.state === 'paused') {
-        resumeFromPause(g);
+        if (isCoopMode(g) && g.coopRole === 'guest') {
+          inp.pause = true;
+        } else {
+          resumeFromPause(g);
+        }
         return;
       }
 

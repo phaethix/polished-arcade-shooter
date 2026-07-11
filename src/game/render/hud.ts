@@ -1,29 +1,13 @@
-import type { GameData } from '../types';
+import type { GameData, Player } from '../types';
 import { CANVAS_W, CANVAS_H } from '../core/constants';
 import { getWaveLabel, getDailyModifierLabel } from '../modes';
 import { getChapter } from '../chapters';
 import { drawSkillIndicator } from '../skills';
 import { drawWeaponLabel } from '../weapons';
 
-export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
-  const p = g.player;
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(g.score.toLocaleString(), 10, 30);
-  ctx.font = '14px "Segoe UI",Arial,sans-serif';
-  ctx.fillStyle = '#aac';
-  ctx.fillText(getWaveLabel(g), 10, 50);
-  const chapter = getChapter(g.chapterId);
-  ctx.font = '11px "Segoe UI",Arial,sans-serif';
-  ctx.fillStyle = chapter.hudColor;
-  ctx.fillText(chapter.name, 10, 64);
-  if (g.gameMode === 'daily' && g.dailyModifier) {
-    ctx.fillStyle = '#da8';
-    ctx.fillText(getDailyModifierLabel(g.dailyModifier), 10, 78);
-  }
+/** Draws one ship's segmented HP bar right-aligned at `barY`. Returns the next free y. */
+function drawHpBar(ctx: CanvasRenderingContext2D, p: Player, barY: number, label: string): number {
   const barX = CANVAS_W - 10;
-  const barY = 14;
   const segW = 14;
   const segH = 8;
   const segGap = 3;
@@ -61,8 +45,32 @@ export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.textAlign = 'right';
   ctx.font = '9px "Segoe UI",Arial,sans-serif';
   ctx.fillStyle = '#889';
-  ctx.fillText('HP', barX - totalW - 5, barY + segH - 1);
-  const statusY = barY + segH + 10;
+  ctx.fillText(label, barX - totalW - 5, barY + segH - 1);
+  return barY + segH;
+}
+
+export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
+  const p = g.player;
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 20px "Segoe UI",Arial,sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(g.score.toLocaleString(), 10, 30);
+  ctx.font = '14px "Segoe UI",Arial,sans-serif';
+  ctx.fillStyle = '#aac';
+  ctx.fillText(getWaveLabel(g), 10, 50);
+  const chapter = getChapter(g.chapterId);
+  ctx.font = '11px "Segoe UI",Arial,sans-serif';
+  ctx.fillStyle = chapter.hudColor;
+  ctx.fillText(chapter.name, 10, 64);
+  if (g.gameMode === 'daily' && g.dailyModifier) {
+    ctx.fillStyle = '#da8';
+    ctx.fillText(getDailyModifierLabel(g.dailyModifier), 10, 78);
+  }
+  let barBottom = drawHpBar(ctx, p, 14, g.player2 ? 'P1' : 'HP');
+  if (g.player2) {
+    barBottom = drawHpBar(ctx, g.player2, barBottom + 6, 'P2');
+  }
+  const statusY = barBottom + 10;
   ctx.textAlign = 'right';
   if (p.powerLevel > 0) {
     ctx.font = '11px "Segoe UI",Arial,sans-serif';

@@ -244,7 +244,20 @@ export function killPlayer(g: GameData, target: Player = g.player): void {
   g.flashAlpha = 0.8;
   g.flashColor = '#fff';
   sfx.playGameOver();
-  if (!isPracticeMode(g)) {
+  if (!isPracticeMode(g) && !(isCoopMode(g) && g.coopRole !== 'host')) {
+    saveHighScore(g.score, g.wave);
+  }
+}
+
+/**
+ * Ends an in-progress coop run because the peer disconnected mid-run (host or guest
+ * left the room). Only the host persists the final score; the guest never does.
+ */
+export function endCoopRunForDisconnect(g: GameData): void {
+  if (g.state !== 'playing' && g.state !== 'paused') return;
+  g.state = 'gameover';
+  sfx.playGameOver();
+  if (!isPracticeMode(g) && g.coopRole === 'host') {
     saveHighScore(g.score, g.wave);
   }
 }

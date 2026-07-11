@@ -212,7 +212,11 @@ export function useKeyboardInput(
         case 'Escape':
         case 'KeyP':
           if (down) {
-            togglePause(g);
+            if (isCoopMode(g) && g.coopRole === 'guest') {
+              inp.pause = true;
+            } else {
+              togglePause(g);
+            }
           }
           e.preventDefault();
           break;

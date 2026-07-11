@@ -108,8 +108,9 @@ export function updatePlayerFromInput(g: GameData, input: InputState, dt: number
 }
 
 /**
- * Drives the co-op guest ship from its synced input snapshot. Skills and bombs stay
- * host-only for now (they hard-code `g.player`); guest gets movement, firing, and timers.
+ * Drives the co-op guest ship from its synced input snapshot: movement, firing, bomb,
+ * and status timers. Active skills stay host-only for now (`tryActivateSkill` hard-codes
+ * `g.player`); the guest's `skill` input flag is relayed but currently has no effect.
  */
 function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number): void {
   let mx = 0;
@@ -140,6 +141,11 @@ function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number):
     }
   } else {
     p.shootTimer = Math.min(p.shootTimer, 3);
+  }
+
+  if (input.bomb) {
+    input.bomb = false;
+    activateBomb(g, p);
   }
 
   if (p.invincibleTimer > 0) p.invincibleTimer -= dt;

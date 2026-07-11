@@ -1,9 +1,8 @@
-import type { GameData, Bullet, PowerUp } from '../types';
+import type { GameData, Bullet, Player, PowerUp } from '../types';
 import { getAircraft } from '../aircraft';
 import { getWeapon } from '../weapons';
 
-export function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData) {
-  const p = g.player;
+export function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData, p: Player = g.player) {
   const beamW = 10 + p.powerLevel * 2;
   const top = Math.max(0, p.y - p.height / 2 - 280);
   const gr = ctx.createLinearGradient(p.x, p.y - p.height / 2, p.x, top);
@@ -25,8 +24,7 @@ export function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.restore();
 }
 
-export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData) {
-  const p = g.player;
+export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData, p: Player = g.player) {
   const craft = getAircraft(p.aircraftId);
   if (p.invincibleTimer > 0 && Math.floor(p.invincibleTimer * 10) % 2 === 0) return;
   if (p.skillActiveTimer > 0 && Math.floor(p.skillActiveTimer * 20) % 2 === 0) return;

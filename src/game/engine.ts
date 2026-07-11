@@ -247,9 +247,9 @@ export interface CoopStartPayload {
 }
 
 /**
- * Minimal coop run bootstrap for Task 8: applies the host's `start` payload to local
- * menu state and resets into `playing` with both ships created. Host/guest input
- * separation and snapshot sync are wired in Task 9.
+ * Applies the host's `start` payload to local menu state and resets into `playing`
+ * with both ships created. Host/guest input separation and snapshot sync live in
+ * `use-game-loop.ts` / `coop-actions.ts`.
  */
 export function beginCoopRun(g: GameData, payload: CoopStartPayload): void {
   g.gameMode = 'coop_endless';
@@ -337,6 +337,12 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   if (g.state !== 'gameover') {
     if (g.player.weaponId === 'laser' && g.player.laserRamp > 0) drawLaserBeam(ctx, g);
     drawPlayer(ctx, g);
+    if (g.player2) {
+      if (g.player2.weaponId === 'laser' && g.player2.laserRamp > 0) {
+        drawLaserBeam(ctx, g, g.player2);
+      }
+      drawPlayer(ctx, g, g.player2);
+    }
   }
 
   drawParticles(ctx, g);
