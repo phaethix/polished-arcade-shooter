@@ -1,7 +1,7 @@
 # Design: Practice start-wave select
 
 **Date:** 2026-07-11  
-**Status:** Approved for implementation (approach 1 — menu row)  
+**Status:** Implemented  
 **Branch:** `feature/practice-start-wave`
 
 ---
