@@ -101,6 +101,7 @@ export function createGameData(): GameData {
     damageDealt: 0,
     enemiesKilled: 0,
     autoFire: true,
+    practiceInvincible: false,
   };
   ensureValidMenuSelection(g);
   applyChapterToGame(g, 'space');

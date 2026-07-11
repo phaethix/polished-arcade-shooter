@@ -3,13 +3,14 @@ import { applyChapterToGame, CHAPTER_ORDER, getChapter, getChapterForWave } from
 
 export type { DailyModifier };
 
-export const MODE_ORDER: GameMode[] = ['story', 'endless', 'boss_rush', 'daily'];
+export const MODE_ORDER: GameMode[] = ['story', 'endless', 'boss_rush', 'daily', 'practice'];
 
 export const MODE_INFO: Record<GameMode, { name: string; tagline: string }> = {
   story: { name: 'Story Mode', tagline: '4 chapters · 20 stages' },
   endless: { name: 'Endless', tagline: 'Survive infinite waves' },
   boss_rush: { name: 'Boss Rush', tagline: 'Back-to-back boss fights' },
   daily: { name: 'Daily Challenge', tagline: 'Seeded run with a twist' },
+  practice: { name: 'Practice', tagline: 'Invincible sandbox · no rewards' },
 };
 
 export const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'normal', 'hard'];
@@ -80,6 +81,17 @@ export function initModeState(g: GameData): void {
     g.dailySeed = 0;
     g.dailyModifier = null;
   }
+  g.practiceInvincible = g.gameMode === 'practice';
+}
+
+/** True when the current mode is the practice sandbox. */
+export function isPracticeMode(g: GameData): boolean {
+  return g.gameMode === 'practice';
+}
+
+/** Practice invincibility is active (practice mode + flag on). */
+export function isPracticeInvincible(g: GameData): boolean {
+  return isPracticeMode(g) && g.practiceInvincible;
 }
 
 export function applyDailyPlayerMods(g: GameData): void {
@@ -112,6 +124,7 @@ export function isBossWave(g: GameData): boolean {
       return g.wave % 5 === 0;
     case 'endless':
     case 'daily':
+    case 'practice':
       return g.wave % 5 === 0 && g.wave >= 5;
   }
 }
@@ -125,6 +138,7 @@ export function getEnemiesPerWave(g: GameData): number {
       return 1;
     case 'endless':
     case 'daily':
+    case 'practice':
       return 5 + g.wave * 2;
   }
 }

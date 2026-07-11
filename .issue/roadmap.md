@@ -88,11 +88,13 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | --------------------------------------- | ---------- |
 | Difficulty tiers (Easy / Normal / Hard) | done (#33) |
 | Daily seeded gameplay RNG               | done       |
+| Run statistics on game over             | done       |
+| Auto-fire toggle (`F`)                  | done (#39) |
+| Practice mode                           | done       |
 
 ## Supplementary ideas (backlog)
 
-- **Practice mode** — Sandbox with invincibility toggle
-- **Run statistics screen** — DPS, accuracy, graze rate after game over
+- **Practice wave / chapter select** — Jump to a stage inside Practice
 - **Colorblind palettes** — Accessible enemy and power-up colors
 - **Controller support** — Gamepad mapping alongside keyboard/touch
 

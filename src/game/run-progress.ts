@@ -7,6 +7,7 @@ import {
   STORY_STAGE_CLEAR_COINS,
   unlockAchievement,
 } from './progress';
+import { isPracticeMode } from './modes';
 import * as sfx from './audio';
 
 export function tickAchievementToast(g: GameData, dt: number): void {
@@ -20,6 +21,9 @@ export function tickAchievementToast(g: GameData, dt: number): void {
 }
 
 export function queueAchievement(g: GameData, id: AchievementId): void {
+  if (isPracticeMode(g)) {
+    return;
+  }
   const unlocked = unlockAchievement(id);
   if (unlocked) {
     g.achievementToast = { id, timer: 3.5 };
@@ -28,7 +32,7 @@ export function queueAchievement(g: GameData, id: AchievementId): void {
 }
 
 export function awardRunCoins(g: GameData, amount: number, x?: number, y?: number): void {
-  if (amount <= 0) {
+  if (isPracticeMode(g) || amount <= 0) {
     return;
   }
   addCoins(amount);

@@ -8,7 +8,7 @@ export type WeaponId = 'standard' | 'armor_piercing' | 'shotgun' | 'laser' | 'ho
 
 export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
 
-export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily';
+export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
@@ -214,4 +214,6 @@ export interface GameData {
   damageDealt: number;
   enemiesKilled: number;
   autoFire: boolean; // when true the player fires continuously without holding shoot
+  /** Practice-only: when true, hurtPlayer is a no-op. */
+  practiceInvincible: boolean;
 }

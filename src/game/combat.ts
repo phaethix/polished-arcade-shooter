@@ -4,7 +4,7 @@ import { shake, addParticles, addRing, addScorePopup } from './effects';
 import { saveHighScore } from './storage/highscores';
 import { fireWeapon, getWeapon } from './weapons';
 import { spawnSplitterChildren, blocksCenterShot, kamikazeExplosionRadius } from './enemies';
-import { powerUpsEnabled } from './modes';
+import { powerUpsEnabled, isPracticeInvincible, isPracticeMode } from './modes';
 import { coinRewardForEnemy, recordEnemyKill } from './progress';
 import { awardRunCoins, queueAchievement } from './run-progress';
 import * as sfx from './audio';
@@ -209,6 +209,9 @@ export function activateBomb(g: GameData): void {
 }
 
 export function hurtPlayer(g: GameData): void {
+  if (isPracticeInvincible(g)) {
+    return;
+  }
   const p = g.player;
   g.waveDamageTaken = true;
   p.hp--;
@@ -235,5 +238,7 @@ export function killPlayer(g: GameData): void {
   g.flashAlpha = 0.8;
   g.flashColor = '#fff';
   sfx.playGameOver();
-  saveHighScore(g.score, g.wave);
+  if (!isPracticeMode(g)) {
+    saveHighScore(g.score, g.wave);
+  }
 }

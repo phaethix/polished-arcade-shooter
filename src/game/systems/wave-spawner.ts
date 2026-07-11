@@ -4,6 +4,7 @@ import { spawnEnemy } from '../enemies';
 import {
   getEnemiesPerWave,
   getSpawnIntervalMult,
+  isPracticeMode,
   isStoryComplete,
   syncChapterForMode,
 } from '../modes';
@@ -24,7 +25,9 @@ export function updateWaves(g: GameData): boolean {
         onWaveCleared(g);
         g.modeVictory = true;
         g.state = 'gameover';
-        saveHighScore(g.score, g.wave);
+        if (!isPracticeMode(g)) {
+          saveHighScore(g.score, g.wave);
+        }
         sfx.playBigExplosion();
         return true;
       }

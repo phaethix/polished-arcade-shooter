@@ -170,6 +170,14 @@ export function useKeyboardInput(
           }
           e.preventDefault();
           break;
+
+        case 'KeyI':
+          if (down && g.state === 'playing' && g.gameMode === 'practice') {
+            g.practiceInvincible = !g.practiceInvincible;
+            playMenuSelect();
+          }
+          e.preventDefault();
+          break;
       }
     };
 
