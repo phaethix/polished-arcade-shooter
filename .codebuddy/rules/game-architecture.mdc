@@ -1,0 +1,53 @@
+---
+description: "Sky Blaster game layer architecture and dependency rules"
+alwaysApply: false
+enabled: true
+updatedAt: 2026-07-12T03:57:00.000Z
+provider: 
+---
+
+Read `docs/ARCHITECTURE.md` for the full module map. Follow these rules when changing game code.
+
+# Dependency rules
+
+1. **`engine.ts` is the hub** — imports domain modules and render helpers; domain modules must not import `engine.ts`.
+2. **Render modules are pure drawing** — receive `CanvasRenderingContext2D` and read-only game state; do not mutate `GameData` or advance simulation.
+3. **`app/` is outside the game domain** — input collection stays next to `App.tsx` so `src/game/` stays testable without React.
+4. **Data modules stay side-effect free** — `aircraft.ts`, `weapons.ts`, `chapters.ts`, `modes.ts` export config and pure helpers only.
+
+# Runtime flow
+
+```text
+App.tsx (RAF)
+  ├─ inputRef  ← keyboard / pointer handlers
+  ├─ update() or updateBackground()  ← engine.ts
+  └─ render()  ← engine.ts
+        ├─ chapters / hazards / enemies (domain draw)
+        └─ render/* (UI and overlays)
+```
+
+`GameData` is a single mutable struct passed through update and render.
+
+# Where to put new code
+
+| Concern | Location |
+| --- | --- |
+| State machine, menu actions, reset | `engine.ts` |
+| Combat (damage, kills, bombs, laser) | `combat.ts` |
+| Per-tick simulation | `systems/*` |
+| Achievements and run coin rewards | `run-progress.ts` |
+| HUD, menu, overlays, game-over | `render/` |
+| Spawn AI, enemy types | `enemies.ts` |
+| Weapons, firing patterns | `weapons.ts` |
+| Active abilities | `skills.ts` |
+| Mode rules, daily modifiers | `modes.ts` |
+| Coins, unlocks, achievements | `progress.ts` |
+| Tuning numbers | `core/constants.ts` |
+
+# Touch / menu layout
+
+Menu drawing lives in `render/menu.ts`. Layout constants and touch hit testing live in `render/menu-layout.ts` — update both together when menu geometry changes.
+
+# Testing
+
+Add Vitest coverage for new **pure** logic. Rendering and full engine integration are lower priority unless explicitly requested.

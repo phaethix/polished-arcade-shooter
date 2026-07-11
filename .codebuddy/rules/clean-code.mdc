@@ -1,0 +1,91 @@
+---
+description: Guidelines for writing clean, maintainable, and human-readable code. Apply these rules when writing or reviewing code to ensure consistency and quality.
+alwaysApply: true
+enabled: true
+updatedAt: 2026-07-12T03:57:00.000Z
+provider: 
+---
+
+# Clean Code Guidelines
+
+## Constants Over Magic Numbers
+- Replace hard-coded values with named constants
+- Use descriptive constant names that explain the value's purpose
+- Keep constants at the top of the file or in a dedicated constants file
+
+## Meaningful Names
+- Variables, functions, and classes should reveal their purpose
+- Names should explain why something exists and how it's used
+- Avoid abbreviations unless they're universally understood
+
+## Smart Comments
+
+Follow the [TypeScript JSDoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) conventions used by the official handbook and API documentation tools.
+
+### Allowed
+
+| Form | When to use |
+| --- | --- |
+| `/** … */` JSDoc | Exported functions, classes, interfaces, and public module APIs |
+| `//` single line | Non-obvious **why** (trade-offs, browser quirks, tuning rationale) |
+| `/* … */` block | Rare multi-line **why** explanations only |
+
+### Forbidden
+
+- Decorative section banners (`// ── … ──`, `// ═══ …`, `===`, ASCII art)
+- Comments that restate what the code already says (`// increment counter`, `// draw score`)
+- Comment blocks used as file dividers — use functions, modules, or folders instead
+- Commented-out dead code left in source (delete it; git keeps history)
+- Narration comments on every drawing step in render code
+
+### Structure over comments
+
+If you need a banner to find a section, extract a named function or hook instead (for example `useGameLoop`, `resolveMenuTouch`).
+
+### Examples
+
+```typescript
+/** Creates the initial title-screen game state. */
+export function createGameData(): GameData { … }
+
+// Player bullets ignore slow-motion so firing stays responsive.
+const bulletSpeedMult = b.isPlayer ? 1 : timeMult;
+
+// BAD: // ── Collision ─────────────────
+// BAD: // Update enemies
+```
+
+## Single Responsibility
+- Each function should do exactly one thing
+- Functions should be small and focused
+- If a function needs a comment to explain what it does, it should be split
+
+## DRY (Don't Repeat Yourself)
+- Extract repeated code into reusable functions
+- Share common logic through proper abstraction
+- Maintain single sources of truth
+
+## Clean Structure
+- Keep related code together
+- Organize code in a logical hierarchy
+- Use consistent file and folder naming conventions
+
+## Encapsulation
+- Hide implementation details
+- Expose clear interfaces
+- Move nested conditionals into well-named functions
+
+## Code Quality Maintenance
+- Refactor continuously
+- Fix technical debt early
+- Leave code cleaner than you found it
+
+## Testing
+- Write tests before fixing bugs
+- Keep tests readable and maintainable
+- Test edge cases and error conditions
+
+## Version Control
+- Write clear commit messages
+- Make small, focused commits
+- Use meaningful branch names
