@@ -204,7 +204,7 @@ Version suffixes in keys allow future migrations without corrupting existing sav
 
 ### 6.1 Phased expansion
 
-The project followed a published roadmap (`.issue/roadmap.md`) of six phases:
+The project followed a published roadmap (`.issue/2026-07-07-roadmap.md`) of six phases:
 
 | Phase | Theme                   | Outcome                                 |
 | ----- | ----------------------- | --------------------------------------- |
@@ -268,7 +268,7 @@ Phases 1–6 are complete. The following items remain in the backlog as optional
 - **Accessibility** — colorblind-friendly palettes for enemies and pickups.
 - **Controller support** — gamepad mapping alongside keyboard and touch.
 
-These are documented in `.issue/roadmap.md` under _Supplementary ideas_ and can be prioritized based on player feedback.
+These are documented in `.issue/2026-07-07-roadmap.md` under _Supplementary ideas_ and can be prioritized based on player feedback.
 
 ---
 
@@ -302,15 +302,15 @@ The project is **feature-complete** against its original expansion plan. It is p
 
 ## Appendix C — Related documents
 
-| Document                                   | Role                                  |
-| ------------------------------------------ | ------------------------------------- |
-| [README.md](../README.md)                  | Repository overview and quick start   |
-| [PLAYER_GUIDE.md](./PLAYER_GUIDE.md)       | Controls, modes, enemies, progression |
-| [ARCHITECTURE.md](./ARCHITECTURE.md)       | Source layout and dependency rules    |
-| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Contributor git workflow              |
-| [CONTRIBUTING.md](../CONTRIBUTING.md)      | Development and pull request workflow |
-| [.issue/roadmap.md](../.issue/roadmap.md)  | Phase checklist and backlog           |
-| [.issue/001–006](../.issue/)               | Per-feature specification notes       |
+| Document                                                        | Role                                  |
+| --------------------------------------------------------------- | ------------------------------------- |
+| [README.md](../README.md)                                       | Repository overview and quick start   |
+| [PLAYER_GUIDE.md](./PLAYER_GUIDE.md)                            | Controls, modes, enemies, progression |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)                            | Source layout and dependency rules    |
+| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md)                      | Contributor git workflow              |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)                           | Development and pull request workflow |
+| [.issue/2026-07-07-roadmap.md](../.issue/2026-07-07-roadmap.md) | Phase checklist and backlog           |
+| [.issue/001–006](../.issue/)                                    | Per-feature specification notes       |
 
 ## Appendix D — Document revision history
 

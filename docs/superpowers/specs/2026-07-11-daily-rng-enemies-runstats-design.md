@@ -42,7 +42,7 @@ Out of scope: Practice mode, full replay/recording, object pools, gamepad, color
 | `src/game/hazards.ts`                  | Same for spawn/timing rolls                  |
 | `src/game/combat.ts`                   | Same for drop rolls                          |
 | `docs/PLAYER_GUIDE.md`                 | Note that Daily gameplay RNG is date-seeded  |
-| `.issue/roadmap.md`                    | Mark difficulty done; note seeded Daily      |
+| `.issue/2026-07-07-roadmap.md`         | Mark difficulty done; note seeded Daily      |
 
 ### Acceptance
 

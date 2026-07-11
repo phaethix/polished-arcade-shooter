@@ -95,7 +95,7 @@ No new sprite assets.
 | `src/game/enemies/ai.ts`         | Dispatch boss fire by pattern (or import from `boss-ai.ts`) |
 | `src/game/render/enemies.ts`     | Color accents by pattern                                    |
 | `docs/PLAYER_GUIDE.md`           | Short note under enemies / story bosses                     |
-| `.issue/roadmap.md`              | Backlog item for boss patterns → done                       |
+| `.issue/2026-07-07-roadmap.md`   | Backlog item for boss patterns → done                       |
 
 Prefer extracting boss fire into `enemies/boss-ai.ts` if `ai.ts` grows awkwardly; otherwise keep dispatch in `ai.ts` with helpers in `boss.ts`.
 
