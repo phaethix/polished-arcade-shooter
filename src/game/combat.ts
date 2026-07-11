@@ -1,4 +1,4 @@
-import type { Enemy, GameData, PowerUp, WeaponId } from './types';
+import type { Enemy, GameData, Player, PowerUp, WeaponId } from './types';
 import { COMBO_WINDOW_S } from './core/constants';
 import { shake, addParticles, addRing, addScorePopup } from './effects';
 import { saveHighScore } from './storage/highscores';
@@ -7,12 +7,13 @@ import { spawnSplitterChildren, blocksCenterShot, kamikazeExplosionRadius } from
 import { powerUpsEnabled, isPracticeInvincible, isPracticeMode } from './modes';
 import { coinRewardForEnemy, recordEnemyKill } from './progress';
 import { awardRunCoins, queueAchievement } from './run-progress';
+import { isCoopMode, shouldTeamWipe } from './coop';
 import * as sfx from './audio';
 
-export function playerShoot(g: GameData): void {
-  fireWeapon(g);
-  const color = getWeapon(g.player.weaponId).bulletColor;
-  addParticles(g, g.player.x, g.player.y - g.player.height / 2, 3, color, 2, 'spark', [1, 3]);
+export function playerShoot(g: GameData, p: Player = g.player): void {
+  fireWeapon(g, p);
+  const color = getWeapon(p.weaponId).bulletColor;
+  addParticles(g, p.x, p.y - p.height / 2, 3, color, 2, 'spark', [1, 3]);
 }
 
 function tryPowerUp(g: GameData, x: number, y: number): void {
@@ -58,24 +59,24 @@ export function explodeKamikaze(g: GameData, e: Enemy): void {
   e.hp = 0;
 }
 
-export function playerHitFromEnemy(g: GameData): boolean {
-  const p = g.player;
-  if (p.skillShieldActive) {
-    p.skillAbsorbedHits++;
-    p.damageBoost = p.skillAbsorbedHits;
-    addParticles(g, p.x, p.y, 10, '#fd4', 3, 'spark');
+/** Resolves a melee-range enemy hit against one ship. Returns true when the run just ended. */
+export function playerHitFromEnemy(g: GameData, target: Player = g.player): boolean {
+  if (target.skillShieldActive) {
+    target.skillAbsorbedHits++;
+    target.damageBoost = target.skillAbsorbedHits;
+    addParticles(g, target.x, target.y, 10, '#fd4', 3, 'spark');
     sfx.playHit();
     return false;
   }
-  if (p.shieldActive) {
-    p.shieldActive = false;
-    p.shieldTimer = 0;
-    addParticles(g, p.x, p.y, 15, '#4af', 3, 'spark');
+  if (target.shieldActive) {
+    target.shieldActive = false;
+    target.shieldTimer = 0;
+    addParticles(g, target.x, target.y, 15, '#4af', 3, 'spark');
     sfx.playHit();
     return false;
   }
-  hurtPlayer(g);
-  return p.hp <= 0;
+  hurtPlayer(g, target);
+  return g.state === 'gameover';
 }
 
 export function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number): void {
@@ -137,8 +138,12 @@ export function onEnemyKilled(g: GameData, e: Enemy, x: number, y: number): void
   }
 }
 
-export function updateLaserFire(g: GameData, shooting: boolean, dt: number): void {
-  const p = g.player;
+export function updateLaserFire(
+  g: GameData,
+  shooting: boolean,
+  dt: number,
+  p: Player = g.player,
+): void {
   if (p.weaponId !== 'laser') {
     p.laserRamp = Math.max(0, p.laserRamp - dt * 4);
     return;
@@ -187,7 +192,7 @@ export function updateLaserFire(g: GameData, shooting: boolean, dt: number): voi
   }
 }
 
-export function activateBomb(g: GameData): void {
+export function activateBomb(g: GameData, p: Player = g.player): void {
   g.bullets = g.bullets.filter((b) => b.isPlayer);
   for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
     const e = g.enemies[ei];
@@ -204,36 +209,37 @@ export function activateBomb(g: GameData): void {
   g.flashColor = '#fff';
   shake(g, 8, 20);
   sfx.playBigExplosion();
-  addParticles(g, g.player.x, g.player.y, 40, '#fff', 6, 'explosion', [3, 8]);
-  addRing(g, g.player.x, g.player.y, '#88ddff', 120);
+  addParticles(g, p.x, p.y, 40, '#fff', 6, 'explosion', [3, 8]);
+  addRing(g, p.x, p.y, '#88ddff', 120);
 }
 
-export function hurtPlayer(g: GameData): void {
+/** Damages one ship. In co-op the run ends when `shouldTeamWipe` is true, not just this ship's hp. */
+export function hurtPlayer(g: GameData, target: Player = g.player): void {
   if (isPracticeInvincible(g)) {
     return;
   }
-  const p = g.player;
   g.waveDamageTaken = true;
-  p.hp--;
-  p.invincibleTimer = 2;
+  target.hp--;
+  target.invincibleTimer = 2;
   shake(g, 10, 12);
   g.flashAlpha = 0.25;
   g.flashColor = '#ff2200';
-  addParticles(g, p.x, p.y, 25, '#f44', 4, 'explosion', [2, 6]);
-  addParticles(g, p.x, p.y, 10, '#ff8800', 3, 'ember', [1, 3]);
+  addParticles(g, target.x, target.y, 25, '#f44', 4, 'explosion', [2, 6]);
+  addParticles(g, target.x, target.y, 10, '#ff8800', 3, 'ember', [1, 3]);
   sfx.playExplosion();
-  if (p.hp <= 0) {
-    killPlayer(g);
+  if (isCoopMode(g)) {
+    if (shouldTeamWipe(g)) killPlayer(g, target);
+  } else if (target.hp <= 0) {
+    killPlayer(g, target);
   }
 }
 
-export function killPlayer(g: GameData): void {
-  const p = g.player;
+export function killPlayer(g: GameData, target: Player = g.player): void {
   g.state = 'gameover';
-  addParticles(g, p.x, p.y, 60, '#f60', 6, 'explosion', [3, 8]);
-  addParticles(g, p.x, p.y, 30, '#fff', 5, 'spark', [2, 5]);
-  addParticles(g, p.x, p.y, 20, '#ff8800', 4, 'ember', [2, 4]);
-  addRing(g, p.x, p.y, '#ff4444', 80);
+  addParticles(g, target.x, target.y, 60, '#f60', 6, 'explosion', [3, 8]);
+  addParticles(g, target.x, target.y, 30, '#fff', 5, 'spark', [2, 5]);
+  addParticles(g, target.x, target.y, 20, '#ff8800', 4, 'ember', [2, 4]);
+  addRing(g, target.x, target.y, '#ff4444', 80);
   shake(g, 15, 30);
   g.flashAlpha = 0.8;
   g.flashColor = '#fff';

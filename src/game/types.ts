@@ -1,4 +1,5 @@
 import type { Rng } from './core/rng';
+import type { InputState } from '../app/input';
 
 export type AircraftId = 'falcon' | 'phantom' | 'fortress';
 
@@ -181,6 +182,8 @@ export interface GameData {
   coopRole: 'host' | 'guest' | null;
   /** Co-op PartyKit room code; empty string when not in a session. */
   coopRoomCode: string;
+  /** Latest input snapshot for the guest ship, applied to `player2` on the host sim. */
+  coopGuestInput: InputState;
   bullets: Bullet[];
   enemies: Enemy[];
   particles: Particle[];

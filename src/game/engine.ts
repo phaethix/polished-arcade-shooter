@@ -61,6 +61,7 @@ export function createGameData(): GameData {
     player2: null,
     coopRole: null,
     coopRoomCode: '',
+    coopGuestInput: createInputState(),
     bullets: [],
     enemies: [],
     particles: [],
@@ -182,6 +183,7 @@ export function resetGame(g: GameData): void {
   initModeState(g);
   Object.assign(g, {
     player: createPlayer(aircraft, weapon),
+    coopGuestInput: createInputState(),
     bullets: [],
     enemies: [],
     particles: [],

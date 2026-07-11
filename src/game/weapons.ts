@@ -1,4 +1,4 @@
-import type { WeaponId, GameData } from './types';
+import type { WeaponId, GameData, Player } from './types';
 import { getAircraft } from './aircraft';
 import * as sfx from './audio';
 
@@ -88,14 +88,13 @@ export const ALTERNATE_WEAPONS: WeaponId[] = WEAPON_ORDER.filter((id) => id !== 
 
 const BULLET_SPEED = 12;
 
-function bulletColor(g: GameData): string {
-  const craft = getAircraft(g.player.aircraftId);
-  const weapon = getWeapon(g.player.weaponId);
-  return g.player.weaponId === 'standard' ? craft.bulletColor : weapon.bulletColor;
+function bulletColor(p: Player): string {
+  const craft = getAircraft(p.aircraftId);
+  const weapon = getWeapon(p.weaponId);
+  return p.weaponId === 'standard' ? craft.bulletColor : weapon.bulletColor;
 }
 
-function pushStandardSpread(g: GameData, damage: number, color: string) {
-  const p = g.player;
+function pushStandardSpread(g: GameData, p: Player, damage: number, color: string) {
   const l = p.powerLevel;
   g.bullets.push({
     x: p.x,
@@ -160,17 +159,15 @@ function pushStandardSpread(g: GameData, damage: number, color: string) {
     }
 }
 
-export function fireStandard(g: GameData) {
-  const p = g.player;
+export function fireStandard(g: GameData, p: Player = g.player) {
   const damage = 1 + p.damageBoost;
   p.damageBoost = 0;
-  const color = bulletColor(g);
+  const color = bulletColor(p);
   sfx.playShoot();
-  pushStandardSpread(g, damage, color);
+  pushStandardSpread(g, p, damage, color);
 }
 
-export function fireArmorPiercing(g: GameData) {
-  const p = g.player;
+export function fireArmorPiercing(g: GameData, p: Player = g.player) {
   const damage = 1 + p.damageBoost;
   p.damageBoost = 0;
   const color = getWeapon('armor_piercing').bulletColor;
@@ -204,8 +201,7 @@ export function fireArmorPiercing(g: GameData) {
       mk(p.x + d * 5, p.y - p.height / 2, d * 3.5, -BULLET_SPEED * 0.9, 3, 10, damage);
 }
 
-export function fireShotgun(g: GameData) {
-  const p = g.player;
+export function fireShotgun(g: GameData, p: Player = g.player) {
   const damage = 1 + p.damageBoost;
   p.damageBoost = 0;
   const color = getWeapon('shotgun').bulletColor;
@@ -232,8 +228,7 @@ export function fireShotgun(g: GameData) {
   }
 }
 
-export function fireHoming(g: GameData) {
-  const p = g.player;
+export function fireHoming(g: GameData, p: Player = g.player) {
   const damage = 1 + p.damageBoost;
   p.damageBoost = 0;
   const color = getWeapon('homing').bulletColor;
@@ -260,23 +255,23 @@ export function fireHoming(g: GameData) {
   }
 }
 
-/** Dispatch player primary fire based on equipped weapon. */
-export function fireWeapon(g: GameData) {
-  switch (g.player.weaponId) {
+/** Dispatch primary fire for a ship based on its equipped weapon. */
+export function fireWeapon(g: GameData, p: Player = g.player) {
+  switch (p.weaponId) {
     case 'armor_piercing':
-      fireArmorPiercing(g);
+      fireArmorPiercing(g, p);
       break;
     case 'shotgun':
-      fireShotgun(g);
+      fireShotgun(g, p);
       break;
     case 'homing':
-      fireHoming(g);
+      fireHoming(g, p);
       break;
     case 'laser':
       break;
     case 'standard':
     default:
-      fireStandard(g);
+      fireStandard(g, p);
       break;
   }
 }
