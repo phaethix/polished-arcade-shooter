@@ -9,12 +9,15 @@ import {
   getDailyModifierLabel,
   getDailySeed,
   pickDailyModifier,
+  isPracticeMode,
+  practiceStartWaveLabel,
 } from '../modes';
 import { isAircraftUnlocked, isWeaponUnlocked, canAffordUnlock, loadCoins } from '../progress';
-import { MENU_LAYOUT } from './menu-layout';
+import { getMenuLayout } from './menu-layout';
 
 export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
-  const layout = MENU_LAYOUT;
+  const showPracticeStart = isPracticeMode(g);
+  const layout = getMenuLayout(showPracticeStart);
 
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
@@ -127,6 +130,19 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
   ctx.font = '10px "Segoe UI",Arial,sans-serif';
   ctx.fillText(diff.tagline, CANVAS_W / 2, layout.difficulty.taglineY);
 
+  if (showPracticeStart) {
+    const sw = layout.startWave;
+    ctx.fillStyle = '#fd4';
+    ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
+    ctx.fillText('START WAVE', CANVAS_W / 2, sw.labelY);
+    ctx.fillStyle = '#8df';
+    ctx.font = 'bold 18px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(`◀  WAVE ${g.practiceStartWave}  ▶`, CANVAS_W / 2, sw.valueY);
+    ctx.fillStyle = '#889';
+    ctx.font = '10px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(practiceStartWaveLabel(g.practiceStartWave), CANVAS_W / 2, sw.taglineY);
+  }
+
   const ready = isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
   ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
   ctx.fillStyle = ready ? '#fff' : '#f88';
@@ -148,6 +164,7 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
     ['X / B', 'Bomb'],
     ['F', 'Toggle auto-fire'],
     ['I', 'Toggle invincibility (practice)'],
+    ['- / =', 'Practice start wave'],
   ];
   const controlsTop = layout.controls.topY;
   const controlsStep = layout.controls.step;

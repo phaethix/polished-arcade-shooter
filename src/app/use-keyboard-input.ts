@@ -8,6 +8,7 @@ import {
   cycleWeaponSelection,
   cycleGameModeSelection,
   cycleDifficultySelection,
+  cyclePracticeStartWave,
   togglePause,
 } from '../game/engine';
 import { resumeAudio, playMenuSelect } from '../game/audio';
@@ -150,6 +151,23 @@ export function useKeyboardInput(
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleDifficultySelection(g, 1);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
+        case 'Minus':
+          if (g.state === 'menu' && g.gameMode === 'practice' && down) {
+            resumeAudio();
+            cyclePracticeStartWave(g, -1);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+        case 'Equal':
+          if (g.state === 'menu' && g.gameMode === 'practice' && down) {
+            resumeAudio();
+            cyclePracticeStartWave(g, 1);
             playMenuSelect();
             e.preventDefault();
           }
