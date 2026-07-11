@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status:** Implemented (Tasks 1–10 on `feature/coop-endless-partykit`). Remaining gaps: guest skills host-only; no live co-op smoke in CI.
+
 **Goal:** Optional 2-player cooperative Endless over PartyKit room codes, while solo modes stay fully offline on GitHub Pages.
 
 **Architecture:** Host browser runs authoritative `update()`; PartyKit room only caps at 2 players and relays JSON (`lobby` / `input` / `snapshot` / `gameover`). Guest sends input and renders snapshots. Solo never opens a WebSocket.

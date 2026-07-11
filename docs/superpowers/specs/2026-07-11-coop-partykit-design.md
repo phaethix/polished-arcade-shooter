@@ -1,8 +1,10 @@
 # Design: Co-op Endless via PartyKit
 
 **Date:** 2026-07-11  
-**Status:** Approved (spec)  
-**Branch:** (implementation TBD)
+**Status:** Implemented  
+**Branch:** `feature/coop-endless-partykit`
+
+**Remaining gaps (v1):** Guest active skills are relayed but not applied (host-only). No automated two-client smoke test in CI — manual verify with `party:dev` + two browsers.
 
 ---
 

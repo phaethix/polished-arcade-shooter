@@ -1,6 +1,6 @@
 # Sky Blaster
 
-> A browser-native vertical shoot-'em-up with five game modes, loadout depth, local meta progression, and procedural audio — built with React, TypeScript, and Canvas 2D.
+> A browser-native vertical shoot-'em-up with six game modes (including optional 2P co-op Endless), loadout depth, local meta progression, and procedural audio — built with React, TypeScript, and Canvas 2D.
 
 [![CI](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml)
 [![Deploy](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml)
@@ -26,7 +26,7 @@ The codebase is structured for incremental feature growth: a thin React shell ho
 
 |                 |                                                               |
 | --------------- | ------------------------------------------------------------- |
-| **Modes**       | Story, Endless, Boss Rush, Daily, Practice                    |
+| **Modes**       | Story, Endless, Boss Rush, Daily, Practice, Co-op Endless     |
 | **Loadout**     | 3 aircraft with active skills · 5 weapons                     |
 | **Difficulty**  | Easy / Normal / Hard — speed, HP, spawn rate, starting HP     |
 | **World**       | 4 chapters with environmental hazards · 10 enemy archetypes   |
@@ -52,6 +52,23 @@ npm run dev
 ```
 
 Open the URL printed by Vite (typically `http://localhost:5173`).
+
+### Co-op Endless (local)
+
+Solo modes need only Vite. Co-op also needs a PartyKit room server in a second terminal:
+
+```bash
+# Terminal 1 — PartyKit relay (default localhost:1999)
+npm run party:dev
+
+# Terminal 2 — game client
+cp .env.example .env   # optional; defaults to localhost:1999
+VITE_PARTYKIT_HOST=localhost:1999 npm run dev
+```
+
+Open two browser windows, select **Co-op Endless**, host with `H`, join with `J` and the room code, then the host presses Space when both are in the lobby. See [PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md#co-op-endless).
+
+**Deploy room server:** `npm run party:deploy` (PartyKit free tier → `*.partykit.dev`). Set `VITE_PARTYKIT_HOST` to that host for production builds (GitHub Pages env or `.env` at build time). The static game on Pages stays separate; only co-op clients open a WebSocket.
 
 ### Verify changes
 
@@ -90,6 +107,8 @@ Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md
 | `npm run lint` / `lint:fix`       | ESLint                                      |
 | `npm run format` / `format:check` | Prettier                                    |
 | `npm test` / `test:run`           | Vitest (watch / single run)                 |
+| `npm run party:dev`               | PartyKit dev server (co-op relay)           |
+| `npm run party:deploy`            | Deploy PartyKit room server                 |
 
 ### Project structure
 
