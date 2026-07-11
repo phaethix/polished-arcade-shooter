@@ -18,6 +18,11 @@ import {
   isStoryComplete,
   isPracticeMode,
   isPracticeInvincible,
+  PRACTICE_START_WAVE_MAX,
+  PRACTICE_START_WAVE_MIN,
+  clampPracticeStartWave,
+  nextPracticeStartWave,
+  practiceStartWaveLabel,
   initModeState,
   MODE_ORDER,
   DIFFICULTY_ORDER,
@@ -316,5 +321,25 @@ describe('practice mode helpers', () => {
     expect(isPracticeInvincible(mkGame({ gameMode: 'endless', practiceInvincible: true }))).toBe(
       false,
     );
+  });
+});
+
+describe('practice start wave helpers', () => {
+  it('clamps out-of-range values into 1..20', () => {
+    expect(clampPracticeStartWave(0)).toBe(PRACTICE_START_WAVE_MIN);
+    expect(clampPracticeStartWave(99)).toBe(PRACTICE_START_WAVE_MAX);
+    expect(clampPracticeStartWave(10)).toBe(10);
+  });
+
+  it('wraps when cycling past the ends', () => {
+    expect(nextPracticeStartWave(1, -1)).toBe(20);
+    expect(nextPracticeStartWave(20, 1)).toBe(1);
+    expect(nextPracticeStartWave(10, 1)).toBe(11);
+  });
+
+  it('labels chapter and marks boss waves', () => {
+    expect(practiceStartWaveLabel(1)).toBe('Deep Space');
+    expect(practiceStartWaveLabel(10)).toBe('Asteroid Belt · boss');
+    expect(practiceStartWaveLabel(5)).toContain('boss');
   });
 });
