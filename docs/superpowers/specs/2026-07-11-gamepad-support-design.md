@@ -1,7 +1,7 @@
 # Design: Gamepad support (gameplay)
 
 **Date:** 2026-07-11  
-**Status:** Approved for implementation (approach 1 — poll into InputState)  
+**Status:** Implemented  
 **Branch:** `feature/gamepad-support`
 
 ---

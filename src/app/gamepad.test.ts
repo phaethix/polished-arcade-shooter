@@ -131,4 +131,15 @@ describe('applyGamepadToInput', () => {
     expect(input.bomb).toBe(false);
     expect(input.skill).toBe(false);
   });
+
+  it('toggles pause on Start rising edge', () => {
+    const g = { state: 'playing' } as GameData;
+    const input = createInputState();
+    const prev: GamepadButtonPrev = { bomb: false, skill: false, pause: false };
+    const pad = fakePad({
+      buttons: Array.from({ length: 10 }, (_, i) => ({ pressed: i === 9 })),
+    });
+    applyGamepadToInput(g, input, pad, prev);
+    expect(g.state).toBe('paused');
+  });
 });
