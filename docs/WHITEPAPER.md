@@ -3,9 +3,9 @@
 |                      |                                                     |
 | -------------------- | --------------------------------------------------- |
 | **Project**          | Sky Blaster (polished-arcade-shooter)               |
-| **Game version**     | v0.7.0                                              |
-| **Document version** | 1.2.2                                               |
-| **Last updated**     | 2026-07-07 22:10 (UTC+8)                            |
+| **Game version**     | v0.9.0                                              |
+| **Document version** | 1.3.0                                               |
+| **Last updated**     | 2026-07-11 17:18 (UTC+8)                            |
 | **Status**           | Expansion complete (Phases 1–6)                     |
 | **License**          | MIT                                                 |
 | **Live demo**        | https://phaethix.github.io/polished-arcade-shooter/ |
@@ -79,7 +79,7 @@ Five modes share the same combat engine but differ in structure and goals:
 | **Endless**         | The original survival loop — infinite waves, escalating difficulty, chapter rotation every 5 waves.                                   |
 | **Boss Rush**       | Skill check — consecutive boss fights with scaling HP and no filler waves.                                                            |
 | **Daily Challenge** | Retention hook — a date-seeded modifier (double speed, no power-ups, single HP, or kamikaze swarm); gameplay RNG is also date-seeded. |
-| **Practice**        | Invincible sandbox (toggle with `I`) for loadout and pattern training; no coins, achievements, or high scores.                        |
+| **Practice**        | Invincible sandbox (toggle with `I`) for loadout and pattern training; menu start-wave select (1–20); no coins, achievements, or high scores. |
 
 ### 3.3 Loadout depth
 
@@ -230,6 +230,8 @@ Each phase was specified in `.issue/YYYY-MM-DD-*.md`, implemented across multipl
 | v0.5.0 | Chapter environments                |
 | v0.6.0 | Game modes                          |
 | v0.7.0 | Meta progression                    |
+| v0.8.0 | Chapter boss patterns + docs sync   |
+| v0.9.0 | Practice start-wave + gamepad       |
 
 Tags trigger the `release.yml` workflow, which builds the production bundle and publishes a GitHub Release. Pushes to `main` trigger CI (typecheck + build) and GitHub Pages deployment.
 
@@ -264,19 +266,17 @@ Toast notifications celebrate unlocks without interrupting gameplay, reinforcing
 
 ## 8. Future direction
 
-Phases 1–6 are complete. Post-expansion work already shipped includes difficulty tiers, Practice mode, run statistics on game over, Daily seeded gameplay RNG, auto-fire toggle, and chapter-specific boss attack patterns.
+Phases 1–6 are complete. Post-expansion work already shipped includes difficulty tiers, Practice mode (with start-wave select 1–20), run statistics on game over, Daily seeded gameplay RNG, auto-fire toggle, chapter-specific boss attack patterns, and standard gamepad gameplay controls.
 
 Optional backlog items (see `.issue/2026-07-07-roadmap.md`):
 
-- **Practice wave select** — jump to a starting wave inside Practice.
 - **Accessibility** — colorblind-friendly palettes for enemies and pickups.
-- **Controller support** — gamepad mapping alongside keyboard and touch.
 
 ---
 
 ## 9. Conclusion
 
-Sky Blaster demonstrates that a focused arcade game can grow from a weekend prototype into a multi-mode, progression-driven experience while keeping the codebase small, typed, and deployable as static HTML. The phased roadmap, modular architecture, and strict commit discipline made it possible to ship seven tagged releases without a rewrite.
+Sky Blaster demonstrates that a focused arcade game can grow from a weekend prototype into a multi-mode, progression-driven experience while keeping the codebase small, typed, and deployable as static HTML. The phased roadmap, modular architecture, and strict commit discipline made it possible to ship nine tagged minor releases without a rewrite.
 
 The project is **feature-complete** against its original expansion plan. It is playable at https://phaethix.github.io/polished-arcade-shooter/, open source under MIT, and open to community contribution under the guidelines in [CONTRIBUTING.md](../CONTRIBUTING.md).
 
@@ -333,6 +333,7 @@ When you change product scope, architecture, or methodology described here:
 
 | Doc version | Updated at (UTC+8) | Game version | Changes                                                                                                                                                                                                                                                 |
 | ----------- | ------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1.3.0**   | 2026-07-11 17:18   | v0.9.0       | Synced to v0.9.0: Practice start-wave, gamepad gameplay; §3.2 / §6.2 / §8 updated; colorblind remains optional backlog.                                                                                                                                 |
 | **1.2.2**   | 2026-07-07 22:10   | v0.7.0       | §5.3 condensed to a layer summary; full module tree deferred to [ARCHITECTURE.md](./ARCHITECTURE.md).                                                                                                                                                   |
 | **1.2.1**   | 2026-07-07 22:09   | v0.7.0       | §5.3 module tree expanded to list all `render/` files; aligned with [ARCHITECTURE.md](./ARCHITECTURE.md) and current `src/` layout.                                                                                                                     |
 | **1.2.0**   | 2026-07-07 22:05   | v0.7.0       | §5.3 updated for `core/`, `render/`, `app/`, and `storage/` split; added [ARCHITECTURE.md](./ARCHITECTURE.md) to Appendix C.                                                                                                                            |

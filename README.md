@@ -68,9 +68,9 @@ npm run build
 ## How to play
 
 1. Open the **[live demo](https://phaethix.github.io/polished-arcade-shooter/)** or run `npm run dev`.
-2. On the title screen, choose **mode**, **aircraft**, **weapon**, and **difficulty**.
-3. **Move** with WASD / arrow keys (or drag on touch). **Shoot** with Space / Z (`F` toggles keyboard auto-fire; touch auto-fires while held).
-4. Use **bombs** (`X` / `B`), **skills** (`C` / `Shift` or the on-screen skill zone), and power-ups to survive waves and bosses. In Practice, `I` toggles invincibility.
+2. On the title screen, choose **mode**, **aircraft**, **weapon**, and **difficulty**. In Practice, also pick a **start wave** (1–20) with `-` / `=`.
+3. **Move** with WASD / arrow keys, drag on touch, or a standard gamepad (left stick / D-pad). **Shoot** with Space / Z, touch hold, or gamepad A / RT (`F` toggles keyboard auto-fire).
+4. Use **bombs** (`X` / `B` or gamepad B), **skills** (`C` / `Shift`, on-screen skill zone, or gamepad X), and power-ups to survive waves and bosses. Pause with Esc / P or Start. In Practice, `I` toggles invincibility.
 
 Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md)**.
 
