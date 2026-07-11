@@ -1,4 +1,4 @@
-import type { GameData } from './types';
+import type { CoopLoadout, Difficulty, GameData } from './types';
 import type { InputState } from '../app/input';
 import { createInputState } from '../app/input';
 import { CANVAS_W, CANVAS_H } from './core/constants';
@@ -58,6 +58,18 @@ export { CANVAS_W, CANVAS_H };
 export function createGameData(): GameData {
   const g: GameData = {
     player: createPlayer('falcon'),
+    player2: null,
+    coopRole: null,
+    coopRoomCode: '',
+    coopCodeDraft: '',
+    coopGuestInput: createInputState(),
+    coopLobbyStatus: 'idle',
+    coopHostPresent: false,
+    coopGuestPresent: false,
+    coopLobbyCanStart: false,
+    coopHostLoadout: null,
+    coopGuestLoadout: null,
+    coopError: null,
     bullets: [],
     enemies: [],
     particles: [],
@@ -179,6 +191,7 @@ export function resetGame(g: GameData): void {
   initModeState(g);
   Object.assign(g, {
     player: createPlayer(aircraft, weapon),
+    coopGuestInput: createInputState(),
     bullets: [],
     enemies: [],
     particles: [],
@@ -225,6 +238,48 @@ export function resetGame(g: GameData): void {
   syncChapterForMode(g);
   g.enemiesPerWave = getEnemiesPerWave(g);
   initChapterHazards(g);
+}
+
+export interface CoopStartPayload {
+  difficulty: Difficulty;
+  seed: number;
+  hostLoadout: CoopLoadout;
+  guestLoadout: CoopLoadout;
+}
+
+/**
+ * Applies the host's `start` payload to local menu state and resets into `playing`
+ * with both ships created. Host/guest input separation and snapshot sync live in
+ * `use-game-loop.ts` / `coop-actions.ts`.
+ */
+export function beginCoopRun(g: GameData, payload: CoopStartPayload): void {
+  g.gameMode = 'coop_endless';
+  g.difficulty = payload.difficulty;
+  const isHost = g.coopRole === 'host';
+  const localLoadout = isHost ? payload.hostLoadout : payload.guestLoadout;
+  const remoteLoadout = isHost ? payload.guestLoadout : payload.hostLoadout;
+  g.selectedAircraft = localLoadout.aircraftId;
+  g.selectedWeapon = localLoadout.weaponId;
+  if (!canStartGame(g)) return;
+  resetGame(g);
+  g.rng = createRng(payload.seed);
+  g.player2 = createPlayer(remoteLoadout.aircraftId, remoteLoadout.weaponId);
+  // resetGame already applied Easy HP to g.player; mirror the same bonus onto P2.
+  const hpBonus = getPlayerHpBonus(g);
+  if (hpBonus > 0) {
+    g.player2.hp += hpBonus;
+    g.player2.maxHp += hpBonus;
+  }
+  // Host left / guest right so both ships are visible from frame one.
+  const COOP_SPAWN_GAP = 48;
+  if (isHost) {
+    g.player.x = CANVAS_W / 2 - COOP_SPAWN_GAP;
+    g.player2.x = CANVAS_W / 2 + COOP_SPAWN_GAP;
+  } else {
+    g.player.x = CANVAS_W / 2 + COOP_SPAWN_GAP;
+    g.player2.x = CANVAS_W / 2 - COOP_SPAWN_GAP;
+  }
+  g.coopLobbyStatus = 'ready';
 }
 
 /** Advances one fixed-timestep simulation tick while the run is active. */
@@ -298,6 +353,12 @@ export function render(ctx: CanvasRenderingContext2D, g: GameData, cw: number, c
   if (g.state !== 'gameover') {
     if (g.player.weaponId === 'laser' && g.player.laserRamp > 0) drawLaserBeam(ctx, g);
     drawPlayer(ctx, g);
+    if (g.player2) {
+      if (g.player2.weaponId === 'laser' && g.player2.laserRamp > 0) {
+        drawLaserBeam(ctx, g, g.player2);
+      }
+      drawPlayer(ctx, g, g.player2);
+    }
   }
 
   drawParticles(ctx, g);

@@ -21,7 +21,8 @@
     "build": "vite build",
     "build:pages": "vite build --mode pages",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && npm run typecheck:party",
+    "typecheck:party": "tsc --noEmit -p tsconfig.party.json",
     "test": "vitest",
     "test:run": "vitest run",
     "lint": "eslint .",
@@ -29,9 +30,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "commitlint": "commitlint --edit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "party:dev": "partykit dev",
+    "party:deploy": "partykit deploy"
   },
   "dependencies": {
+    "partysocket": "^1.3.0",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
@@ -47,6 +51,7 @@
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "9.1.7",
+    "partykit": "^0.0.115",
     "prettier": "^3.6.2",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",

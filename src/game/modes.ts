@@ -3,7 +3,14 @@ import { applyChapterToGame, CHAPTER_ORDER, getChapter, getChapterForWave } from
 
 export type { DailyModifier };
 
-export const MODE_ORDER: GameMode[] = ['story', 'endless', 'boss_rush', 'daily', 'practice'];
+export const MODE_ORDER: GameMode[] = [
+  'story',
+  'endless',
+  'boss_rush',
+  'daily',
+  'practice',
+  'coop_endless',
+];
 
 export const MODE_INFO: Record<GameMode, { name: string; tagline: string }> = {
   story: { name: 'Story Mode', tagline: '4 chapters · 20 stages' },
@@ -11,6 +18,7 @@ export const MODE_INFO: Record<GameMode, { name: string; tagline: string }> = {
   boss_rush: { name: 'Boss Rush', tagline: 'Back-to-back boss fights' },
   daily: { name: 'Daily Challenge', tagline: 'Seeded run with a twist' },
   practice: { name: 'Practice', tagline: 'Invincible sandbox · no rewards' },
+  coop_endless: { name: 'Co-op Endless', tagline: '2P · room code · team wipe' },
 };
 
 export const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'normal', 'hard'];
@@ -149,6 +157,7 @@ export function isBossWave(g: GameData): boolean {
     case 'endless':
     case 'daily':
     case 'practice':
+    case 'coop_endless':
       return g.wave % 5 === 0 && g.wave >= 5;
   }
 }
@@ -163,6 +172,7 @@ export function getEnemiesPerWave(g: GameData): number {
     case 'endless':
     case 'daily':
     case 'practice':
+    case 'coop_endless':
       return 5 + g.wave * 2;
   }
 }

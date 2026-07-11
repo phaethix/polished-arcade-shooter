@@ -1,10 +1,13 @@
 import { useEffect, type RefObject } from 'react';
 import { resetGame, canStartGame, resumeFromPause } from '../game/engine';
+import { isCoopMode } from '../game/coop';
 import { isInSkillZone } from '../game/render/menu-layout';
 import { resumeAudio, playMenuSelect } from '../game/audio';
 import type { GameData } from '../game/types';
 import type { InputState } from './input';
+import type { CoopSession } from '../net/coop-session';
 import { handleMenuTouchAction } from './menu-touch';
+import { restartCoopFromGameOver } from './coop-actions';
 
 interface CanvasScaleInfo {
   scale: number;
@@ -17,6 +20,7 @@ export function usePointerInput(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   gameRef: RefObject<GameData>,
   inputRef: RefObject<InputState>,
+  sessionRef: RefObject<CoopSession>,
   getCanvasScale: () => CanvasScaleInfo | null,
 ): void {
   useEffect(() => {
@@ -42,10 +46,14 @@ export function usePointerInput(
       const inp = inputRef.current;
 
       if (g.state === 'menu') {
-        handleMenuTouchAction(g, cx, cy, toGame);
+        handleMenuTouchAction(g, sessionRef.current, cx, cy, toGame);
         return;
       }
       if (g.state === 'gameover') {
+        if (isCoopMode(g)) {
+          if (restartCoopFromGameOver(g, sessionRef.current)) playMenuSelect();
+          return;
+        }
         if (canStartGame(g)) {
           playMenuSelect();
           resetGame(g);
@@ -53,7 +61,11 @@ export function usePointerInput(
         return;
       }
       if (g.state === 'paused') {
-        resumeFromPause(g);
+        if (isCoopMode(g) && g.coopRole === 'guest') {
+          inp.pause = true;
+        } else {
+          resumeFromPause(g);
+        }
         return;
       }
 
@@ -125,5 +137,5 @@ export function usePointerInput(
       window.removeEventListener('mousemove', onMM);
       window.removeEventListener('mouseup', onMU);
     };
-  }, [canvasRef, gameRef, inputRef, getCanvasScale]);
+  }, [canvasRef, gameRef, inputRef, sessionRef, getCanvasScale]);
 }

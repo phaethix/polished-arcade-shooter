@@ -1,4 +1,5 @@
 import type { Rng } from './core/rng';
+import type { InputState } from '../app/input';
 
 export type AircraftId = 'falcon' | 'phantom' | 'fortress';
 
@@ -10,7 +11,7 @@ export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
 
 export type BossPatternId = 'fan' | 'rain' | 'broadside' | 'ring';
 
-export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice';
+export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice' | 'coop_endless';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
@@ -134,6 +135,22 @@ export interface Player {
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
 
+/** A player's aircraft/weapon choice, shared over the coop wire protocol. */
+export interface CoopLoadout {
+  aircraftId: AircraftId;
+  weaponId: WeaponId;
+}
+
+/** Menu-facing lobby phase for the coop host/join flow. */
+export type CoopLobbyStatus =
+  | 'idle'
+  | 'entering_code'
+  | 'connecting'
+  | 'waiting_for_guest'
+  | 'waiting_for_host'
+  | 'ready'
+  | 'error';
+
 export interface HighScore {
   score: number;
   date: string;
@@ -175,6 +192,26 @@ export interface Hazard {
 
 export interface GameData {
   player: Player;
+  /** Co-op second ship; null in solo modes. */
+  player2: Player | null;
+  /** Co-op session role; null in solo modes. */
+  coopRole: 'host' | 'guest' | null;
+  /** Co-op PartyKit room code; empty string when not in a session. */
+  coopRoomCode: string;
+  /** Guest join draft typed on the title screen (no browser prompt). */
+  coopCodeDraft: string;
+  /** Latest input snapshot for the guest ship, applied to `player2` on the host sim. */
+  coopGuestInput: InputState;
+  /** Menu-only lobby phase driving the host/join UI copy. */
+  coopLobbyStatus: CoopLobbyStatus;
+  coopHostPresent: boolean;
+  coopGuestPresent: boolean;
+  /** True once the room has both a host and a guest; only the host may start. */
+  coopLobbyCanStart: boolean;
+  coopHostLoadout: CoopLoadout | null;
+  coopGuestLoadout: CoopLoadout | null;
+  /** Last `error` message from the room (e.g. `room_full`, `role_taken`, `game_started`). */
+  coopError: string | null;
   bullets: Bullet[];
   enemies: Enemy[];
   particles: Particle[];

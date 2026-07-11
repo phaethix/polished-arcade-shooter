@@ -11,25 +11,68 @@ import {
   cyclePracticeStartWave,
   togglePause,
 } from '../game/engine';
+import { isCoopMode } from '../game/coop';
 import { resumeAudio, playMenuSelect } from '../game/audio';
 import type { GameData } from '../game/types';
 import type { InputState } from './input';
+import type { CoopSession } from '../net/coop-session';
+import {
+  appendCoopCodeDraft,
+  backspaceCoopCodeDraft,
+  cancelJoinCoopCodeEntry,
+  hostCoopEndless,
+  joinCoopEndless,
+  leaveCoopEndless,
+  syncCoopLobbyLoadout,
+  restartCoopFromGameOver,
+  startCoopEndlessRun,
+  submitJoinCoopCode,
+} from './coop-actions';
 
 export function useKeyboardInput(
   gameRef: RefObject<GameData>,
   inputRef: RefObject<InputState>,
+  sessionRef: RefObject<CoopSession>,
 ): void {
   useEffect(() => {
     const handle = (e: KeyboardEvent, down: boolean) => {
       const inp = inputRef.current;
       const g = gameRef.current;
+      const session = sessionRef.current;
+
+      if (down && g.state === 'menu' && isCoopMode(g) && g.coopLobbyStatus === 'entering_code') {
+        if (e.code === 'Escape') {
+          cancelJoinCoopCodeEntry(g);
+          playMenuSelect();
+          e.preventDefault();
+          return;
+        }
+        if (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ') {
+          resumeAudio();
+          if (submitJoinCoopCode(g, session)) playMenuSelect();
+          e.preventDefault();
+          return;
+        }
+        if (e.code === 'Backspace') {
+          backspaceCoopCodeDraft(g);
+          e.preventDefault();
+          return;
+        }
+        if (e.key.length === 1 && /[A-Za-z0-9]/.test(e.key)) {
+          appendCoopCodeDraft(g, e.key);
+          e.preventDefault();
+          return;
+        }
+      }
 
       switch (e.code) {
         case 'ArrowUp':
         case 'KeyW':
           if (g.state === 'menu' && down) {
             resumeAudio();
+            const wasCoop = isCoopMode(g);
             cycleGameModeSelection(g, -1);
+            if (wasCoop && !isCoopMode(g)) leaveCoopEndless(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -41,7 +84,9 @@ export function useKeyboardInput(
         case 'KeyS':
           if (g.state === 'menu' && down) {
             resumeAudio();
+            const wasCoop = isCoopMode(g);
             cycleGameModeSelection(g, 1);
+            if (wasCoop && !isCoopMode(g)) leaveCoopEndless(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -52,8 +97,13 @@ export function useKeyboardInput(
         case 'ArrowLeft':
         case 'KeyA':
           if (g.state === 'menu' && down) {
+            if (g.coopLobbyStatus === 'entering_code') {
+              e.preventDefault();
+              break;
+            }
             resumeAudio();
             cycleAircraftSelection(g, -1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -64,8 +114,13 @@ export function useKeyboardInput(
         case 'ArrowRight':
         case 'KeyD':
           if (g.state === 'menu' && down) {
+            if (g.coopLobbyStatus === 'entering_code') {
+              e.preventDefault();
+              break;
+            }
             resumeAudio();
             cycleAircraftSelection(g, 1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -86,12 +141,38 @@ export function useKeyboardInput(
           }
           break;
 
+        case 'KeyH':
+          if (g.state === 'menu' && isCoopMode(g) && down) {
+            resumeAudio();
+            hostCoopEndless(g, session);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
+        case 'KeyJ':
+          if (g.state === 'menu' && isCoopMode(g) && down) {
+            resumeAudio();
+            joinCoopEndless(g, session);
+            playMenuSelect();
+            e.preventDefault();
+          }
+          break;
+
         case 'Space':
         case 'KeyZ':
           e.preventDefault();
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
+              if (g.state === 'gameover' && isCoopMode(g)) {
+                if (restartCoopFromGameOver(g, session)) playMenuSelect();
+                break;
+              }
+              if (g.state === 'menu' && isCoopMode(g)) {
+                if (startCoopEndlessRun(g, session)) playMenuSelect();
+                break;
+              }
               if (g.state === 'menu' && !canStartGame(g)) {
                 break;
               }
@@ -126,6 +207,7 @@ export function useKeyboardInput(
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleWeaponSelection(g, -1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
           }
@@ -134,6 +216,7 @@ export function useKeyboardInput(
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleWeaponSelection(g, 1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
           }
@@ -176,7 +259,11 @@ export function useKeyboardInput(
         case 'Escape':
         case 'KeyP':
           if (down) {
-            togglePause(g);
+            if (isCoopMode(g) && g.coopRole === 'guest') {
+              inp.pause = true;
+            } else {
+              togglePause(g);
+            }
           }
           e.preventDefault();
           break;
@@ -207,5 +294,5 @@ export function useKeyboardInput(
       window.removeEventListener('keydown', kd);
       window.removeEventListener('keyup', ku);
     };
-  }, [gameRef, inputRef]);
+  }, [gameRef, inputRef, sessionRef]);
 }

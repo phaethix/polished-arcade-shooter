@@ -13,11 +13,13 @@ import {
   practiceStartWaveLabel,
 } from '../modes';
 import { isAircraftUnlocked, isWeaponUnlocked, canAffordUnlock, loadCoins } from '../progress';
+import { isCoopMode, describeCoopLobby } from '../coop';
 import { getMenuLayout } from './menu-layout';
 
 export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
   const showPracticeStart = isPracticeMode(g);
-  const layout = getMenuLayout(showPracticeStart);
+  const showCoopLobby = isCoopMode(g);
+  const layout = getMenuLayout(showPracticeStart, showCoopLobby);
 
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
@@ -143,15 +145,39 @@ export function drawMenu(ctx: CanvasRenderingContext2D, g: GameData): void {
     ctx.fillText(practiceStartWaveLabel(g.practiceStartWave), CANVAS_W / 2, sw.taglineY);
   }
 
+  if (showCoopLobby) {
+    const cl = layout.coopLobby;
+    const lobbyCopy = describeCoopLobby(g);
+    ctx.fillStyle = '#fd4';
+    ctx.font = 'bold 13px "Segoe UI",Arial,sans-serif';
+    ctx.fillText('CO-OP LOBBY', CANVAS_W / 2, cl.labelY);
+    ctx.fillStyle = g.coopLobbyStatus === 'error' ? '#f88' : '#8df';
+    ctx.font = 'bold 15px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(lobbyCopy.value, CANVAS_W / 2, cl.valueY);
+    ctx.fillStyle = '#889';
+    ctx.font = '10px "Segoe UI",Arial,sans-serif';
+    ctx.fillText(lobbyCopy.detail, CANVAS_W / 2, cl.detailY);
+  }
+
   const ready = isAircraftUnlocked(g.selectedAircraft) && isWeaponUnlocked(g.selectedWeapon);
-  ctx.globalAlpha = ready ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
-  ctx.fillStyle = ready ? '#fff' : '#f88';
-  ctx.font = `${ready ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
-  ctx.fillText(
-    ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START',
-    CANVAS_W / 2,
-    layout.start.textY,
-  );
+  let startReady = ready;
+  let startText = ready ? 'TAP or PRESS SPACE' : 'UNLOCK SELECTION TO START';
+  if (showCoopLobby) {
+    if (g.coopRole === 'host') {
+      startReady = g.coopLobbyCanStart;
+      startText = g.coopLobbyCanStart ? 'PRESS SPACE TO START' : 'WAITING FOR GUEST…';
+    } else if (g.coopRole === 'guest') {
+      startReady = false;
+      startText = 'WAITING FOR HOST…';
+    } else {
+      startReady = false;
+      startText = 'PRESS H TO HOST · J TO JOIN';
+    }
+  }
+  ctx.globalAlpha = startReady ? 0.5 + Math.sin(Date.now() * 0.004) * 0.5 : 0.7;
+  ctx.fillStyle = startReady ? '#fff' : '#f88';
+  ctx.font = `${startReady ? '20' : '16'}px "Segoe UI",Arial,sans-serif`;
+  ctx.fillText(startText, CANVAS_W / 2, layout.start.textY);
   ctx.globalAlpha = 1;
 
   const lines: [string, string][] = [

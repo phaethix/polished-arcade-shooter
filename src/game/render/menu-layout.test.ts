@@ -92,6 +92,27 @@ describe('practice start-wave menu layout', () => {
   });
 });
 
+describe('coop lobby menu layout', () => {
+  it('keeps start hit zone unchanged when coop lobby row hidden', () => {
+    const layout = getMenuLayout(false, false);
+    expect(layout.start.hitYMin).toBe(440);
+  });
+
+  it('shifts start down and resolves host/join taps when shown', () => {
+    const layout = getMenuLayout(false, true);
+    expect(layout.start.hitYMin).toBeGreaterThan(440);
+    const y = (layout.coopLobby.hitYMin + layout.coopLobby.hitYMax) / 2;
+    expect(resolveMenuTouch(100, y, false, true)).toEqual({ kind: 'coop_host' });
+    expect(resolveMenuTouch(300, y, false, true)).toEqual({ kind: 'coop_join' });
+  });
+
+  it('ignores the coop lobby row when not flagged as shown', () => {
+    const layout = getMenuLayout(false, true);
+    const y = (layout.coopLobby.hitYMin + layout.coopLobby.hitYMax) / 2;
+    expect(resolveMenuTouch(100, y, false, false)).toBeNull();
+  });
+});
+
 describe('isInSkillZone', () => {
   it('detects the bottom-center skill tap area', () => {
     expect(isInSkillZone(CANVAS_W / 2, 680)).toBe(true);

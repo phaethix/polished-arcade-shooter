@@ -70,6 +70,11 @@ describe('isBossWave', () => {
     expect(isBossWave(mkGame({ gameMode: 'practice', wave: 5 }))).toBe(true);
     expect(isBossWave(mkGame({ gameMode: 'practice', wave: 4 }))).toBe(false);
   });
+
+  it('matches endless boss cadence in coop_endless', () => {
+    expect(isBossWave(mkGame({ gameMode: 'coop_endless', wave: 5 }))).toBe(true);
+    expect(isBossWave(mkGame({ gameMode: 'coop_endless', wave: 4 }))).toBe(false);
+  });
 });
 
 describe('getEnemiesPerWave', () => {
@@ -91,6 +96,11 @@ describe('getEnemiesPerWave', () => {
   it('matches endless enemy counts in practice', () => {
     expect(getEnemiesPerWave(mkGame({ gameMode: 'practice', wave: 1 }))).toBe(7);
     expect(getEnemiesPerWave(mkGame({ gameMode: 'practice', wave: 4 }))).toBe(13);
+  });
+
+  it('matches endless enemy counts in coop_endless', () => {
+    expect(getEnemiesPerWave(mkGame({ gameMode: 'coop_endless', wave: 1 }))).toBe(7);
+    expect(getEnemiesPerWave(mkGame({ gameMode: 'coop_endless', wave: 4 }))).toBe(13);
   });
 });
 
@@ -299,7 +309,11 @@ describe('nextDifficulty', () => {
 describe('practice mode helpers', () => {
   it('includes practice in MODE_ORDER', () => {
     expect(MODE_ORDER).toContain('practice');
-    expect(MODE_ORDER[MODE_ORDER.length - 1]).toBe('practice');
+  });
+
+  it('includes coop_endless as the last mode in MODE_ORDER', () => {
+    expect(MODE_ORDER).toContain('coop_endless');
+    expect(MODE_ORDER[MODE_ORDER.length - 1]).toBe('coop_endless');
   });
 
   it('initModeState enables invincibility only for practice', () => {

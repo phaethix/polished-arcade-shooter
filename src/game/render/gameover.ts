@@ -92,6 +92,12 @@ export function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
   ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.004) * 0.5;
   ctx.fillStyle = '#fff';
   ctx.font = '20px "Segoe UI",Arial,sans-serif';
-  ctx.fillText('TAP or PRESS SPACE to restart', CANVAS_W / 2, 540);
+  const continueHint =
+    g.gameMode === 'coop_endless'
+      ? g.coopRole === 'host'
+        ? 'SPACE / TAP — rematch'
+        : 'SPACE / TAP — back to lobby'
+      : 'TAP or PRESS SPACE to restart';
+  ctx.fillText(continueHint, CANVAS_W / 2, 540);
   ctx.globalAlpha = 1;
 }

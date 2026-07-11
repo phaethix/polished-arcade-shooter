@@ -46,6 +46,7 @@ export const MENU_LAYOUT = {
 } as const;
 
 export const PRACTICE_MENU_OFFSET = 46;
+export const COOP_LOBBY_OFFSET = 46;
 
 export interface MenuLayoutView {
   titleY: number;
@@ -61,13 +62,27 @@ export interface MenuLayoutView {
     hitYMin: number;
     hitYMax: number;
   };
+  coopLobby: {
+    labelY: number;
+    valueY: number;
+    detailY: number;
+    hitYMin: number;
+    hitYMax: number;
+  };
   start: { textY: number; hitYMin: number; hitYMax: number };
   controls: { topY: number; step: number };
 }
 
-/** Build menu geometry; when showPracticeStartWave, insert row and shift start/controls. */
-export function getMenuLayout(showPracticeStartWave: boolean): MenuLayoutView {
-  const offset = showPracticeStartWave ? PRACTICE_MENU_OFFSET : 0;
+/** Build menu geometry; showPracticeStartWave / showCoopLobby insert a row and shift start/controls. */
+export function getMenuLayout(
+  showPracticeStartWave: boolean,
+  showCoopLobby = false,
+): MenuLayoutView {
+  const offset = showPracticeStartWave
+    ? PRACTICE_MENU_OFFSET
+    : showCoopLobby
+      ? COOP_LOBBY_OFFSET
+      : 0;
   return {
     titleY: MENU_LAYOUT.titleY,
     subtitleY: MENU_LAYOUT.subtitleY,
@@ -81,6 +96,13 @@ export function getMenuLayout(showPracticeStartWave: boolean): MenuLayoutView {
       taglineY: 480,
       hitYMin: 440,
       hitYMax: 440 + PRACTICE_MENU_OFFSET,
+    },
+    coopLobby: {
+      labelY: 446,
+      valueY: 466,
+      detailY: 480,
+      hitYMin: 440,
+      hitYMax: 440 + COOP_LOBBY_OFFSET,
     },
     start: {
       textY: MENU_LAYOUT.start.textY + offset,
@@ -107,6 +129,8 @@ export type MenuTouchAction =
   | { kind: 'cycle_weapon'; direction: -1 | 1 }
   | { kind: 'cycle_difficulty'; direction: -1 | 1 }
   | { kind: 'cycle_practice_start_wave'; direction: -1 | 1 }
+  | { kind: 'coop_host' }
+  | { kind: 'coop_join' }
   | { kind: 'start' };
 
 /** Half-row split so centered ◀ / ▶ glyphs (near mid-canvas) are clickable. */
@@ -123,9 +147,12 @@ export function resolveMenuTouch(
   x: number,
   y: number,
   showPracticeStartWave = false,
+  showCoopLobby = false,
 ): MenuTouchAction | null {
-  const { mode, aircraft, weapon, difficulty, startWave, start } =
-    getMenuLayout(showPracticeStartWave);
+  const { mode, aircraft, weapon, difficulty, startWave, coopLobby, start } = getMenuLayout(
+    showPracticeStartWave,
+    showCoopLobby,
+  );
 
   if (y >= mode.hitYMin && y < mode.hitYMax) {
     return { kind: 'cycle_mode', direction: y < mode.splitY ? -1 : 1 };
@@ -141,6 +168,9 @@ export function resolveMenuTouch(
   }
   if (showPracticeStartWave && y >= startWave.hitYMin && y < startWave.hitYMax) {
     return { kind: 'cycle_practice_start_wave', direction: rowCycleDirection(x) };
+  }
+  if (showCoopLobby && y >= coopLobby.hitYMin && y < coopLobby.hitYMax) {
+    return rowCycleDirection(x) === -1 ? { kind: 'coop_host' } : { kind: 'coop_join' };
   }
   if (y >= start.hitYMin && y < start.hitYMax && isMenuRowCenter(x)) {
     return { kind: 'start' };

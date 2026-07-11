@@ -13,6 +13,41 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 | **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                                 |
 | **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream             |
 | **Practice**        | Endless-like waves with invincibility on by default (`I` toggles); choose a start wave (1–20) on the menu; chapter follows Endless rotation with bosses on waves 5, 10, 15, and 20; no coins, achievements, or high scores |
+| **Co-op Endless**   | 2-player online Endless via a room code; same wave/chapter rules as Endless; **team wipe** — if either ship reaches 0 HP, the run ends for both; requires a PartyKit room server (solo modes do not)                       |
+
+---
+
+## Co-op Endless
+
+Co-op is **optional** and **online only**. Story, Endless, Boss Rush, Daily, and Practice stay fully offline — no WebSocket unless you select **Co-op Endless**.
+
+### Lobby
+
+1. Select **Co-op Endless** on the title screen.
+2. Each player picks aircraft and weapon locally.
+3. **Host** (`H` or tap the left half of the **CO-OP LOBBY** row): creates a 6-character room code and waits for a guest.
+4. **Guest** (`J` or tap the right half): the lobby row shows `TYPE CODE  _ _ _ _ _ _` — type the host's 6 characters on the keyboard, **Enter** (or Space) to join, **Backspace** to edit, **Esc** to cancel.
+5. When both players are connected, the **host** starts the run with **Space** (guest sees “waiting for host”). Host **difficulty** applies to the run.
+
+Touch: the lobby row uses the same left/right split as other menu rows — left = host, right = join.
+
+### In run
+
+| Role  | Simulation                                                | Notes                                                                                                                               |
+| ----- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Host  | Runs the full game loop; sends snapshots to the guest     | Coins, achievements, and high scores save to **host** `localStorage` only                                                           |
+| Guest | Sends input; renders host snapshots (no local combat sim) | Move (keyboard **or** mouse/touch drag), shoot, bomb, and pause requests work; **active skills (C / Shift) do not** yet (host-only) |
+
+### Team wipe and disconnects
+
+- **Team wipe:** Either ship at 0 HP ends the run for both players.
+- **After game over:** Host presses **Space** (or taps) to rematch in the same room; guest presses **Space** to return to the lobby and wait for the host's next start.
+- **Host disconnects** (lobby or run): session ends; guest sees a disconnect/game-over state.
+- **Guest disconnects during a run:** run ends for both (no solo continuation).
+- **Guest disconnects in lobby:** host returns to waiting for a guest.
+- **Third player** joining a full room is rejected (`room_full`).
+
+PartyKit is a small relay server (cap 2 players per room). Solo play on GitHub Pages never connects to it.
 
 ---
 
@@ -72,15 +107,17 @@ Menu navigation, auto-fire toggle, Practice invincibility, and unlocks remain ke
 
 ### Menu
 
-| Key           | Action                                           |
-| ------------- | ------------------------------------------------ |
-| `↑` / `↓`     | Cycle game mode                                  |
-| `←` / `→`     | Cycle aircraft                                   |
-| `[` / `]`     | Cycle weapon                                     |
-| `,` / `.`     | Cycle difficulty                                 |
-| `-` / `=`     | Cycle Practice start wave (1–20; Practice only)  |
-| `U`           | Unlock selected aircraft or weapon (costs coins) |
-| `Space` / `Z` | Start game                                       |
+| Key           | Action                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| `↑` / `↓`     | Cycle game mode                                                  |
+| `←` / `→`     | Cycle aircraft                                                   |
+| `[` / `]`     | Cycle weapon                                                     |
+| `,` / `.`     | Cycle difficulty                                                 |
+| `-` / `=`     | Cycle Practice start wave (1–20; Practice only)                  |
+| `U`           | Unlock selected aircraft or weapon (costs coins)                 |
+| `Space` / `Z` | Start game (solo); **host starts co-op run** when lobby is ready |
+| `H`           | Host co-op lobby (Co-op Endless only)                            |
+| `J`           | Join co-op — type 6-char code on screen, Enter                   |
 
 **Practice start wave:** When Practice is selected, a **START WAVE** row appears between Difficulty and Start. Use `-` / `=` (or tap the row) to pick wave 1–20; the tagline shows the chapter name (same rotation as Endless) and **· boss** on waves 5, 10, 15, and 20.
 

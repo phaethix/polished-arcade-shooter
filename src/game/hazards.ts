@@ -1,8 +1,9 @@
-import type { GameData, Hazard } from './types';
+import type { GameData, Hazard, Player } from './types';
 import { getChapter } from './chapters';
 import * as sfx from './audio';
 import { CANVAS_W, CANVAS_H } from './core/constants';
 import { boxesOverlap } from './core/collision';
+import { activePlayers } from './coop';
 
 const MAX_ASTEROIDS = 5;
 
@@ -72,8 +73,16 @@ export function initChapterHazards(g: GameData): void {
   else if (hazardType === 'teleporter') spawnTeleporters(g);
 }
 
+function nearestPlayer(g: GameData, x: number, y: number): Player {
+  return activePlayers(g).reduce((closest, p) => {
+    const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+    const closestD = (closest.x - x) ** 2 + (closest.y - y) ** 2;
+    return d < closestD ? p : closest;
+  });
+}
+
 function fireTurret(g: GameData, h: Hazard): void {
-  const p = g.player;
+  const p = nearestPlayer(g, h.x, h.y);
   const dx = p.x - h.x;
   const dy = p.y - h.y;
   const d = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -92,10 +101,9 @@ function fireTurret(g: GameData, h: Hazard): void {
   });
 }
 
-function tryTeleport(g: GameData, pad: Hazard): void {
+function tryTeleport(g: GameData, p: Player, pad: Hazard): void {
   const other = g.hazards.find((h) => h.type === 'teleporter' && h.padId !== pad.padId);
   if (!other) return;
-  const p = g.player;
   p.x = other.x;
   p.y = other.y;
   p.invincibleTimer = 0.6;
@@ -230,10 +238,10 @@ export interface HazardCollisionResult {
 
 export function handleHazardCollisions(
   g: GameData,
-  isPlayerVulnerable: (p: GameData['player']) => boolean,
-  hurtPlayer: () => void,
+  p: Player,
+  isPlayerVulnerable: (p: Player) => boolean,
+  hurtPlayer: (target: Player) => void,
 ): HazardCollisionResult {
-  const p = g.player;
   if (!isPlayerVulnerable(p)) return { playerDied: false };
 
   for (const h of g.hazards) {
@@ -241,15 +249,15 @@ export function handleHazardCollisions(
       if ((h.cooldown ?? 0) > 0) continue;
       if (!boxesOverlap(p.x, p.y, p.width * 0.5, p.height * 0.5, h.x, h.y, h.width, h.height))
         continue;
-      tryTeleport(g, h);
+      tryTeleport(g, p, h);
       return { playerDied: false };
     }
 
     if (h.type === 'asteroid') {
       if (!boxesOverlap(p.x, p.y, p.width * 0.4, p.height * 0.4, h.x, h.y, h.width, h.height))
         continue;
-      hurtPlayer();
-      return { playerDied: p.hp <= 0 };
+      hurtPlayer(p);
+      return { playerDied: g.state === 'gameover' };
     }
   }
 

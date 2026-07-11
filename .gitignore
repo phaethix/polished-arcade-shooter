@@ -34,3 +34,13 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# git worktrees
+.worktrees/
+
+# partykit
+.partykit/
+
+# local agent / indexing tooling (never commit)
+.codegraph/
+.superpowers/
