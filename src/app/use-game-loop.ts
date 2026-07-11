@@ -3,6 +3,7 @@ import { update, updateBackground, render } from '../game/engine';
 import { FIXED_TIMESTEP_S, MAX_FRAME_DELTA_S } from '../game/core/constants';
 import type { GameData } from '../game/types';
 import type { InputState } from './input';
+import { pollGamepadInput, type GamepadButtonPrev } from './gamepad';
 
 export function useGameLoop(
   canvasRef: RefObject<HTMLCanvasElement | null>,
@@ -22,6 +23,7 @@ export function useGameLoop(
 
     let last = performance.now();
     let accumulator = 0;
+    const gamepadPrev: GamepadButtonPrev = { bomb: false, skill: false, pause: false };
 
     const tick = (now: number) => {
       let elapsed = (now - last) / 1000;
@@ -31,6 +33,7 @@ export function useGameLoop(
 
       const game = gameRef.current;
       const input = inputRef.current;
+      pollGamepadInput(game, input, gamepadPrev);
 
       while (accumulator >= FIXED_TIMESTEP_S) {
         if (game.state === 'playing') {

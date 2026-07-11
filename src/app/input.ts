@@ -5,6 +5,11 @@ export interface InputState {
   up: boolean;
   down: boolean;
   shoot: boolean;
+  padLeft: boolean;
+  padRight: boolean;
+  padUp: boolean;
+  padDown: boolean;
+  padShoot: boolean;
   bomb: boolean;
   skill: boolean;
   touchX: number | null;
@@ -21,6 +26,11 @@ export function createInputState(): InputState {
     up: false,
     down: false,
     shoot: false,
+    padLeft: false,
+    padRight: false,
+    padUp: false,
+    padDown: false,
+    padShoot: false,
     bomb: false,
     skill: false,
     touchX: null,
