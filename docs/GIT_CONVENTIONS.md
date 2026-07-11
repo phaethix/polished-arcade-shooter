@@ -29,7 +29,7 @@ Guidelines:
 - Keep each branch small enough to review in under 30 minutes.
 - Rebase onto `main` only after upstream PRs merge, or retarget PRs to the previous branch until merge.
 
-Current expansion work uses this pattern under `.issue/roadmap.md`.
+Current expansion work uses this pattern under `.issue/2026-07-07-roadmap.md`.
 
 ## Branch naming
 

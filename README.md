@@ -145,7 +145,7 @@ Module boundaries and dependency rules: **[docs/ARCHITECTURE.md](docs/ARCHITECTU
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Source layout and module responsibilities |
 | [GIT_CONVENTIONS.md](docs/GIT_CONVENTIONS.md) | Branch naming and commit format           |
 | [CONTRIBUTING.md](CONTRIBUTING.md)            | Setup, testing, and pull request workflow |
-| [roadmap.md](.issue/roadmap.md)               | Expansion phases and backlog              |
+| [2026-07-07-roadmap.md](.issue/2026-07-07-roadmap.md) | Expansion phases and backlog        |
 
 ---
 

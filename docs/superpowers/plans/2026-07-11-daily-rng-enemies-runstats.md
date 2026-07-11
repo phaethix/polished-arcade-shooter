@@ -27,7 +27,7 @@
 | `src/game/run-stats.ts`                     | Pure `formatAccuracy` helper                                        |
 | `src/game/render/gameover.ts`               | Stats line                                                          |
 | `src/game/render/enemies.ts`                | `drawEnemy`                                                         |
-| `docs/PLAYER_GUIDE.md`, `.issue/roadmap.md` | Docs sync                                                           |
+| `docs/PLAYER_GUIDE.md`, `.issue/2026-07-07-roadmap.md` | Docs sync                                                           |
 
 ---
 
@@ -212,7 +212,7 @@ git commit -m "feat(game): seed gameplay rng from daily date"
 **Files:**
 
 - Modify: `docs/PLAYER_GUIDE.md` (Daily Challenge row)
-- Modify: `.issue/roadmap.md` (difficulty done; add seeded Daily under supplementary or done)
+- Modify: `.issue/2026-07-07-roadmap.md` (difficulty done; add seeded Daily under supplementary or done)
 
 - [ ] Update PLAYER_GUIDE Daily row to mention date-seeded gameplay RNG (spawns/drops/hazards).
 - [ ] Roadmap: mark difficulty tiers done; add “Daily seeded gameplay RNG” as done under post-expansion or supplementary.
