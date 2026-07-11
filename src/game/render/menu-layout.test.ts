@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CANVAS_W } from '../core/constants';
-import { isInSkillZone, resolveMenuTouch } from './menu-layout';
+import { getMenuLayout, isInSkillZone, resolveMenuTouch } from './menu-layout';
 
 describe('resolveMenuTouch', () => {
   it('cycles mode up in the top half of the mode row', () => {
@@ -67,6 +67,28 @@ describe('resolveMenuTouch', () => {
 
   it('ignores taps outside interactive rows', () => {
     expect(resolveMenuTouch(CANVAS_W / 2, 120)).toBeNull();
+  });
+});
+
+describe('practice start-wave menu layout', () => {
+  it('keeps start hit zone unchanged when practice row hidden', () => {
+    const layout = getMenuLayout(false);
+    expect(layout.start.hitYMin).toBe(440);
+    expect(resolveMenuTouch(180, 450)).toEqual({ kind: 'start' });
+  });
+
+  it('shifts start down and hits cycle_practice_start_wave when shown', () => {
+    const layout = getMenuLayout(true);
+    expect(layout.start.hitYMin).toBeGreaterThan(440);
+    const y = (layout.startWave.hitYMin + layout.startWave.hitYMax) / 2;
+    expect(resolveMenuTouch(100, y, true)).toEqual({
+      kind: 'cycle_practice_start_wave',
+      direction: -1,
+    });
+    expect(resolveMenuTouch(300, y, true)).toEqual({
+      kind: 'cycle_practice_start_wave',
+      direction: 1,
+    });
   });
 });
 
