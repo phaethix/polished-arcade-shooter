@@ -14,19 +14,19 @@
 
 ## File map
 
-| Path                                        | Role                                                                |
-| ------------------------------------------- | ------------------------------------------------------------------- |
-| `src/game/core/rng.ts`                      | `Rng` interface + `createRng(seed)`                                 |
-| `src/game/core/rng.test.ts`                 | Determinism unit tests                                              |
-| `src/game/types.ts`                         | `rng` + run-stat fields on `GameData`                               |
-| `src/game/engine.ts`                        | Init/reset `rng` and run stats                                      |
-| `src/game/enemies.ts` → `enemies/*`         | Spawn uses `g.rng`; later split                                     |
-| `src/game/hazards.ts`                       | Spawn/timing uses `g.rng`; particle FX stay `Math.random`           |
-| `src/game/combat.ts`                        | Drop rolls use `g.rng`; laser FX stay `Math.random`; kill/hit stats |
-| `src/game/weapons.ts`                       | Count `shotsFired` on fire                                          |
-| `src/game/run-stats.ts`                     | Pure `formatAccuracy` helper                                        |
-| `src/game/render/gameover.ts`               | Stats line                                                          |
-| `src/game/render/enemies.ts`                | `drawEnemy`                                                         |
+| Path                                                   | Role                                                                |
+| ------------------------------------------------------ | ------------------------------------------------------------------- |
+| `src/game/core/rng.ts`                                 | `Rng` interface + `createRng(seed)`                                 |
+| `src/game/core/rng.test.ts`                            | Determinism unit tests                                              |
+| `src/game/types.ts`                                    | `rng` + run-stat fields on `GameData`                               |
+| `src/game/engine.ts`                                   | Init/reset `rng` and run stats                                      |
+| `src/game/enemies.ts` → `enemies/*`                    | Spawn uses `g.rng`; later split                                     |
+| `src/game/hazards.ts`                                  | Spawn/timing uses `g.rng`; particle FX stay `Math.random`           |
+| `src/game/combat.ts`                                   | Drop rolls use `g.rng`; laser FX stay `Math.random`; kill/hit stats |
+| `src/game/weapons.ts`                                  | Count `shotsFired` on fire                                          |
+| `src/game/run-stats.ts`                                | Pure `formatAccuracy` helper                                        |
+| `src/game/render/gameover.ts`                          | Stats line                                                          |
+| `src/game/render/enemies.ts`                           | `drawEnemy`                                                         |
 | `docs/PLAYER_GUIDE.md`, `.issue/2026-07-07-roadmap.md` | Docs sync                                                           |
 
 ---

@@ -302,15 +302,15 @@ The project is **feature-complete** against its original expansion plan. It is p
 
 ## Appendix C — Related documents
 
-| Document                                   | Role                                  |
-| ------------------------------------------ | ------------------------------------- |
-| [README.md](../README.md)                  | Repository overview and quick start   |
-| [PLAYER_GUIDE.md](./PLAYER_GUIDE.md)       | Controls, modes, enemies, progression |
-| [ARCHITECTURE.md](./ARCHITECTURE.md)       | Source layout and dependency rules    |
-| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md) | Contributor git workflow              |
-| [CONTRIBUTING.md](../CONTRIBUTING.md)      | Development and pull request workflow |
-| [.issue/2026-07-07-roadmap.md](../.issue/2026-07-07-roadmap.md)  | Phase checklist and backlog           |
-| [.issue/001–006](../.issue/)               | Per-feature specification notes       |
+| Document                                                        | Role                                  |
+| --------------------------------------------------------------- | ------------------------------------- |
+| [README.md](../README.md)                                       | Repository overview and quick start   |
+| [PLAYER_GUIDE.md](./PLAYER_GUIDE.md)                            | Controls, modes, enemies, progression |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)                            | Source layout and dependency rules    |
+| [GIT_CONVENTIONS.md](./GIT_CONVENTIONS.md)                      | Contributor git workflow              |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)                           | Development and pull request workflow |
+| [.issue/2026-07-07-roadmap.md](../.issue/2026-07-07-roadmap.md) | Phase checklist and backlog           |
+| [.issue/001–006](../.issue/)                                    | Per-feature specification notes       |
 
 ## Appendix D — Document revision history
 

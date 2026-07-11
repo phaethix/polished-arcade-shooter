@@ -75,7 +75,7 @@ Score / combo / run stats may still update in-memory for the game-over screen (u
 | `src/game/render/hud.ts`           | `INV` indicator                                                                       |
 | `src/game/render/menu.ts`          | Controls line                                                                         |
 | `docs/PLAYER_GUIDE.md`             | Mode + controls                                                                       |
-| `.issue/2026-07-07-roadmap.md`                | Mark Practice done (or in progress → done on merge)                                   |
+| `.issue/2026-07-07-roadmap.md`     | Mark Practice done (or in progress → done on merge)                                   |
 
 ---
 
