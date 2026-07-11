@@ -13,6 +13,8 @@ describe('protocol', () => {
       bomb: false,
       skill: false,
       pause: false,
+      touchDx: 0,
+      touchDy: 0,
     });
     const msg = parseNetMessage(raw);
     expect(msg?.type).toBe('input');

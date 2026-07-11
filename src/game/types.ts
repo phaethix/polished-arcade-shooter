@@ -144,6 +144,7 @@ export interface CoopLoadout {
 /** Menu-facing lobby phase for the coop host/join flow. */
 export type CoopLobbyStatus =
   | 'idle'
+  | 'entering_code'
   | 'connecting'
   | 'waiting_for_guest'
   | 'waiting_for_host'
@@ -197,6 +198,8 @@ export interface GameData {
   coopRole: 'host' | 'guest' | null;
   /** Co-op PartyKit room code; empty string when not in a session. */
   coopRoomCode: string;
+  /** Guest join draft typed on the title screen (no browser prompt). */
+  coopCodeDraft: string;
   /** Latest input snapshot for the guest ship, applied to `player2` on the host sim. */
   coopGuestInput: InputState;
   /** Menu-only lobby phase driving the host/join UI copy. */

@@ -4,9 +4,16 @@ import { getWaveLabel, getDailyModifierLabel } from '../modes';
 import { getChapter } from '../chapters';
 import { drawSkillIndicator } from '../skills';
 import { drawWeaponLabel } from '../weapons';
+import { coopSeatForShip, resolveCoopShipPalette } from '../coop';
 
 /** Draws one ship's segmented HP bar right-aligned at `barY`. Returns the next free y. */
-function drawHpBar(ctx: CanvasRenderingContext2D, p: Player, barY: number, label: string): number {
+function drawHpBar(
+  ctx: CanvasRenderingContext2D,
+  p: Player,
+  barY: number,
+  label: string,
+  labelColor = '#889',
+): number {
   const barX = CANVAS_W - 10;
   const segW = 14;
   const segH = 8;
@@ -44,9 +51,21 @@ function drawHpBar(ctx: CanvasRenderingContext2D, p: Player, barY: number, label
   }
   ctx.textAlign = 'right';
   ctx.font = '9px "Segoe UI",Arial,sans-serif';
-  ctx.fillStyle = '#889';
+  ctx.fillStyle = labelColor;
   ctx.fillText(label, barX - totalW - 5, barY + segH - 1);
   return barY + segH;
+}
+
+function seatHudLabel(g: GameData, p: Player): string {
+  const seat = coopSeatForShip(g, p);
+  if (seat === 'host') return 'HOST';
+  if (seat === 'guest') return 'GUEST';
+  return 'P2';
+}
+
+function seatHudColor(g: GameData, p: Player): string {
+  const seat = coopSeatForShip(g, p);
+  return resolveCoopShipPalette(p.aircraftId, seat).accent;
 }
 
 export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
@@ -66,9 +85,15 @@ export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
     ctx.fillStyle = '#da8';
     ctx.fillText(getDailyModifierLabel(g.dailyModifier), 10, 78);
   }
-  let barBottom = drawHpBar(ctx, p, 14, g.player2 ? 'P1' : 'HP');
+  let barBottom = drawHpBar(ctx, p, 14, g.player2 ? seatHudLabel(g, p) : 'HP', seatHudColor(g, p));
   if (g.player2) {
-    barBottom = drawHpBar(ctx, g.player2, barBottom + 6, 'P2');
+    barBottom = drawHpBar(
+      ctx,
+      g.player2,
+      barBottom + 6,
+      seatHudLabel(g, g.player2),
+      seatHudColor(g, g.player2),
+    );
   }
   const statusY = barBottom + 10;
   ctx.textAlign = 'right';

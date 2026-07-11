@@ -74,7 +74,10 @@ export function useGameLoop(
           }
         } else if (isGuest) {
           inputFrameCounter++;
-          if (inputFrameCounter >= COOP_INPUT_INTERVAL_FRAMES) {
+          // Bomb / skill / pause are one-frame edges — send immediately so the 20Hz
+          // throttle cannot drop them between polls.
+          const urgent = input.bomb || input.skill || input.pause;
+          if (urgent || inputFrameCounter >= COOP_INPUT_INTERVAL_FRAMES) {
             inputFrameCounter = 0;
             sendCoopGuestInput(game, session, input);
           }

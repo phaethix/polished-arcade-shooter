@@ -1,11 +1,14 @@
 import type {
   Bullet,
+  ChapterId,
   Enemy,
   GameData,
   GameState,
+  Hazard,
   Player,
   PowerUp,
 } from '../game/types';
+import { applyChapterToGame } from '../game/chapters';
 
 export interface GameSnapshot {
   player: Player;
@@ -13,6 +16,8 @@ export interface GameSnapshot {
   bullets: Bullet[];
   enemies: Enemy[];
   powerUps: PowerUp[];
+  hazards: Hazard[];
+  chapterId: ChapterId;
   score: number;
   wave: number;
   waveTimer: number;
@@ -35,6 +40,8 @@ export function buildSnapshot(g: GameData): GameSnapshot {
     bullets: g.bullets.map((b) => ({ ...b })),
     enemies: g.enemies.map((e) => ({ ...e })),
     powerUps: g.powerUps.map((p) => ({ ...p })),
+    hazards: g.hazards.map((h) => ({ ...h })),
+    chapterId: g.chapterId,
     score: g.score,
     wave: g.wave,
     waveTimer: g.waveTimer,
@@ -76,6 +83,11 @@ export function applySnapshot(g: GameData, snap: GameSnapshot): void {
   g.bullets = snap.bullets.map((b) => ({ ...b }));
   g.enemies = snap.enemies.map((e) => ({ ...e }));
   g.powerUps = snap.powerUps.map((p) => ({ ...p }));
+  g.hazards = snap.hazards.map((h) => ({ ...h }));
+  // Refresh ambient backdrop when the chapter rotates mid-run on the host.
+  if (snap.chapterId !== g.chapterId) {
+    applyChapterToGame(g, snap.chapterId);
+  }
   g.score = snap.score;
   g.wave = snap.wave;
   g.waveTimer = snap.waveTimer;

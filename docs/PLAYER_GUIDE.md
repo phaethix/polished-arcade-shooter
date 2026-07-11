@@ -26,7 +26,7 @@ Co-op is **optional** and **online only**. Story, Endless, Boss Rush, Daily, and
 1. Select **Co-op Endless** on the title screen.
 2. Each player picks aircraft and weapon locally.
 3. **Host** (`H` or tap the left half of the **CO-OP LOBBY** row): creates a 6-character room code and waits for a guest.
-4. **Guest** (`J` or tap the right half): enter the host's room code in the browser prompt, then wait in the lobby.
+4. **Guest** (`J` or tap the right half): the lobby row shows `TYPE CODE  _ _ _ _ _ _` — type the host's 6 characters on the keyboard, **Enter** (or Space) to join, **Backspace** to edit, **Esc** to cancel.
 5. When both players are connected, the **host** starts the run with **Space** (guest sees “waiting for host”). Host **difficulty** applies to the run.
 
 Touch: the lobby row uses the same left/right split as other menu rows — left = host, right = join.
@@ -36,11 +36,12 @@ Touch: the lobby row uses the same left/right split as other menu rows — left 
 | Role  | Simulation | Notes |
 | ----- | ---------- | ----- |
 | Host  | Runs the full game loop; sends snapshots to the guest | Coins, achievements, and high scores save to **host** `localStorage` only |
-| Guest | Sends input; renders host snapshots (no local combat sim) | Move, shoot, bomb, and pause requests work; **active skills do not** (host-only for now) |
+| Guest | Sends input; renders host snapshots (no local combat sim) | Move (keyboard **or** mouse/touch drag), shoot, bomb, and pause requests work; **active skills (C / Shift) do not** yet (host-only) |
 
 ### Team wipe and disconnects
 
 - **Team wipe:** Either ship at 0 HP ends the run for both players.
+- **After game over:** Host presses **Space** (or taps) to rematch in the same room; guest presses **Space** to return to the lobby and wait for the host's next start.
 - **Host disconnects** (lobby or run): session ends; guest sees a disconnect/game-over state.
 - **Guest disconnects during a run:** run ends for both (no solo continuation).
 - **Guest disconnects in lobby:** host returns to waiting for a guest.
@@ -116,7 +117,7 @@ Menu navigation, auto-fire toggle, Practice invincibility, and unlocks remain ke
 | `U`           | Unlock selected aircraft or weapon (costs coins) |
 | `Space` / `Z` | Start game (solo); **host starts co-op run** when lobby is ready |
 | `H`           | Host co-op lobby (Co-op Endless only)            |
-| `J`           | Join co-op lobby — enter room code (Co-op only)  |
+| `J`           | Join co-op — type 6-char code on screen, Enter   |
 
 **Practice start wave:** When Practice is selected, a **START WAVE** row appears between Difficulty and Start. Use `-` / `=` (or tap the row) to pick wave 1–20; the tagline shows the chapter name (same rotation as Endless) and **· boss** on waves 5, 10, 15, and 20.
 

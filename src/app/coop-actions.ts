@@ -6,7 +6,7 @@ import type { InputState } from './input';
 import { CoopSession } from '../net/coop-session';
 import type { NetMessage } from '../net/protocol';
 import { applySnapshot, buildSnapshot, type GameSnapshot } from '../net/snapshot';
-import { generateRoomCode, isValidRoomCode, normalizeRoomCode } from '../net/room-code';
+import { generateRoomCode, isRoomCodeChar, isValidRoomCode, normalizeRoomCode } from '../net/room-code';
 
 function localLoadout(g: GameData) {
   return { aircraftId: g.selectedAircraft, weaponId: g.selectedWeapon };
@@ -36,13 +36,17 @@ export function handleCoopMessage(g: GameData, msg: NetMessage, session: CoopSes
     case 'lobby':
       // Presence flags flipping to false mid-run mean the peer's socket closed; the
       // room only relays lobby-shape presence, not a dedicated "peer left" message.
+      // Always apply lobby after ending so canStart/presence are not left stale
+      // (otherwise host rematch could spawn a ghost P2 with no live guest).
       if (isCoopRunActive(g)) {
         if (g.coopRole === 'guest' && !msg.hostPresent) {
           endCoopRunFromPeerLeft(g, session, 'host_left');
+          applyLobbyMessage(g, msg);
           return;
         }
         if (g.coopRole === 'host' && !msg.guestPresent) {
           endCoopRunFromPeerLeft(g, session, 'guest_left');
+          applyLobbyMessage(g, msg);
           return;
         }
       }
@@ -91,36 +95,111 @@ export function hostCoopEndless(g: GameData, session: CoopSession): void {
   session.sendHello('host', localLoadout(g));
 }
 
-/** Join flow: prompt for a room code, validate, connect, and announce as guest. */
-export function joinCoopEndless(g: GameData, session: CoopSession): void {
-  const raw = window.prompt('Room code');
-  if (raw === null) return;
-  if (!isValidRoomCode(raw)) {
-    applyCoopError(g, 'invalid_code');
-    return;
-  }
+/** Opens on-canvas room-code entry (no browser prompt). Drops any prior socket. */
+export function beginJoinCoopCodeEntry(g: GameData, session?: CoopSession): void {
+  session?.disconnect();
   resetCoopLobby(g);
   g.coopRole = 'guest';
-  g.coopRoomCode = normalizeRoomCode(raw);
+  g.coopCodeDraft = '';
+  g.coopLobbyStatus = 'entering_code';
+}
+
+/** Alias used by menu H/J and touch — starts typing the room code on screen. */
+export function joinCoopEndless(g: GameData, session: CoopSession): void {
+  beginJoinCoopCodeEntry(g, session);
+}
+
+/** Appends one character to the join draft while `entering_code`. */
+export function appendCoopCodeDraft(g: GameData, raw: string): void {
+  if (g.coopLobbyStatus !== 'entering_code') return;
+  if (!isRoomCodeChar(raw)) return;
+  if (g.coopCodeDraft.length >= 6) return;
+  g.coopCodeDraft += raw.toUpperCase();
+}
+
+/** Removes the last draft character while `entering_code`. */
+export function backspaceCoopCodeDraft(g: GameData): void {
+  if (g.coopLobbyStatus !== 'entering_code') return;
+  g.coopCodeDraft = g.coopCodeDraft.slice(0, -1);
+}
+
+/** Cancels on-canvas join entry and returns to the idle lobby. */
+export function cancelJoinCoopCodeEntry(g: GameData): void {
+  if (g.coopLobbyStatus !== 'entering_code') return;
+  resetCoopLobby(g);
+}
+
+/**
+ * Guest join: validate the on-screen draft, connect, and announce as guest.
+ * Returns whether the connect attempt started.
+ */
+export function submitJoinCoopCode(g: GameData, session: CoopSession): boolean {
+  if (g.coopLobbyStatus !== 'entering_code') return false;
+  if (!isValidRoomCode(g.coopCodeDraft)) {
+    applyCoopError(g, 'invalid_code');
+    return false;
+  }
+  const code = normalizeRoomCode(g.coopCodeDraft);
+  g.coopRole = 'guest';
+  g.coopRoomCode = code;
+  g.coopCodeDraft = '';
   g.coopLobbyStatus = 'connecting';
-  session.connect(g.coopRoomCode, {
+  session.connect(code, {
     onMessage: (msg) => handleCoopMessage(g, msg, session),
     onClose: () => handleCoopClose(g),
   });
   session.sendHello('guest', localLoadout(g));
+  return true;
 }
 
 /** Host-only: sends the `start` payload to the room and boots the local run. Returns success. */
 export function startCoopEndlessRun(g: GameData, session: CoopSession): boolean {
-  if (g.coopRole !== 'host' || !g.coopLobbyCanStart) return false;
+  // Require a live guest presence, not only a stale canStart flag from a prior lobby.
+  if (g.coopRole !== 'host' || !g.coopLobbyCanStart || !g.coopGuestPresent) return false;
+  if (!g.coopGuestLoadout) return false;
   const payload: CoopStartPayload = {
     difficulty: g.difficulty,
     seed: (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0,
     hostLoadout: localLoadout(g),
-    guestLoadout: g.coopGuestLoadout ?? localLoadout(g),
+    guestLoadout: g.coopGuestLoadout,
   };
   session.send({ type: 'start', ...payload });
   beginCoopRun(g, payload);
+  return true;
+}
+
+/**
+ * Re-announces the local aircraft/weapon while connected in the lobby so the peer's
+ * `start` payload / menu copy stay current after mid-lobby loadout changes.
+ */
+export function syncCoopLobbyLoadout(g: GameData, session: CoopSession): void {
+  if (!isCoopMode(g) || g.state !== 'menu' || !g.coopRole) return;
+  if (
+    g.coopLobbyStatus === 'idle' ||
+    g.coopLobbyStatus === 'entering_code' ||
+    g.coopLobbyStatus === 'error'
+  ) {
+    return;
+  }
+  session.sendHello(g.coopRole, localLoadout(g));
+}
+
+/**
+ * Coop game-over continue: host rematches in the same room; guest returns to the lobby
+ * and waits for the next `start`. Solo / non-gameover callers get false.
+ */
+export function restartCoopFromGameOver(g: GameData, session: CoopSession): boolean {
+  if (!isCoopMode(g) || g.state !== 'gameover') return false;
+  if (g.coopRole === 'host') {
+    return startCoopEndlessRun(g, session);
+  }
+  g.player2 = null;
+  g.state = 'menu';
+  if (g.coopLobbyCanStart) {
+    g.coopLobbyStatus = 'ready';
+  } else if (g.coopRole === 'guest') {
+    g.coopLobbyStatus = 'waiting_for_host';
+  }
   return true;
 }
 
@@ -133,9 +212,24 @@ export function leaveCoopEndless(g: GameData, session: CoopSession): void {
 /**
  * Guest-only: relays the local `InputState` to the host as an `input` message and
  * consumes the rising-edge bomb/skill/pause flags so each press is sent exactly once.
+ * Pointer drag is converted to touchDx/touchDy here because guests do not run the local sim.
  */
 export function sendCoopGuestInput(g: GameData, session: CoopSession, input: InputState): void {
   if (g.coopRole !== 'guest') return;
+
+  let touchDx = 0;
+  let touchDy = 0;
+  if (input.touchActive && input.touchX != null && input.touchY != null) {
+    if (input.prevTouchX != null && input.prevTouchY != null) {
+      touchDx = (input.touchX - input.prevTouchX) * 1.5;
+      touchDy = (input.touchY - input.prevTouchY) * 1.5;
+    }
+    input.prevTouchX = input.touchX;
+    input.prevTouchY = input.touchY;
+  } else {
+    input.prevTouchX = input.prevTouchY = null;
+  }
+
   session.send({
     type: 'input',
     left: input.left || input.padLeft,
@@ -146,6 +240,8 @@ export function sendCoopGuestInput(g: GameData, session: CoopSession, input: Inp
     bomb: input.bomb,
     skill: input.skill,
     pause: input.pause,
+    touchDx,
+    touchDy,
   });
   input.bomb = false;
   input.skill = false;
@@ -164,6 +260,8 @@ function applyCoopGuestInput(g: GameData, msg: Extract<NetMessage, { type: 'inpu
   guestInput.up = msg.up;
   guestInput.down = msg.down;
   guestInput.shoot = msg.shoot;
+  guestInput.touchDx = msg.touchDx ?? 0;
+  guestInput.touchDy = msg.touchDy ?? 0;
   if (msg.bomb) guestInput.bomb = true;
   if (msg.skill) guestInput.skill = true;
   if (msg.pause) togglePause(g);

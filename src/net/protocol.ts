@@ -32,6 +32,9 @@ export type NetMessage =
       bomb: boolean;
       skill: boolean;
       pause: boolean;
+      /** Pointer drag delta in game pixels (guest → host), matching local touch gain. */
+      touchDx: number;
+      touchDy: number;
     }
   | { type: 'snapshot'; payload: unknown }
   | { type: 'gameover'; reason: 'team_wipe' | 'host_left' | 'guest_left' }

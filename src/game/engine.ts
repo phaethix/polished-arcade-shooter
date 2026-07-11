@@ -61,6 +61,7 @@ export function createGameData(): GameData {
     player2: null,
     coopRole: null,
     coopRoomCode: '',
+    coopCodeDraft: '',
     coopGuestInput: createInputState(),
     coopLobbyStatus: 'idle',
     coopHostPresent: false,
@@ -263,6 +264,21 @@ export function beginCoopRun(g: GameData, payload: CoopStartPayload): void {
   resetGame(g);
   g.rng = createRng(payload.seed);
   g.player2 = createPlayer(remoteLoadout.aircraftId, remoteLoadout.weaponId);
+  // resetGame already applied Easy HP to g.player; mirror the same bonus onto P2.
+  const hpBonus = getPlayerHpBonus(g);
+  if (hpBonus > 0) {
+    g.player2.hp += hpBonus;
+    g.player2.maxHp += hpBonus;
+  }
+  // Host left / guest right so both ships are visible from frame one.
+  const COOP_SPAWN_GAP = 48;
+  if (isHost) {
+    g.player.x = CANVAS_W / 2 - COOP_SPAWN_GAP;
+    g.player2.x = CANVAS_W / 2 + COOP_SPAWN_GAP;
+  } else {
+    g.player.x = CANVAS_W / 2 + COOP_SPAWN_GAP;
+    g.player2.x = CANVAS_W / 2 - COOP_SPAWN_GAP;
+  }
   g.coopLobbyStatus = 'ready';
 }
 

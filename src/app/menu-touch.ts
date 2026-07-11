@@ -12,7 +12,13 @@ import { resolveMenuTouch } from '../game/render/menu-layout';
 import { playMenuSelect } from '../game/audio';
 import type { GameData } from '../game/types';
 import type { CoopSession } from '../net/coop-session';
-import { hostCoopEndless, joinCoopEndless, leaveCoopEndless, startCoopEndlessRun } from './coop-actions';
+import {
+  hostCoopEndless,
+  joinCoopEndless,
+  leaveCoopEndless,
+  startCoopEndlessRun,
+  syncCoopLobbyLoadout,
+} from './coop-actions';
 
 export function handleMenuTouchAction(
   g: GameData,
@@ -41,10 +47,12 @@ export function handleMenuTouchAction(
     }
     case 'cycle_aircraft':
       cycleAircraftSelection(g, action.direction);
+      syncCoopLobbyLoadout(g, session);
       playMenuSelect();
       break;
     case 'cycle_weapon':
       cycleWeaponSelection(g, action.direction);
+      syncCoopLobbyLoadout(g, session);
       playMenuSelect();
       break;
     case 'cycle_difficulty':

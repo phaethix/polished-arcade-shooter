@@ -108,9 +108,9 @@ export function updatePlayerFromInput(g: GameData, input: InputState, dt: number
 }
 
 /**
- * Drives the co-op guest ship from its synced input snapshot: movement, firing, bomb,
- * and status timers. Active skills stay host-only for now (`tryActivateSkill` hard-codes
- * `g.player`); the guest's `skill` input flag is relayed but currently has no effect.
+ * Drives the co-op guest ship from its synced input snapshot: movement (keys + pointer
+ * deltas), firing, and bomb. Active skills stay host-only for now (`tryActivateSkill`
+ * hard-codes `g.player`); the guest's `skill` input flag is relayed but has no effect yet.
  */
 function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number): void {
   let mx = 0;
@@ -126,11 +126,19 @@ function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number):
     p.y += (my / l) * p.speed;
   }
 
+  if (input.touchDx || input.touchDy) {
+    p.x += input.touchDx;
+    p.y += input.touchDy;
+    input.touchDx = 0;
+    input.touchDy = 0;
+  }
+
   p.x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, p.x));
   p.y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, p.y));
   p.tilt += (mx * 0.6 - p.tilt) * 0.15;
 
-  const shooting = g.autoFire || input.shoot || input.padShoot;
+  // Do not inherit the host's autoFire toggle — guest fire comes only from their input.
+  const shooting = input.shoot || input.padShoot;
   if (p.weaponId === 'laser') {
     updateLaserFire(g, shooting, dt, p);
   } else if (shooting) {

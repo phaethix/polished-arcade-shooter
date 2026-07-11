@@ -65,4 +65,35 @@ describe('snapshot', () => {
     // The host's ship (host's player) is mirrored onto g.player2.
     expect(guest.player2?.x).toBe(host.player.x);
   });
+
+  it('round-trips hazards and chapterId for guest chapter visuals', () => {
+    const host = createGameData();
+    host.gameMode = 'coop_endless';
+    host.state = 'playing';
+    host.chapterId = 'asteroid';
+    host.hazards = [
+      {
+        type: 'asteroid',
+        x: 40,
+        y: 80,
+        width: 20,
+        height: 20,
+        vx: 0.5,
+        vy: 2,
+        rot: 1,
+        rotSpeed: 0.1,
+      },
+    ];
+    const snap = buildSnapshot(host);
+    const guest = createGameData();
+    guest.gameMode = 'coop_endless';
+    guest.coopRole = 'guest';
+    guest.chapterId = 'space';
+    guest.hazards = [];
+    applySnapshot(guest, snap);
+    expect(guest.chapterId).toBe('asteroid');
+    expect(guest.hazards).toHaveLength(1);
+    expect(guest.hazards[0]?.type).toBe('asteroid');
+    expect(guest.hazards[0]?.x).toBe(40);
+  });
 });

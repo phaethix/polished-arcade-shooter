@@ -17,10 +17,16 @@ import type { GameData } from '../game/types';
 import type { InputState } from './input';
 import type { CoopSession } from '../net/coop-session';
 import {
+  appendCoopCodeDraft,
+  backspaceCoopCodeDraft,
+  cancelJoinCoopCodeEntry,
   hostCoopEndless,
   joinCoopEndless,
   leaveCoopEndless,
+  syncCoopLobbyLoadout,
+  restartCoopFromGameOver,
   startCoopEndlessRun,
+  submitJoinCoopCode,
 } from './coop-actions';
 
 export function useKeyboardInput(
@@ -33,6 +39,36 @@ export function useKeyboardInput(
       const inp = inputRef.current;
       const g = gameRef.current;
       const session = sessionRef.current;
+
+      if (
+        down &&
+        g.state === 'menu' &&
+        isCoopMode(g) &&
+        g.coopLobbyStatus === 'entering_code'
+      ) {
+        if (e.code === 'Escape') {
+          cancelJoinCoopCodeEntry(g);
+          playMenuSelect();
+          e.preventDefault();
+          return;
+        }
+        if (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ') {
+          resumeAudio();
+          if (submitJoinCoopCode(g, session)) playMenuSelect();
+          e.preventDefault();
+          return;
+        }
+        if (e.code === 'Backspace') {
+          backspaceCoopCodeDraft(g);
+          e.preventDefault();
+          return;
+        }
+        if (e.key.length === 1 && /[A-Za-z0-9]/.test(e.key)) {
+          appendCoopCodeDraft(g, e.key);
+          e.preventDefault();
+          return;
+        }
+      }
 
       switch (e.code) {
         case 'ArrowUp':
@@ -66,8 +102,13 @@ export function useKeyboardInput(
         case 'ArrowLeft':
         case 'KeyA':
           if (g.state === 'menu' && down) {
+            if (g.coopLobbyStatus === 'entering_code') {
+              e.preventDefault();
+              break;
+            }
             resumeAudio();
             cycleAircraftSelection(g, -1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -78,8 +119,13 @@ export function useKeyboardInput(
         case 'ArrowRight':
         case 'KeyD':
           if (g.state === 'menu' && down) {
+            if (g.coopLobbyStatus === 'entering_code') {
+              e.preventDefault();
+              break;
+            }
             resumeAudio();
             cycleAircraftSelection(g, 1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
             break;
@@ -124,9 +170,8 @@ export function useKeyboardInput(
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
-              // Coop gameover has no local restart: only the host can start a new room run,
-              // and it must go through the lobby's `start` flow, not a bare local resetGame.
               if (g.state === 'gameover' && isCoopMode(g)) {
+                if (restartCoopFromGameOver(g, session)) playMenuSelect();
                 break;
               }
               if (g.state === 'menu' && isCoopMode(g)) {
@@ -167,6 +212,7 @@ export function useKeyboardInput(
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleWeaponSelection(g, -1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
           }
@@ -175,6 +221,7 @@ export function useKeyboardInput(
           if (g.state === 'menu' && down) {
             resumeAudio();
             cycleWeaponSelection(g, 1);
+            syncCoopLobbyLoadout(g, session);
             playMenuSelect();
             e.preventDefault();
           }

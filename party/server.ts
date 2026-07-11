@@ -2,8 +2,8 @@ import type * as Party from 'partykit/server';
 
 import { encodeNetMessage, parseNetMessage } from '../src/net/protocol';
 import type { LoadoutWire, NetMessage } from '../src/net/protocol';
-
-const MAX_CONNECTIONS = 2;
+import { COOP_MAX_CONNECTIONS, shouldRejectRoomJoin } from '../src/net/room-capacity';
+import { shouldRelayFromRole } from '../src/net/room-relay';
 
 interface ConnState {
   role: 'host' | 'guest' | null;
@@ -29,8 +29,8 @@ export default class CoopRoom implements Party.Server {
       connection.close();
       return;
     }
-    const connectionCount = [...this.room.getConnections()].length;
-    if (connectionCount > MAX_CONNECTIONS) {
+    const connectionIds = [...this.room.getConnections()].map((c) => c.id);
+    if (shouldRejectRoomJoin(connectionIds, connection.id, COOP_MAX_CONNECTIONS)) {
       connection.send(encodeNetMessage({ type: 'error', message: 'room_full' }));
       connection.close();
       return;
@@ -40,9 +40,9 @@ export default class CoopRoom implements Party.Server {
   }
 
   onClose(_connection: Party.Connection): void {
-    if ([...this.room.getConnections()].length === 0) {
-      this.started = false;
-    }
+    // Host leave mid-run never sends `gameover`, so unlock the room for rematch/rejoin.
+    // Guest leave is usually paired with a host `gameover` that already clears this.
+    this.started = false;
     this.broadcastLobby();
   }
 
@@ -57,8 +57,15 @@ export default class CoopRoom implements Party.Server {
     }
 
     if (RELAYED_TYPES.has(data.type)) {
+      const role = (sender as Party.Connection<ConnState>).state?.role ?? null;
+      if (!shouldRelayFromRole(data.type, role)) return;
+
       if (data.type === 'start') {
         this.started = true;
+      }
+      if (data.type === 'gameover') {
+        // Allow rematch in the same room without forcing both clients to reconnect.
+        this.started = false;
       }
       this.room.broadcast(message, [sender.id]);
     }

@@ -7,6 +7,7 @@ import type { GameData } from '../game/types';
 import type { InputState } from './input';
 import type { CoopSession } from '../net/coop-session';
 import { handleMenuTouchAction } from './menu-touch';
+import { restartCoopFromGameOver } from './coop-actions';
 
 interface CanvasScaleInfo {
   scale: number;
@@ -49,9 +50,11 @@ export function usePointerInput(
         return;
       }
       if (g.state === 'gameover') {
-        // Coop gameover has no local restart: only the host can start a new room run,
-        // and it must go through the lobby's `start` flow, not a bare local resetGame.
-        if (!isCoopMode(g) && canStartGame(g)) {
+        if (isCoopMode(g)) {
+          if (restartCoopFromGameOver(g, sessionRef.current)) playMenuSelect();
+          return;
+        }
+        if (canStartGame(g)) {
           playMenuSelect();
           resetGame(g);
         }

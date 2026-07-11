@@ -1,6 +1,6 @@
 import type { GameData, Bullet, Player, PowerUp } from '../types';
-import { getAircraft } from '../aircraft';
 import { getWeapon } from '../weapons';
+import { coopSeatForShip, resolveCoopShipPalette } from '../coop';
 
 export function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData, p: Player = g.player) {
   const beamW = 10 + p.powerLevel * 2;
@@ -25,7 +25,8 @@ export function drawLaserBeam(ctx: CanvasRenderingContext2D, g: GameData, p: Pla
 }
 
 export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData, p: Player = g.player) {
-  const craft = getAircraft(p.aircraftId);
+  const seat = coopSeatForShip(g, p);
+  const craft = resolveCoopShipPalette(p.aircraftId, seat);
   if (p.invincibleTimer > 0 && Math.floor(p.invincibleTimer * 10) % 2 === 0) return;
   if (p.skillActiveTimer > 0 && Math.floor(p.skillActiveTimer * 20) % 2 === 0) return;
 
@@ -114,6 +115,16 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData, p: Player
   ctx.strokeStyle = craft.hullTop + '33';
   ctx.lineWidth = 1;
   ctx.stroke();
+  if (seat) {
+    ctx.strokeStyle = craft.accent;
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-p.width / 2 + 2, p.height / 5);
+    ctx.lineTo(p.width / 2 - 2, p.height / 5);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
   ctx.fillStyle = craft.cockpitColor;
   ctx.beginPath();
   ctx.ellipse(0, -4, 4, 7, 0, 0, Math.PI * 2);
@@ -127,7 +138,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, g: GameData, p: Player
   ctx.ellipse(0, -4, 3, 5, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  ctx.strokeStyle = '#66ccff44';
+  ctx.strokeStyle = craft.accent + '66';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(-4, 0);

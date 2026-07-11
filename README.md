@@ -66,7 +66,7 @@ cp .env.example .env   # optional; defaults to localhost:1999
 VITE_PARTYKIT_HOST=localhost:1999 npm run dev
 ```
 
-Open two browser windows, select **Co-op Endless**, host with `H`, join with `J` and the room code, then the host presses Space when both are in the lobby. See [PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md#co-op-endless).
+Open two browser windows, select **Co-op Endless**, host with `H`, join with `J` then type the room code on screen and press Enter, then the host presses Space when both are in the lobby. See [PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md#co-op-endless).
 
 **Deploy room server:** `npm run party:deploy` (PartyKit free tier → `*.partykit.dev`). Set `VITE_PARTYKIT_HOST` to that host for production builds (GitHub Pages env or `.env` at build time). The static game on Pages stays separate; only co-op clients open a WebSocket.
 
