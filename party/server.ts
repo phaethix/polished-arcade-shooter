@@ -18,9 +18,17 @@ const RELAYED_TYPES: ReadonlySet<NetMessage['type']> = new Set([
 ]);
 
 export default class CoopRoom implements Party.Server {
+  /** True once a `start` message has been relayed; blocks further joins mid-run. */
+  private started = false;
+
   constructor(readonly room: Party.Room) {}
 
   onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext): void {
+    if (this.started) {
+      connection.send(encodeNetMessage({ type: 'error', message: 'game_started' }));
+      connection.close();
+      return;
+    }
     const connectionCount = [...this.room.getConnections()].length;
     if (connectionCount > MAX_CONNECTIONS) {
       connection.send(encodeNetMessage({ type: 'error', message: 'room_full' }));
@@ -32,6 +40,9 @@ export default class CoopRoom implements Party.Server {
   }
 
   onClose(_connection: Party.Connection): void {
+    if ([...this.room.getConnections()].length === 0) {
+      this.started = false;
+    }
     this.broadcastLobby();
   }
 
@@ -46,6 +57,9 @@ export default class CoopRoom implements Party.Server {
     }
 
     if (RELAYED_TYPES.has(data.type)) {
+      if (data.type === 'start') {
+        this.started = true;
+      }
       this.room.broadcast(message, [sender.id]);
     }
   }
