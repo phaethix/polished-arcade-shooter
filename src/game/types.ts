@@ -222,4 +222,6 @@ export interface GameData {
   autoFire: boolean; // when true the player fires continuously without holding shoot
   /** Practice-only: when true, hurtPlayer is a no-op. */
   practiceInvincible: boolean;
+  /** Menu-only Practice start wave (1–20); applied in resetGame. */
+  practiceStartWave: number;
 }

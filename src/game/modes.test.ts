@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { createGameData, resetGame, cyclePracticeStartWave } from './engine';
 import type { GameData, DailyModifier } from './types';
 import {
   isBossWave,
@@ -341,5 +342,52 @@ describe('practice start wave helpers', () => {
     expect(practiceStartWaveLabel(1)).toBe('Deep Space');
     expect(practiceStartWaveLabel(10)).toBe('Asteroid Belt · boss');
     expect(practiceStartWaveLabel(5)).toContain('boss');
+  });
+});
+
+describe('practice resetGame start wave', () => {
+  beforeEach(() => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        store.set(k, v);
+      },
+      removeItem: (k: string) => {
+        store.delete(k);
+      },
+      clear: () => {
+        store.clear();
+      },
+    });
+  });
+
+  it('starts practice at the selected wave and endless at 1', () => {
+    const g = createGameData();
+    g.gameMode = 'practice';
+    g.practiceStartWave = 10;
+    resetGame(g);
+    expect(g.wave).toBe(10);
+    expect(g.chapterId).toBe('asteroid');
+
+    g.gameMode = 'endless';
+    resetGame(g);
+    expect(g.wave).toBe(1);
+  });
+});
+
+describe('cyclePracticeStartWave', () => {
+  it('no-ops outside practice and cycles in practice', () => {
+    const g = createGameData();
+    g.gameMode = 'endless';
+    g.practiceStartWave = 5;
+    cyclePracticeStartWave(g, 1);
+    expect(g.practiceStartWave).toBe(5);
+
+    g.gameMode = 'practice';
+    cyclePracticeStartWave(g, 1);
+    expect(g.practiceStartWave).toBe(6);
+    cyclePracticeStartWave(g, -1);
+    expect(g.practiceStartWave).toBe(5);
   });
 });
