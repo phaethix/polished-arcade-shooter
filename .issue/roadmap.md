@@ -91,6 +91,7 @@ Incremental rollout for Sky Blaster v0.2+. Each phase should land as multiple sm
 | Run statistics on game over             | done       |
 | Auto-fire toggle (`F`)                  | done (#39) |
 | Practice mode                           | done       |
+| Chapter boss attack patterns            | done       |
 
 ## Supplementary ideas (backlog)
 

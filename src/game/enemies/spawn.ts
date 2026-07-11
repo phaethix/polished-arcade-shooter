@@ -3,6 +3,7 @@ import type { Rng } from '../core/rng';
 import { getBossHp, getEnemyHpMult, getSpawnPoolOverride, isBossWave } from '../modes';
 import { CANVAS_W } from '../core/constants';
 import { addParticles } from '../effects';
+import { bossPatternForChapter, bossShootInterval } from './boss';
 
 function buildSpawnPool(g: GameData): EnemyType[] {
   const override = getSpawnPoolOverride(g);
@@ -197,6 +198,7 @@ export function spawnEnemy(g: GameData): void {
   const w = g.wave;
   if (isBossWave(g) && g.enemiesSpawned === 0) {
     const hp = getBossHp(g);
+    const pattern = bossPatternForChapter(g.chapterId);
     g.enemies.push(
       baseEnemy(g.rng, {
         type: 'boss',
@@ -208,9 +210,11 @@ export function spawnEnemy(g: GameData): void {
         maxHp: hp,
         speed: 0.5,
         shootTimer: 40,
-        shootInterval: 25,
+        shootInterval: bossShootInterval(pattern),
         movePattern: 'sine',
         scoreValue: 2000,
+        bossPattern: pattern,
+        bossVolley: 0,
       }),
     );
     g.enemiesSpawned++;

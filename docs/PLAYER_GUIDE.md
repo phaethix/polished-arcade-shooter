@@ -100,18 +100,27 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 
 ## Enemies
 
-| Type         | Behavior                       | Base score |
-| ------------ | ------------------------------ | ---------- |
-| **Basic**    | Standard patterns              | 100        |
-| **Fast**     | Quick, erratic movement        | 150        |
-| **Tank**     | High HP, slow                  | 300        |
-| **Splitter** | Spawns mini enemies on death   | 220        |
-| **Sniper**   | Long-range aimed shots         | 350        |
-| **Shielded** | Frontal immunity               | 280        |
-| **Kamikaze** | Rushes the player and explodes | 180        |
-| **Healer**   | Heals nearby enemies           | 400        |
-| **Mini**     | Small splitter spawn           | 75         |
-| **Boss**     | Boss waves / story milestones  | 2000       |
+| Type         | Behavior                                    | Base score |
+| ------------ | ------------------------------------------- | ---------- |
+| **Basic**    | Standard patterns                           | 100        |
+| **Fast**     | Quick, erratic movement                     | 150        |
+| **Tank**     | High HP, slow                               | 300        |
+| **Splitter** | Spawns mini enemies on death                | 220        |
+| **Sniper**   | Long-range aimed shots                      | 350        |
+| **Shielded** | Frontal immunity                            | 280        |
+| **Kamikaze** | Rushes the player and explodes              | 180        |
+| **Healer**   | Heals nearby enemies                        | 400        |
+| **Mini**     | Small splitter spawn                        | 75         |
+| **Boss**     | Chapter-specific attack pattern (see below) | 2000       |
+
+Chapter bosses keep the same silhouette but change attack and hull accent by chapter:
+
+| Chapter  | Pattern   | Attack feel                                |
+| -------- | --------- | ------------------------------------------ |
+| Space    | Fan       | Aimed 5-way spread                         |
+| Asteroid | Rain      | Vertical rain + occasional side sweep      |
+| Carrier  | Broadside | Left/right horizontal volleys + aimed shot |
+| Wormhole | Ring      | Expanding ring burst + slow homing pellets |
 
 ---
 

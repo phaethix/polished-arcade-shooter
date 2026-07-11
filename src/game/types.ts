@@ -8,6 +8,8 @@ export type WeaponId = 'standard' | 'armor_piercing' | 'shotgun' | 'laser' | 'ho
 
 export type ChapterId = 'space' | 'asteroid' | 'carrier' | 'wormhole';
 
+export type BossPatternId = 'fan' | 'rain' | 'broadside' | 'ring';
+
 export type GameMode = 'story' | 'endless' | 'boss_rush' | 'daily' | 'practice';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -84,6 +86,10 @@ export interface Enemy {
   state?: 'patrol' | 'rush' | 'aim';
   aimTimer?: number;
   healPulse?: number;
+  /** Set on bosses; selects chapter-specific attack pattern. */
+  bossPattern?: BossPatternId;
+  /** Increments each boss volley for alternating pattern variants. */
+  bossVolley?: number;
 }
 
 export interface PowerUp {

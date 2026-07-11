@@ -9,6 +9,7 @@ import {
   KAMIKAZE_TRIGGER_DIST,
   SNIPER_AIM_FRAMES,
 } from './constants';
+import { fireBossPattern } from './boss-ai';
 
 function fireEnemyBullet(
   g: GameData,
@@ -36,26 +37,11 @@ function fireEnemyBullet(
 }
 
 export function enemyShoot(g: GameData, e: Enemy): void {
-  const dx = g.player.x - e.x;
-  const dy = g.player.y - e.y;
   const s = 3 + g.wave * 0.1;
   sfx.playEnemyShoot();
 
   if (e.type === 'boss') {
-    for (let i = -2; i <= 2; i++) {
-      const a = Math.atan2(dy, dx) + i * 0.25;
-      g.bullets.push({
-        x: e.x,
-        y: e.y + e.height / 2,
-        vx: Math.cos(a) * s,
-        vy: Math.sin(a) * s,
-        width: 6,
-        height: 6,
-        damage: 1,
-        isPlayer: false,
-        color: '#f46',
-      });
-    }
+    fireBossPattern(g, e);
     return;
   }
 

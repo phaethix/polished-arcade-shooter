@@ -1,5 +1,6 @@
 import type { Enemy, GameData } from '../types';
 import { HEAL_RADIUS, SNIPER_AIM_FRAMES } from '../enemies/constants';
+import { bossAccentColors } from '../enemies/boss';
 
 export function drawEnemy(
   ctx: CanvasRenderingContext2D,
@@ -17,7 +18,7 @@ export function drawEnemy(
   const eg = ctx.createRadialGradient(0, -e.height / 3, 0, 0, -e.height / 3, e.width * 0.4);
   const glow =
     e.type === 'boss'
-      ? '#ff2244'
+      ? bossAccentColors(e.bossPattern ?? 'fan').glow
       : e.type === 'healer'
         ? '#4f8'
         : e.type === 'kamikaze'
@@ -59,9 +60,10 @@ export function drawEnemy(
   }
 
   if (e.type === 'boss') {
+    const accent = bossAccentColors(e.bossPattern ?? 'fan');
     const gr = ctx.createLinearGradient(0, -e.height / 2, 0, e.height / 2);
-    gr.addColorStop(0, f ? '#fff' : '#cc2244');
-    gr.addColorStop(1, f ? '#f88' : '#611');
+    gr.addColorStop(0, f ? '#fff' : accent.hullTop);
+    gr.addColorStop(1, f ? '#f88' : accent.hullBottom);
     ctx.fillStyle = gr;
     ctx.beginPath();
     ctx.moveTo(0, e.height / 2);
@@ -73,13 +75,13 @@ export function drawEnemy(
     ctx.closePath();
     ctx.fill();
     const eyeR = 6 + Math.sin(frame * 0.08) * 2;
-    ctx.fillStyle = '#f46';
+    ctx.fillStyle = accent.eye;
     ctx.beginPath();
     ctx.arc(0, 0, eyeR, 0, Math.PI * 2);
     ctx.fill();
     ctx.save();
     ctx.globalAlpha = 0.3;
-    ctx.shadowColor = '#ff2244';
+    ctx.shadowColor = accent.glow;
     ctx.shadowBlur = 15;
     ctx.beginPath();
     ctx.arc(0, 0, eyeR, 0, Math.PI * 2);
@@ -87,7 +89,7 @@ export function drawEnemy(
     ctx.restore();
     ctx.save();
     ctx.globalAlpha = 0.15 + Math.sin(frame * 0.05) * 0.1;
-    ctx.strokeStyle = '#ff4466';
+    ctx.strokeStyle = accent.eye;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();

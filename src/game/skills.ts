@@ -17,36 +17,53 @@ function nearestEnemies(g: GameData, count: number): Enemy[] {
     .slice(0, count);
 }
 
+function steerBulletToward(
+  b: { x: number; y: number; vx: number; vy: number; homingStrength?: number },
+  tx: number,
+  ty: number,
+  dt: number,
+  fallbackSpeed: number,
+): void {
+  const strength = b.homingStrength;
+  if (!strength) return;
+
+  const dx = tx - b.x;
+  const dy = ty - b.y;
+  const current = Math.atan2(b.vy, b.vx);
+  const desired = Math.atan2(dy, dx);
+  let delta = desired - current;
+  while (delta > Math.PI) delta -= Math.PI * 2;
+  while (delta < -Math.PI) delta += Math.PI * 2;
+
+  const turn = strength * dt * 4;
+  const next = current + Math.max(-turn, Math.min(turn, delta));
+  const speed = Math.hypot(b.vx, b.vy) || fallbackSpeed;
+  b.vx = Math.cos(next) * speed;
+  b.vy = Math.sin(next) * speed;
+}
+
 export function updateHomingBullets(g: GameData, dt: number) {
   for (const b of g.bullets) {
-    if (!b.isPlayer || !b.homingStrength) continue;
+    if (!b.homingStrength) continue;
 
-    let target: Enemy | null = null;
-    let bestDist = Infinity;
-    for (const e of g.enemies) {
-      const dx = e.x - b.x;
-      const dy = e.y - b.y;
-      const dist = dx * dx + dy * dy;
-      if (dist < bestDist) {
-        bestDist = dist;
-        target = e;
+    if (b.isPlayer) {
+      let target: Enemy | null = null;
+      let bestDist = Infinity;
+      for (const e of g.enemies) {
+        const dx = e.x - b.x;
+        const dy = e.y - b.y;
+        const dist = dx * dx + dy * dy;
+        if (dist < bestDist) {
+          bestDist = dist;
+          target = e;
+        }
       }
+      if (!target) continue;
+      steerBulletToward(b, target.x, target.y, dt, MISSILE_SPEED);
+      continue;
     }
-    if (!target) continue;
 
-    const dx = target.x - b.x;
-    const dy = target.y - b.y;
-    const current = Math.atan2(b.vy, b.vx);
-    const desired = Math.atan2(dy, dx);
-    let delta = desired - current;
-    while (delta > Math.PI) delta -= Math.PI * 2;
-    while (delta < -Math.PI) delta += Math.PI * 2;
-
-    const turn = b.homingStrength * dt * 4;
-    const next = current + Math.max(-turn, Math.min(turn, delta));
-    const speed = Math.hypot(b.vx, b.vy) || MISSILE_SPEED;
-    b.vx = Math.cos(next) * speed;
-    b.vy = Math.sin(next) * speed;
+    steerBulletToward(b, g.player.x, g.player.y, dt, 3);
   }
 }
 
