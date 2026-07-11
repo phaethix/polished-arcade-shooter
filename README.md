@@ -1,6 +1,6 @@
 # Sky Blaster
 
-> A browser-native vertical shoot-'em-up with four game modes, loadout depth, local meta progression, and procedural audio — built with React, TypeScript, and Canvas 2D.
+> A browser-native vertical shoot-'em-up with five game modes, loadout depth, local meta progression, and procedural audio — built with React, TypeScript, and Canvas 2D.
 
 [![CI](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/ci.yml)
 [![Deploy](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml/badge.svg)](https://github.com/phaethix/polished-arcade-shooter/actions/workflows/pages.yml)
@@ -26,7 +26,7 @@ The codebase is structured for incremental feature growth: a thin React shell ho
 
 |                 |                                                               |
 | --------------- | ------------------------------------------------------------- |
-| **Modes**       | Story (20 stages), Endless, Boss Rush, Daily Challenge        |
+| **Modes**       | Story, Endless, Boss Rush, Daily, Practice                    |
 | **Loadout**     | 3 aircraft with active skills · 5 weapons                     |
 | **Difficulty**  | Easy / Normal / Hard — speed, HP, spawn rate, starting HP     |
 | **World**       | 4 chapters with environmental hazards · 10 enemy archetypes   |

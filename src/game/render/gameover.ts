@@ -58,7 +58,8 @@ export function drawGameOver(ctx: CanvasRenderingContext2D, g: GameData) {
   );
   y = lineStep(y, 13, 15);
   const sc = loadHighScores();
-  const isNewHighScore = sc.length > 0 && sc[0].score === g.score && !g.modeVictory;
+  const isNewHighScore =
+    g.gameMode !== 'practice' && sc.length > 0 && sc[0].score === g.score && !g.modeVictory;
 
   if (g.runCoinsEarned > 0) {
     ctx.fillStyle = '#fd4';

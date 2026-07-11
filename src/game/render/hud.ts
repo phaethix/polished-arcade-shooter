@@ -89,12 +89,22 @@ export function drawHUD(ctx: CanvasRenderingContext2D, g: GameData) {
 
   drawSkillIndicator(ctx, p, CANVAS_W / 2, CANVAS_H - 36);
   drawWeaponLabel(ctx, p.weaponId, 10, CANVAS_H - 36);
+  let footerY = CANVAS_H - 12;
   if (g.autoFire) {
     ctx.textAlign = 'right';
     ctx.font = '11px "Segoe UI",Arial,sans-serif';
     ctx.fillStyle = '#4f8';
     ctx.globalAlpha = 0.85;
-    ctx.fillText('AUTO', CANVAS_W - 10, CANVAS_H - 12);
+    ctx.fillText('AUTO', CANVAS_W - 10, footerY);
+    ctx.globalAlpha = 1;
+    footerY -= 14;
+  }
+  if (g.gameMode === 'practice' && g.practiceInvincible) {
+    ctx.textAlign = 'right';
+    ctx.font = '11px "Segoe UI",Arial,sans-serif';
+    ctx.fillStyle = '#fd4';
+    ctx.globalAlpha = 0.85;
+    ctx.fillText('INV', CANVAS_W - 10, footerY);
     ctx.globalAlpha = 1;
   }
 }

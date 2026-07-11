@@ -12,6 +12,7 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 | **Endless**         | Survive infinite waves; chapter environments rotate every 5 waves                                                                                                                                              |
 | **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                     |
 | **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream |
+| **Practice**        | Endless-like waves with invincibility on by default (`I` toggles); no coins, achievements, or high scores                                                                                                      |
 
 ---
 
@@ -57,14 +58,15 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 
 ### In-game
 
-| Action    | Keyboard                                    | Touch / Mouse                      |
-| --------- | ------------------------------------------- | ---------------------------------- |
-| Move      | `WASD` or `Arrow Keys`                      | Drag anywhere                      |
-| Shoot     | `Space` or `Z` (hold)                       | Auto-fire while touching           |
-| Auto-fire | `F` toggles continuous fire (on by default) | —                                  |
-| Bomb      | `X` or `B`                                  | —                                  |
-| Skill     | `C` or `Shift`                              | Tap the skill zone (bottom center) |
-| Pause     | `Esc` or `P`                                | Tap when paused                    |
+| Action     | Keyboard                                    | Touch / Mouse                      |
+| ---------- | ------------------------------------------- | ---------------------------------- |
+| Move       | `WASD` or `Arrow Keys`                      | Drag anywhere                      |
+| Shoot      | `Space` or `Z` (hold)                       | Auto-fire while touching           |
+| Auto-fire  | `F` toggles continuous fire (on by default) | —                                  |
+| Invincible | `I` toggles (Practice mode only)            | —                                  |
+| Bomb       | `X` or `B`                                  | —                                  |
+| Skill      | `C` or `Shift`                              | Tap the skill zone (bottom center) |
+| Pause      | `Esc` or `P`                                | Tap when paused                    |
 
 ### Menu
 

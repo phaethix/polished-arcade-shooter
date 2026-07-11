@@ -16,6 +16,9 @@ import {
   nextGameMode,
   nextDifficulty,
   isStoryComplete,
+  isPracticeMode,
+  isPracticeInvincible,
+  initModeState,
   MODE_ORDER,
   DIFFICULTY_ORDER,
 } from './modes';
@@ -56,6 +59,11 @@ describe('isBossWave', () => {
     expect(isBossWave(mkGame({ gameMode: 'daily', wave: 5 }))).toBe(true);
     expect(isBossWave(mkGame({ gameMode: 'daily', wave: 4 }))).toBe(false);
   });
+
+  it('matches endless boss cadence in practice', () => {
+    expect(isBossWave(mkGame({ gameMode: 'practice', wave: 5 }))).toBe(true);
+    expect(isBossWave(mkGame({ gameMode: 'practice', wave: 4 }))).toBe(false);
+  });
 });
 
 describe('getEnemiesPerWave', () => {
@@ -72,6 +80,11 @@ describe('getEnemiesPerWave', () => {
   it('scales with wave in endless mode (5 + wave * 2) for non-boss waves', () => {
     expect(getEnemiesPerWave(mkGame({ gameMode: 'endless', wave: 1 }))).toBe(7);
     expect(getEnemiesPerWave(mkGame({ gameMode: 'endless', wave: 4 }))).toBe(13);
+  });
+
+  it('matches endless enemy counts in practice', () => {
+    expect(getEnemiesPerWave(mkGame({ gameMode: 'practice', wave: 1 }))).toBe(7);
+    expect(getEnemiesPerWave(mkGame({ gameMode: 'practice', wave: 4 }))).toBe(13);
   });
 });
 
@@ -274,5 +287,34 @@ describe('nextDifficulty', () => {
   it('cycles backward', () => {
     expect(nextDifficulty('easy', -1)).toBe('hard');
     expect(nextDifficulty('normal', -1)).toBe('easy');
+  });
+});
+
+describe('practice mode helpers', () => {
+  it('includes practice in MODE_ORDER', () => {
+    expect(MODE_ORDER).toContain('practice');
+    expect(MODE_ORDER[MODE_ORDER.length - 1]).toBe('practice');
+  });
+
+  it('initModeState enables invincibility only for practice', () => {
+    const practice = mkGame({ gameMode: 'practice', practiceInvincible: false });
+    initModeState(practice);
+    expect(practice.practiceInvincible).toBe(true);
+    expect(isPracticeMode(practice)).toBe(true);
+    expect(isPracticeInvincible(practice)).toBe(true);
+
+    const endless = mkGame({ gameMode: 'endless', practiceInvincible: true });
+    initModeState(endless);
+    expect(endless.practiceInvincible).toBe(false);
+    expect(isPracticeInvincible(endless)).toBe(false);
+  });
+
+  it('isPracticeInvincible requires both mode and flag', () => {
+    expect(isPracticeInvincible(mkGame({ gameMode: 'practice', practiceInvincible: false }))).toBe(
+      false,
+    );
+    expect(isPracticeInvincible(mkGame({ gameMode: 'endless', practiceInvincible: true }))).toBe(
+      false,
+    );
   });
 });
