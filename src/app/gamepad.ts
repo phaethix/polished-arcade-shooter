@@ -137,6 +137,13 @@ export function pollGamepadInput(
       ? Array.from(navigator.getGamepads())
       : []);
   const pad = pickStandardGamepad(list);
-  if (!pad) return;
+  if (!pad) {
+    input.padLeft = false;
+    input.padRight = false;
+    input.padUp = false;
+    input.padDown = false;
+    input.padShoot = false;
+    return;
+  }
   applyGamepadToInput(g, input, pad, prev);
 }
