@@ -40,4 +40,29 @@ describe('snapshot', () => {
     expect(guest.player.x).toBe(host.player.x);
     expect(guest.player2?.hp).toBe(host.player2.hp);
   });
+
+  it('remaps identity for a guest so g.player stays "me"', () => {
+    const host = createGameData();
+    host.gameMode = 'coop_endless';
+    host.state = 'playing';
+    host.coopRole = 'host';
+    host.player.x = 100;
+    host.player2 = createPlayer('phantom');
+    host.player2.x = 200;
+    const snap = buildSnapshot(host);
+
+    const guest = createGameData();
+    guest.gameMode = 'coop_endless';
+    guest.coopRole = 'guest';
+    guest.player.x = 200;
+    guest.player2 = createPlayer(host.selectedAircraft);
+    guest.player2.x = 100;
+
+    applySnapshot(guest, snap);
+
+    // Guest's own ship (host's player2) stays on g.player so the HUD reflects "me".
+    expect(guest.player.x).toBe(host.player2.x);
+    // The host's ship (host's player) is mirrored onto g.player2.
+    expect(guest.player2?.x).toBe(host.player.x);
+  });
 });

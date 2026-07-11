@@ -50,14 +50,25 @@ export function buildSnapshot(g: GameData): GameSnapshot {
   };
 }
 
-/** Applies a host snapshot onto guest GameData for render-only sync. */
+/**
+ * Applies a host snapshot onto guest GameData for render-only sync.
+ *
+ * `buildSnapshot` always runs on the host, so `snap.player`/`snap.player2` are in the
+ * host's frame: `player` is the host's own ship, `player2` is the guest's ship. On the
+ * guest, `g.player` is "me" (drives the HUD), so we remap: `g.player` gets the guest's
+ * ship (`snap.player2`) and `g.player2` gets the host's ship (`snap.player`).
+ */
 export function applySnapshot(g: GameData, snap: GameSnapshot): void {
-  Object.assign(g.player, snap.player);
-  if (snap.player2) {
+  const isGuest = g.coopRole === 'guest';
+  const selfSnap: Player = isGuest && snap.player2 ? snap.player2 : snap.player;
+  const otherSnap: Player | null = isGuest && snap.player2 ? snap.player : snap.player2;
+
+  Object.assign(g.player, selfSnap);
+  if (otherSnap) {
     if (g.player2) {
-      Object.assign(g.player2, snap.player2);
+      Object.assign(g.player2, otherSnap);
     } else {
-      g.player2 = { ...snap.player2 };
+      g.player2 = { ...otherSnap };
     }
   } else {
     g.player2 = null;

@@ -124,6 +124,11 @@ export function useKeyboardInput(
           if (down) {
             resumeAudio();
             if (g.state === 'menu' || g.state === 'gameover') {
+              // Coop gameover has no local restart: only the host can start a new room run,
+              // and it must go through the lobby's `start` flow, not a bare local resetGame.
+              if (g.state === 'gameover' && isCoopMode(g)) {
+                break;
+              }
               if (g.state === 'menu' && isCoopMode(g)) {
                 if (startCoopEndlessRun(g, session)) playMenuSelect();
                 break;

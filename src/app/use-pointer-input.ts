@@ -49,7 +49,9 @@ export function usePointerInput(
         return;
       }
       if (g.state === 'gameover') {
-        if (canStartGame(g)) {
+        // Coop gameover has no local restart: only the host can start a new room run,
+        // and it must go through the lobby's `start` flow, not a bare local resetGame.
+        if (!isCoopMode(g) && canStartGame(g)) {
           playMenuSelect();
           resetGame(g);
         }

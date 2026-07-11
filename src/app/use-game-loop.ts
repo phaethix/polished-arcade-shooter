@@ -10,6 +10,8 @@ import { notifyCoopTeamWipe, sendCoopGuestInput, sendCoopHostSnapshot } from './
 
 /** Host snapshot broadcast rate: every N animation frames (~60fps / 3 ≈ 20Hz). */
 const COOP_SNAPSHOT_INTERVAL_FRAMES = 3;
+/** Guest input send rate: matches the host snapshot cadence (~20Hz). */
+const COOP_INPUT_INTERVAL_FRAMES = 3;
 
 export function useGameLoop(
   canvasRef: RefObject<HTMLCanvasElement | null>,
@@ -31,6 +33,7 @@ export function useGameLoop(
     let last = performance.now();
     let accumulator = 0;
     let snapshotFrameCounter = 0;
+    let inputFrameCounter = 0;
     const gamepadPrev: GamepadButtonPrev = { bomb: false, skill: false, pause: false };
 
     const tick = (now: number) => {
@@ -70,7 +73,11 @@ export function useGameLoop(
             sendCoopHostSnapshot(game, session);
           }
         } else if (isGuest) {
-          sendCoopGuestInput(game, session, input);
+          inputFrameCounter++;
+          if (inputFrameCounter >= COOP_INPUT_INTERVAL_FRAMES) {
+            inputFrameCounter = 0;
+            sendCoopGuestInput(game, session, input);
+          }
         }
       }
 
