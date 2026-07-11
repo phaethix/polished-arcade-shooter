@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseNetMessage, type NetMessage } from './protocol';
+import { parseNetMessage } from './protocol';
 
 describe('protocol', () => {
   it('parses a valid input message', () => {
