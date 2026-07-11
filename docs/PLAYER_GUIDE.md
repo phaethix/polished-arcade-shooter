@@ -77,7 +77,7 @@ Phantom, Fortress, and alternate weapons unlock with coins earned during runs.
 | `U`           | Unlock selected aircraft or weapon (costs coins) |
 | `Space` / `Z` | Start game                                       |
 
-**Touch:** tap each menu row to cycle — mode (up/down zones), aircraft, weapon, and difficulty (left/right on the row). Tap **TAP or PRESS SPACE** to start.
+**Touch / mouse:** tap each menu row to cycle — mode (upper/lower half), aircraft, weapon, and difficulty (left/right half, including the ◀ ▶ glyphs). Tap **TAP or PRESS SPACE** to start.
 
 > On mobile, tap the screen once if audio is silent — Web Audio unlocks on the first user gesture.
 

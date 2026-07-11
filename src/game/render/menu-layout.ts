@@ -45,6 +45,7 @@ export const MENU_LAYOUT = {
   },
 } as const;
 
+/** Outer thirds reserved for start-button centering (not loadout row arrows). */
 export const MENU_ROW_LEFT_X = CANVAS_W / 3;
 export const MENU_ROW_RIGHT_X = (CANVAS_W * 2) / 3;
 
@@ -58,16 +59,13 @@ export type MenuTouchAction =
   | { kind: 'cycle_difficulty'; direction: -1 | 1 }
   | { kind: 'start' };
 
-function isMenuRowLeft(x: number): boolean {
-  return x < MENU_ROW_LEFT_X;
-}
-
-function isMenuRowRight(x: number): boolean {
-  return x > MENU_ROW_RIGHT_X;
+/** Half-row split so centered ◀ / ▶ glyphs (near mid-canvas) are clickable. */
+function rowCycleDirection(x: number): -1 | 1 {
+  return x < CANVAS_W / 2 ? -1 : 1;
 }
 
 function isMenuRowCenter(x: number): boolean {
-  return !isMenuRowLeft(x) && !isMenuRowRight(x);
+  return x >= MENU_ROW_LEFT_X && x <= MENU_ROW_RIGHT_X;
 }
 
 /** Map a game-space pointer position on the title screen to a menu action. */
@@ -78,31 +76,13 @@ export function resolveMenuTouch(x: number, y: number): MenuTouchAction | null {
     return { kind: 'cycle_mode', direction: y < mode.splitY ? -1 : 1 };
   }
   if (y >= aircraft.hitYMin && y < aircraft.hitYMax) {
-    if (isMenuRowLeft(x)) {
-      return { kind: 'cycle_aircraft', direction: -1 };
-    }
-    if (isMenuRowRight(x)) {
-      return { kind: 'cycle_aircraft', direction: 1 };
-    }
-    return null;
+    return { kind: 'cycle_aircraft', direction: rowCycleDirection(x) };
   }
   if (y >= weapon.hitYMin && y < weapon.hitYMax) {
-    if (isMenuRowLeft(x)) {
-      return { kind: 'cycle_weapon', direction: -1 };
-    }
-    if (isMenuRowRight(x)) {
-      return { kind: 'cycle_weapon', direction: 1 };
-    }
-    return null;
+    return { kind: 'cycle_weapon', direction: rowCycleDirection(x) };
   }
   if (y >= difficulty.hitYMin && y < difficulty.hitYMax) {
-    if (isMenuRowLeft(x)) {
-      return { kind: 'cycle_difficulty', direction: -1 };
-    }
-    if (isMenuRowRight(x)) {
-      return { kind: 'cycle_difficulty', direction: 1 };
-    }
-    return null;
+    return { kind: 'cycle_difficulty', direction: rowCycleDirection(x) };
   }
   if (y >= start.hitYMin && y < start.hitYMax && isMenuRowCenter(x)) {
     return { kind: 'start' };
