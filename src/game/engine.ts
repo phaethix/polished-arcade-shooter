@@ -184,8 +184,7 @@ export function resetGame(g: GameData): void {
     particles: [],
     powerUps: [],
     score: 0,
-    wave:
-      g.gameMode === 'practice' ? clampPracticeStartWave(g.practiceStartWave) : 1,
+    wave: g.gameMode === 'practice' ? clampPracticeStartWave(g.practiceStartWave) : 1,
     waveTimer: 25,
     waveDelay: 90,
     enemiesSpawned: 0,
