@@ -39,7 +39,7 @@
 | `src/game/engine.ts`                    | Coop reset / start from lobby payload               |
 | `src/game/render/*`                     | Draw P2; lobby UI strings                           |
 | `src/game/render/menu-layout.ts`        | Host / Join / room-code rows when coop              |
-| `src/app/use-game-loop.ts`              | Host snapshot tick; guest apply-only path           |
+| `src/app/use-game-loop.ts`              | Host 60Hz snapshot; guest predict + reconcile       |
 | `src/app/use-keyboard-input.ts`         | Coop menu actions (host/join/start)                 |
 | `src/App.tsx`                           | Wire session ref if needed                          |
 | `.env.example`                          | `VITE_PARTYKIT_HOST`                                |
@@ -195,6 +195,7 @@ export type NetMessage =
     }
   | {
       type: 'input';
+      tick: number;
       left: boolean;
       right: boolean;
       up: boolean;
@@ -203,6 +204,8 @@ export type NetMessage =
       bomb: boolean;
       skill: boolean;
       pause: boolean;
+      touchDx: number;
+      touchDy: number;
     }
   | { type: 'snapshot'; payload: unknown } // narrowed in snapshot.ts
   | { type: 'gameover'; reason: 'team_wipe' | 'host_left' | 'guest_left' }
@@ -736,16 +739,16 @@ When `coopRole === 'host'` and `state === 'playing'`:
 
 1. Apply latest guest `input` into `g.coopGuestInput`.
 2. `update(g, localInput, dt)` (controller uses both inputs).
-3. Every N frames (~3 at 60fps ≈ 20Hz) `session.send({ type: 'snapshot', payload: buildSnapshot(g) })`.
+3. Every tick (60Hz, `COOP_SNAPSHOT_INTERVAL_TICKS = 1`) `session.send({ type: 'snapshot', payload: buildSnapshot(g) })`.
 4. On team wipe / gameover: `session.send({ type: 'gameover', reason: 'team_wipe' })`.
 
 - [ ] **Step 2: Guest path**
 
 When `coopRole === 'guest'` and playing:
 
-1. Each frame encode local input → `session.send({ type: 'input', ... })` (throttle bomb/skill edges).
-2. On snapshot message → `applySnapshot(g, payload)`.
-3. Skip combat `update`; still allow `updateBackground` cosmetics if desired.
+1. Each tick: read local input, increment `coopGuestTick`, log the `CoopInputSample`, `stepGuestMovement(g.player, cmd)`, and send `{ type: 'input', tick, ... }`.
+2. On snapshot message → `applySnapshot(g, payload)` which adopts the host state then replays unacknowledged inputs (reconciliation) for a smooth, correct ship.
+3. Skip the full combat `update` (enemies/bullets); still allow `updateBackground` cosmetics.
 4. `render` as normal.
 
 - [ ] **Step 3: Disconnect**
@@ -815,7 +818,7 @@ git commit -m "docs: document coop endless partykit play and deploy"
 | Host authority         | Task 9                           |
 | Team wipe              | Task 5                           |
 | Co-op Endless only     | Task 4                           |
-| Snapshot ~10–20Hz      | Task 6, 9                        |
+| Snapshot ~60Hz (per tick) | Task 6, 9                        |
 | Host-only meta         | Task 9                           |
 | Docs / deploy          | Task 10                          |
 | No Cloudflare required | Task 3/10 (partykit.dev)         |
