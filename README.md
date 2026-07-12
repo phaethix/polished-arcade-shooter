@@ -55,20 +55,26 @@ Open the URL printed by Vite (typically `http://localhost:5173`).
 
 ### Co-op Endless (local)
 
-Solo modes need only Vite. Co-op also needs a PartyKit room server in a second terminal:
+Solo modes need only Vite. Co-op also needs a room server (Cloudflare Workers + Durable Objects, via `partyserver`) in a second terminal:
 
 ```bash
-# Terminal 1 — PartyKit relay (default localhost:1999)
+# Terminal 1 — room server relay (default localhost:8787)
 npm run party:dev
 
 # Terminal 2 — game client
-cp .env.example .env   # optional; defaults to localhost:1999
-VITE_PARTYKIT_HOST=localhost:1999 npm run dev
+cp .env.example .env   # optional; defaults to localhost:8787
+VITE_PARTYKIT_HOST=localhost:8787 npm run dev
 ```
 
 Open two browser windows, select **Co-op Endless**, host with `H`, join with `J` then type the room code on screen and press Enter, then the host presses Space when both are in the lobby. See [PLAYER_GUIDE.md](docs/PLAYER_GUIDE.md#co-op-endless).
 
-**Deploy room server:** `npm run party:deploy` (PartyKit free tier → `*.partykit.dev`). Set `VITE_PARTYKIT_HOST` to that host for production builds (GitHub Pages env or `.env` at build time). The static game on Pages stays separate; only co-op clients open a WebSocket.
+**Deploy room server:** `npm run party:deploy` (Cloudflare Workers → `*.workers.dev`). Pass the client origin so the worker allows cross-origin WebSocket handshakes:
+
+```bash
+npx wrangler deploy --var PARTYKIT_HOST:https://phaethix.github.io
+```
+
+Set `VITE_PARTYKIT_HOST` to the deployed `*.workers.dev` host for production builds (GitHub Pages env or `.env` at build time). The static game on Pages stays separate; only co-op clients open a WebSocket. Requires a Cloudflare account; authenticate once with `npx wrangler login`.
 
 ### Verify changes
 
@@ -107,8 +113,8 @@ Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md
 | `npm run lint` / `lint:fix`       | ESLint                                      |
 | `npm run format` / `format:check` | Prettier                                    |
 | `npm test` / `test:run`           | Vitest (watch / single run)                 |
-| `npm run party:dev`               | PartyKit dev server (co-op relay)           |
-| `npm run party:deploy`            | Deploy PartyKit room server                 |
+| `npm run party:dev`               | Workers dev server (co-op relay)            |
+| `npm run party:deploy`            | Deploy co-op room server to Cloudflare Workers |
 
 ### Project structure
 

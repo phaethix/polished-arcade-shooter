@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "types": ["@cloudflare/workers-types"],
 
     "strict": true,
     "noUnusedLocals": true,

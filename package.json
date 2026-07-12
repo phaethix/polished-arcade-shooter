@@ -31,15 +31,17 @@
     "format:check": "prettier --check .",
     "commitlint": "commitlint --edit",
     "prepare": "husky",
-    "party:dev": "partykit dev",
-    "party:deploy": "partykit deploy"
+    "party:dev": "wrangler dev",
+    "party:deploy": "wrangler deploy"
   },
   "dependencies": {
+    "partyserver": "^0.5.8",
     "partysocket": "^1.3.0",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
     "@eslint/js": "^9.32.0",
@@ -51,13 +53,13 @@
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "9.1.7",
-    "partykit": "^0.0.115",
     "prettier": "^3.6.2",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.63.0",
     "vite": "7.3.2",
     "vite-plugin-singlefile": "2.3.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wrangler": "^4.90.0"
   }
 }
