@@ -33,10 +33,10 @@ Touch: the lobby row uses the same left/right split as other menu rows — left 
 
 ### In run
 
-| Role  | Simulation                                                | Notes                                                                                                                               |
-| ----- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Host  | Runs the full game loop; sends snapshots to the guest     | Coins, achievements, and high scores save to **host** `localStorage` only                                                           |
-| Guest | Sends input; renders host snapshots (no local combat sim) | Move (keyboard **or** mouse/touch drag), shoot, bomb, and pause requests work; **active skills (C / Shift) do not** yet (host-only) |
+| Role  | Simulation                                                                                       | Notes                                                                                                                               |
+| ----- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Host  | Runs the full game loop; sends snapshots to the guest                                            | Coins, achievements, and high scores save to **host** `localStorage` only                                                           |
+| Guest | Sends input; predicts own ship locally and reconciles on each host snapshot (no full combat sim) | Move (keyboard **or** mouse/touch drag), shoot, bomb, and pause requests work; **active skills (C / Shift) do not** yet (host-only) |
 
 ### Team wipe and disconnects
 

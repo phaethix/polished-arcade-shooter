@@ -18,20 +18,20 @@ Pages remains a static client. Realtime needs a small room service — **PartyKi
 
 ## Decisions (locked)
 
-| Topic                   | Choice                                                                  |
-| ----------------------- | ----------------------------------------------------------------------- |
-| Mode                    | Cooperative only (not PvP)                                              |
-| Join                    | Room code (host creates, guest enters code)                             |
-| Simulation authority    | **Host browser** runs `update()`; PartyKit is a dumb relay              |
-| Lives / fail            | **Team wipe** — either player's `hp ≤ 0` ends the run                   |
-| Modes in v1             | **Co-op Endless only**; all other modes stay solo                       |
-| Solo                    | Unchanged; no WebSocket unless Co-op path selected                      |
-| Backend                 | PartyKit free Individual deploy (`npx partykit deploy`)                 |
-| Cloudflare              | **Not required** for v1; optional later for own account / custom domain |
-| Matchmaking             | Out of scope                                                            |
-| WebRTC / lockstep       | Out of scope                                                            |
-| Guest client prediction | Out of scope in v1 (snapshot render only)                               |
-| Player count            | Hard cap **2**                                                          |
+| Topic                   | Choice                                                                   |
+| ----------------------- | ------------------------------------------------------------------------ |
+| Mode                    | Cooperative only (not PvP)                                               |
+| Join                    | Room code (host creates, guest enters code)                              |
+| Simulation authority    | **Host browser** runs `update()`; PartyKit is a dumb relay               |
+| Lives / fail            | **Team wipe** — either player's `hp ≤ 0` ends the run                    |
+| Modes in v1             | **Co-op Endless only**; all other modes stay solo                        |
+| Solo                    | Unchanged; no WebSocket unless Co-op path selected                       |
+| Backend                 | PartyKit free Individual deploy (`npx partykit deploy`)                  |
+| Cloudflare              | **Not required** for v1; optional later for own account / custom domain  |
+| Matchmaking             | Out of scope                                                             |
+| WebRTC / lockstep       | Out of scope                                                             |
+| Guest client prediction | Implemented — local prediction + reconciliation on host snapshots (60Hz) |
+| Player count            | Hard cap **2**                                                           |
 
 ---
 
@@ -46,7 +46,7 @@ GitHub Pages (static game)
         Guest browser ─┘
               │
         Host runs authoritative GameData.update()
-        Guest sends input; applies snapshots then render()
+        Guest sends input; predicts its own ship locally and reconciles on each host snapshot, then renders
 ```
 
 - **PartyKit** does not simulate combat. It enforces room size, roles (host/guest), and forwards messages.
@@ -98,11 +98,11 @@ Room assigns the first connection as host if using host-created room id; guest j
 
 ### In run
 
-| Type       | Direction               | Rate / notes                                                     |
-| ---------- | ----------------------- | ---------------------------------------------------------------- |
-| `input`    | guest → host (via room) | Throttled; axes/buttons: move, shoot, bomb, skill, pause request |
-| `snapshot` | host → guest            | ~10–20 Hz; gameplay state without heavy cosmetics                |
-| `gameover` | host → guest            | Team wipe or disconnect reason                                   |
+| Type       | Direction               | Rate / notes                                                      |
+| ---------- | ----------------------- | ----------------------------------------------------------------- |
+| `input`    | guest → host (via room) | Throttled; axes/buttons: move, shoot, bomb, skill, pause request  |
+| `snapshot` | host → guest            | ~60 Hz (every logic tick); gameplay state without heavy cosmetics |
+| `gameover` | host → guest            | Team wipe or disconnect reason                                    |
 
 ### Snapshot contents (v1)
 
@@ -121,7 +121,7 @@ On host: if either `player.hp ≤ 0` after collisions, set `state = 'gameover'`,
 1. **Dual players for co-op only** — e.g. `players: [Player, Player]` or `player` + `player2`; solo keeps single-player code paths.
 2. **Input** — host merges local `InputState` for P1 and remote `input` for P2 into `update`.
 3. **Collision / hurt** — damage targets the correct ship; either death triggers shared game over.
-4. **Guest loop** — while co-op guest: poll/send input; on snapshot, replace renderable state; call `render` only (no combat `update`).
+4. **Guest loop** — while co-op guest: poll/send input; predict own ship each tick; on snapshot, reconcile via unacknowledged-input replay (adopt host state, re-sim pending inputs); render remote state. No full combat `update` for enemies/bullets.
 5. **Pause** — host applies pause; guest pause request forwarded as input/event for host to `togglePause`.
 6. **Progression** — v1: coins/achievements/high scores follow **host** localStorage only (or disable meta rewards in co-op — prefer **host-only meta** to avoid double-award complexity).
 
@@ -165,7 +165,7 @@ Client Party URL via `import.meta.env` (dev: `localhost:1999` / PartyKit dev; pr
 - 3+ players, mid-run reconnect / host migration
 - Binding Cloudflare account (optional follow-up)
 - WebRTC data channels, deterministic lockstep
-- Guest-side movement prediction
+- Guest-side movement prediction — implemented as local prediction + reconciliation (see Decisions table); retained here only as a historical note.
 
 ---
 
