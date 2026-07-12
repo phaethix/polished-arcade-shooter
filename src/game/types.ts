@@ -141,6 +141,30 @@ export interface CoopLoadout {
   weaponId: WeaponId;
 }
 
+/**
+ * Movement command for the co-op guest ship, stripped of firing/edge flags.
+ * Shared by the host sim and the guest's local prediction so both derive the
+ * same position from the same input — prediction only stays correct if it runs
+ * the identical math the host will.
+ */
+export interface CoopInputCommand {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  touchDx: number;
+  touchDy: number;
+}
+
+/**
+ * A guest input command tagged with the local tick it was issued on. The guest
+ * keeps a short log so it can re-simulate the inputs the host has not yet
+ * acknowledged when a snapshot lands (client-side prediction reconciliation).
+ */
+export interface CoopInputSample extends CoopInputCommand {
+  tick: number;
+}
+
 /** Menu-facing lobby phase for the coop host/join flow. */
 export type CoopLobbyStatus =
   | 'idle'
@@ -213,11 +237,15 @@ export interface GameData {
   /** Last `error` message from the room (e.g. `room_full`, `role_taken`, `game_started`). */
   coopError: string | null;
   /**
-   * Guest-only render target for "my" ship. The host snapshot carries the
-   * authoritative position; the guest predicts locally each frame and lerps
-   * toward this target so the local ship stays responsive without snapping.
+   * Guest-only client-side prediction state for "my" ship. `coopGuestTick` is
+   * the local tick counter; `coopInputLog` holds recent input commands so the
+   * guest can replay the ones the host has not acknowledged when a snapshot
+   * lands. `coopLastGuestTick` is the host side: the latest guest input tick it
+   * has applied, echoed back in snapshots so the guest knows what to replay.
    */
-  coopSelfTarget: { x: number; y: number; tilt: number } | null;
+  coopGuestTick: number;
+  coopInputLog: CoopInputSample[];
+  coopLastGuestTick: number;
   bullets: Bullet[];
   enemies: Enemy[];
   particles: Particle[];

@@ -8,6 +8,7 @@ import type {
   Player,
   PowerUp,
 } from '../game/types';
+import { advanceGuestPosition } from '../game/systems/player-controller';
 import { applyChapterToGame } from '../game/chapters';
 
 export interface GameSnapshot {
@@ -30,6 +31,9 @@ export interface GameSnapshot {
   state: GameState;
   slowMotion: number;
   slowMotionTimer: number;
+  /** Host: the latest guest input tick it has applied. Echoed so the guest can
+   *  replay only the inputs the host has not acknowledged yet. */
+  lastGuestTick: number;
 }
 
 /** Serializes host gameplay state for guest render sync. */
@@ -54,6 +58,7 @@ export function buildSnapshot(g: GameData): GameSnapshot {
     state: g.state,
     slowMotion: g.slowMotion,
     slowMotionTimer: g.slowMotionTimer,
+    lastGuestTick: g.coopLastGuestTick,
   };
 }
 
@@ -70,18 +75,33 @@ export function applySnapshot(g: GameData, snap: GameSnapshot): void {
   const selfSnap: Player = isGuest && snap.player2 ? snap.player2 : snap.player;
   const otherSnap: Player | null = isGuest && snap.player2 ? snap.player : snap.player2;
 
-  // The guest predicts its own ship locally each frame, so don't snap `g.player`
-  // to the authoritative position. Sync every other field, keep the position as
-  // a lerp target (consumed in the game loop), and let prediction own the render.
+  // Client-side prediction reconciliation for the guest's own ship. Adopt the
+  // host's authoritative state (stats + position), then re-simulate every input
+  // the host has not acknowledged yet on top of it. This lands the ship exactly
+  // where local prediction should be — smooth and correct, with no per-frame pull
+  // and no oscillation under lag.
   if (isGuest) {
-    g.coopSelfTarget = { x: selfSnap.x, y: selfSnap.y, tilt: selfSnap.tilt };
-    const predictedX = g.player.x;
-    const predictedY = g.player.y;
-    const predictedTilt = g.player.tilt;
     Object.assign(g.player, selfSnap);
-    g.player.x = predictedX;
-    g.player.y = predictedY;
-    g.player.tilt = predictedTilt;
+    const ackedTick = snap.lastGuestTick;
+    let x = g.player.x;
+    let y = g.player.y;
+    let tilt = g.player.tilt;
+    for (const sample of g.coopInputLog) {
+      if (sample.tick > ackedTick) {
+        const moved = advanceGuestPosition(
+          { x, y, tilt, width: g.player.width, height: g.player.height, speed: g.player.speed },
+          sample,
+        );
+        x = moved.x;
+        y = moved.y;
+        tilt = moved.tilt;
+      }
+    }
+    g.player.x = x;
+    g.player.y = y;
+    g.player.tilt = tilt;
+    // Drop inputs the host has now acknowledged.
+    g.coopInputLog = g.coopInputLog.filter((s) => s.tick > ackedTick);
   } else {
     Object.assign(g.player, selfSnap);
   }

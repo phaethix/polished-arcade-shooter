@@ -24,6 +24,8 @@ export type NetMessage =
     }
   | {
       type: 'input';
+      /** Local tick the guest issued this command on, echoed back via snapshot. */
+      tick: number;
       left: boolean;
       right: boolean;
       up: boolean;

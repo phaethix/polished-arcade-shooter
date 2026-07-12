@@ -6,21 +6,18 @@ import type { InputState } from './input';
 import { pollGamepadInput, type GamepadButtonPrev } from './gamepad';
 import { isCoopMode } from '../game/coop';
 import type { CoopSession } from '../net/coop-session';
-import { notifyCoopTeamWipe, sendCoopGuestInput, sendCoopHostSnapshot } from './coop-actions';
-import { predictGuestKeyboard } from '../game/systems/player-controller';
+import {
+  notifyCoopTeamWipe,
+  readGuestInputCommand,
+  sendCoopGuestInput,
+  sendCoopHostSnapshot,
+} from './coop-actions';
+import { stepGuestMovement } from '../game/systems/player-controller';
 
-/** Host snapshot broadcast rate: every N animation frames (~60fps / 2 ≈ 30Hz). */
-const COOP_SNAPSHOT_INTERVAL_FRAMES = 2;
-/** Guest input send rate: matches the host snapshot cadence (~30Hz). */
-const COOP_INPUT_INTERVAL_FRAMES = 2;
-/**
- * Drift (px) past which the guest snaps its ship to the host's authoritative
- * position. Plain movement only ever lags the host by the round-trip, which
- * stays well under this; only real desyncs (run start, extreme latency spikes)
- * trip it. A per-frame lerp toward the authoritative position is deliberately
- * avoided — it would cancel the prediction and re-introduce input lag.
- */
-const COOP_PREDICT_MAX_DRIFT_PX = 128;
+/** Host snapshot broadcast interval in fixed ticks; 1 = 60Hz, smooth for remotes. */
+const COOP_SNAPSHOT_INTERVAL_TICKS = 1;
+/** Cap on the guest's replay log so a stalled connection cannot grow it unbounded. */
+const COOP_INPUT_LOG_CAP = 64;
 
 export function useGameLoop(
   canvasRef: RefObject<HTMLCanvasElement | null>,
@@ -42,7 +39,6 @@ export function useGameLoop(
     let last = performance.now();
     let accumulator = 0;
     let snapshotFrameCounter = 0;
-    let inputFrameCounter = 0;
     const gamepadPrev: GamepadButtonPrev = { bomb: false, skill: false, pause: false };
 
     const tick = (now: number) => {
@@ -67,21 +63,18 @@ export function useGameLoop(
         } else {
           updateBackground(game, FIXED_TIMESTEP_S);
         }
-        // Guests predict their own ship locally so it stays responsive between
-        // host snapshots. Prediction runs every frame; the authoritative position
-        // only hard-corrects gross desyncs (run start, extreme latency), never a
-        // per-frame pull — that would cancel the prediction and re-add input lag.
+        // Guests predict their own ship every tick so it tracks input 1:1. The
+        // authoritative correction happens in applySnapshot (reconciliation): on
+        // each host snapshot the ship snaps to the host position then replays the
+        // unacknowledged inputs — smooth and correct, never a per-frame pull or a
+        // threshold snap that would oscillate under lag.
         if (isGuest && game.state === 'playing') {
-          predictGuestKeyboard(game.player, input);
-          if (game.coopSelfTarget) {
-            const dx = game.coopSelfTarget.x - game.player.x;
-            const dy = game.coopSelfTarget.y - game.player.y;
-            if (dx * dx + dy * dy > COOP_PREDICT_MAX_DRIFT_PX * COOP_PREDICT_MAX_DRIFT_PX) {
-              game.player.x = game.coopSelfTarget.x;
-              game.player.y = game.coopSelfTarget.y;
-              game.player.tilt = game.coopSelfTarget.tilt;
-            }
-          }
+          const cmd = readGuestInputCommand(input);
+          game.coopGuestTick++;
+          game.coopInputLog.push({ tick: game.coopGuestTick, ...cmd });
+          if (game.coopInputLog.length > COOP_INPUT_LOG_CAP) game.coopInputLog.shift();
+          stepGuestMovement(game.player, cmd);
+          if (session) sendCoopGuestInput(game, session, cmd, input, game.coopGuestTick);
         }
         accumulator -= FIXED_TIMESTEP_S;
       }
@@ -93,18 +86,9 @@ export function useGameLoop(
       if (isCoopMode(game) && (game.state === 'playing' || game.state === 'paused')) {
         if (game.coopRole === 'host') {
           snapshotFrameCounter++;
-          if (snapshotFrameCounter >= COOP_SNAPSHOT_INTERVAL_FRAMES) {
+          if (snapshotFrameCounter >= COOP_SNAPSHOT_INTERVAL_TICKS) {
             snapshotFrameCounter = 0;
             sendCoopHostSnapshot(game, session);
-          }
-        } else if (isGuest) {
-          inputFrameCounter++;
-          // Bomb / skill / pause are one-frame edges — send immediately so the 20Hz
-          // throttle cannot drop them between polls.
-          const urgent = input.bomb || input.skill || input.pause;
-          if (urgent || inputFrameCounter >= COOP_INPUT_INTERVAL_FRAMES) {
-            inputFrameCounter = 0;
-            sendCoopGuestInput(game, session, input);
           }
         }
       }

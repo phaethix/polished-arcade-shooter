@@ -1,7 +1,7 @@
 import { beginCoopRun, togglePause, type CoopStartPayload } from '../game/engine';
 import { endCoopRunForDisconnect } from '../game/combat';
 import { applyCoopError, applyLobbyMessage, isCoopMode, resetCoopLobby } from '../game/coop';
-import type { GameData } from '../game/types';
+import type { CoopInputCommand, GameData } from '../game/types';
 import type { InputState } from './input';
 import { CoopSession } from '../net/coop-session';
 import type { NetMessage } from '../net/protocol';
@@ -217,13 +217,12 @@ export function leaveCoopEndless(g: GameData, session: CoopSession): void {
 }
 
 /**
- * Guest-only: relays the local `InputState` to the host as an `input` message and
- * consumes the rising-edge bomb/skill/pause flags so each press is sent exactly once.
- * Pointer drag is converted to touchDx/touchDy here because guests do not run the local sim.
+ * Reads the guest's current movement command and advances the touch baseline.
+ * Called once per simulation tick so both the local prediction and the wire
+ * command derive from the same pointer delta (guests do not run the sim, so the
+ * prediction has to mirror exactly what the host will apply).
  */
-export function sendCoopGuestInput(g: GameData, session: CoopSession, input: InputState): void {
-  if (g.coopRole !== 'guest') return;
-
+export function readGuestInputCommand(input: InputState): CoopInputCommand {
   let touchDx = 0;
   let touchDy = 0;
   if (input.touchActive && input.touchX != null && input.touchY != null) {
@@ -236,19 +235,44 @@ export function sendCoopGuestInput(g: GameData, session: CoopSession, input: Inp
   } else {
     input.prevTouchX = input.prevTouchY = null;
   }
-
-  session.send({
-    type: 'input',
+  return {
     left: input.left || input.padLeft,
     right: input.right || input.padRight,
     up: input.up || input.padUp,
     down: input.down || input.padDown,
+    touchDx,
+    touchDy,
+  };
+}
+
+/**
+ * Guest-only: relays the local movement command + edge flags to the host as an
+ * `input` message, tagged with the local tick so the host can echo it back for
+ * prediction reconciliation. Consumes the rising-edge bomb/skill/pause flags so
+ * each press is sent exactly once.
+ */
+export function sendCoopGuestInput(
+  g: GameData,
+  session: CoopSession,
+  cmd: CoopInputCommand,
+  input: InputState,
+  tick: number,
+): void {
+  if (g.coopRole !== 'guest') return;
+
+  session.send({
+    type: 'input',
+    tick,
+    left: cmd.left,
+    right: cmd.right,
+    up: cmd.up,
+    down: cmd.down,
     shoot: input.shoot || input.padShoot || input.touchActive,
     bomb: input.bomb,
     skill: input.skill,
     pause: input.pause,
-    touchDx,
-    touchDy,
+    touchDx: cmd.touchDx,
+    touchDy: cmd.touchDy,
   });
   input.bomb = false;
   input.skill = false;
@@ -257,7 +281,8 @@ export function sendCoopGuestInput(g: GameData, session: CoopSession, input: Inp
 
 /**
  * Host-only: applies a guest `input` message onto `g.coopGuestInput` (consumed by
- * `updatePlayerFromInput`'s guest-ship branch) and applies pause requests immediately.
+ * `updatePlayerFromInput`'s guest-ship branch), records the acknowledged tick, and
+ * applies pause requests immediately.
  */
 function applyCoopGuestInput(g: GameData, msg: Extract<NetMessage, { type: 'input' }>): void {
   if (g.coopRole !== 'host') return;
@@ -272,6 +297,7 @@ function applyCoopGuestInput(g: GameData, msg: Extract<NetMessage, { type: 'inpu
   if (msg.bomb) guestInput.bomb = true;
   if (msg.skill) guestInput.skill = true;
   if (msg.pause) togglePause(g);
+  g.coopLastGuestTick = msg.tick;
 }
 
 /** Host-only: serializes and sends the current frame's authoritative state to the guest. */
