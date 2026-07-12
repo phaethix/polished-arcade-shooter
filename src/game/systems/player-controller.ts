@@ -176,3 +176,26 @@ function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number):
     );
   }
 }
+
+/**
+ * Guest-only client-side prediction for the local ship. Mirrors the host's
+ * keyboard movement math so the guest's own ship stays responsive between
+ * snapshots. Firing, bombs, and skills remain host-authoritative.
+ */
+export function predictGuestKeyboard(p: Player, input: InputState): void {
+  let mx = 0;
+  let my = 0;
+  if (input.left || input.padLeft) mx--;
+  if (input.right || input.padRight) mx++;
+  if (input.up || input.padUp) my--;
+  if (input.down || input.padDown) my++;
+  if (mx || my) {
+    const l = Math.sqrt(mx * mx + my * my);
+    p.x += (mx / l) * p.speed;
+    p.y += (my / l) * p.speed;
+  }
+  p.x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, p.x));
+  p.y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, p.y));
+  const targetTilt = mx * 0.6;
+  p.tilt += (targetTilt - p.tilt) * 0.15;
+}

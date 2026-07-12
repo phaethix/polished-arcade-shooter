@@ -70,6 +70,7 @@ export function createGameData(): GameData {
     coopHostLoadout: null,
     coopGuestLoadout: null,
     coopError: null,
+    coopSelfTarget: null,
     bullets: [],
     enemies: [],
     particles: [],
@@ -255,6 +256,9 @@ export interface CoopStartPayload {
 export function beginCoopRun(g: GameData, payload: CoopStartPayload): void {
   g.gameMode = 'coop_endless';
   g.difficulty = payload.difficulty;
+  // Drop the previous run's prediction target so the first frame does not snap
+  // the guest ship to a stale position before the host's first snapshot lands.
+  g.coopSelfTarget = null;
   const isHost = g.coopRole === 'host';
   const localLoadout = isHost ? payload.hostLoadout : payload.guestLoadout;
   const remoteLoadout = isHost ? payload.guestLoadout : payload.hostLoadout;
