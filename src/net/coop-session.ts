@@ -21,6 +21,7 @@ export class CoopSession {
     this.opened = false;
     this.socket = new PartySocket({
       host: getPartyHost(),
+      party: 'coop-room',
       room: roomCode,
     });
     this.socket.addEventListener('open', () => {
