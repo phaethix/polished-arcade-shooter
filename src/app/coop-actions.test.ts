@@ -12,6 +12,7 @@ import {
   handleCoopClose,
   handleCoopMessage,
   notifyCoopTeamWipe,
+  readGuestInputCommand,
   restartCoopFromGameOver,
   sendCoopGuestInput,
   sendCoopHostSnapshot,
@@ -47,11 +48,13 @@ describe('sendCoopGuestInput', () => {
     input.bomb = true;
     input.skill = true;
     input.pause = true;
+    const cmd = readGuestInputCommand(input);
 
-    sendCoopGuestInput(g, session, input);
+    sendCoopGuestInput(g, session, cmd, input, 1);
 
     expect(send).toHaveBeenCalledWith({
       type: 'input',
+      tick: 1,
       left: true,
       right: false,
       up: false,
@@ -78,12 +81,14 @@ describe('sendCoopGuestInput', () => {
     input.prevTouchY = 200;
     input.touchX = 110;
     input.touchY = 190;
+    const cmd = readGuestInputCommand(input);
 
-    sendCoopGuestInput(g, session, input);
+    sendCoopGuestInput(g, session, cmd, input, 2);
 
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'input',
+        tick: 2,
         shoot: true,
         touchDx: 15,
         touchDy: -15,
@@ -97,7 +102,8 @@ describe('sendCoopGuestInput', () => {
     const g = coopHost();
     const session = new CoopSession();
     const send = vi.spyOn(session, 'send');
-    sendCoopGuestInput(g, session, createInputState());
+    const cmd = readGuestInputCommand(createInputState());
+    sendCoopGuestInput(g, session, cmd, createInputState(), 1);
     expect(send).not.toHaveBeenCalled();
   });
 });
@@ -210,6 +216,7 @@ describe('handleCoopMessage', () => {
       g,
       {
         type: 'input',
+        tick: 7,
         left: true,
         right: false,
         up: false,
@@ -237,6 +244,7 @@ describe('handleCoopMessage', () => {
       g,
       {
         type: 'input',
+        tick: 3,
         left: false,
         right: false,
         up: false,

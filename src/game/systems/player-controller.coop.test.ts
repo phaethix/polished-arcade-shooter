@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { createGameData } from '../engine';
 import { createPlayer } from '../player-factory';
 import { createInputState } from '../../app/input';
-import { updatePlayerFromInput, predictGuestKeyboard } from './player-controller';
+import {
+  updatePlayerFromInput,
+  stepGuestMovement,
+  advanceGuestPosition,
+} from './player-controller';
 import { beginCoopRun } from '../engine';
 import { CANVAS_W, CANVAS_H } from '../core/constants';
 
@@ -63,45 +67,80 @@ describe('updateGuestShip (via updatePlayerFromInput)', () => {
   });
 });
 
-describe('predictGuestKeyboard', () => {
-  it('moves the local ship by input and keeps it inside the play field', () => {
+describe('advanceGuestPosition', () => {
+  it('moves by the command and eases tilt toward the direction', () => {
+    const pos = { x: CANVAS_W / 2, y: CANVAS_H / 2, tilt: 0, width: 40, height: 40, speed: 5 };
+    const moved = advanceGuestPosition(pos, {
+      left: false,
+      right: true,
+      up: false,
+      down: false,
+      touchDx: 0,
+      touchDy: 0,
+    });
+    expect(moved.x).toBeGreaterThan(pos.x);
+    expect(moved.tilt).toBeGreaterThan(0);
+  });
+
+  it('keeps the ship inside the play field', () => {
+    const pos = { x: CANVAS_W - 5, y: CANVAS_H / 2, tilt: 0, width: 40, height: 40, speed: 5 };
+    const moved = advanceGuestPosition(pos, {
+      left: false,
+      right: true,
+      up: false,
+      down: false,
+      touchDx: 0,
+      touchDy: 0,
+    });
+    expect(moved.x).toBeLessThanOrEqual(CANVAS_W - pos.width / 2);
+    expect(moved.x).toBeGreaterThanOrEqual(pos.width / 2);
+  });
+
+  it('applies pointer drag deltas', () => {
+    const pos = { x: 100, y: 100, tilt: 0, width: 40, height: 40, speed: 5 };
+    const moved = advanceGuestPosition(pos, {
+      left: false,
+      right: false,
+      up: false,
+      down: false,
+      touchDx: 12,
+      touchDy: -8,
+    });
+    expect(moved.x).toBe(112);
+    expect(moved.y).toBe(92);
+  });
+});
+
+describe('stepGuestMovement', () => {
+  it('mutates the live player in place', () => {
     const g = createGameData();
     g.state = 'playing';
     g.coopRole = 'guest';
     const p = g.player;
     p.x = CANVAS_W / 2;
-    p.y = CANVAS_H / 2;
-    const input = createInputState();
-    input.right = true;
-
     const beforeX = p.x;
-    predictGuestKeyboard(p, input);
-
+    stepGuestMovement(p, {
+      left: false,
+      right: true,
+      up: false,
+      down: false,
+      touchDx: 0,
+      touchDy: 0,
+    });
     expect(p.x).toBeGreaterThan(beforeX);
-    expect(p.x).toBeLessThanOrEqual(CANVAS_W - p.width / 2);
-    expect(p.x).toBeGreaterThanOrEqual(p.width / 2);
-  });
-
-  it('eases tilt toward the movement direction', () => {
-    const g = createGameData();
-    g.coopRole = 'guest';
-    const p = g.player;
-    p.tilt = 0;
-    const input = createInputState();
-    input.right = true;
-
-    predictGuestKeyboard(p, input);
-
-    expect(p.tilt).toBeGreaterThan(0);
   });
 });
 
 describe('beginCoopRun', () => {
-  it('clears coopSelfTarget so the guest never snaps to a stale position', () => {
+  it('resets prediction state so a rematch never reconciles against stale inputs', () => {
     const g = createGameData();
     g.gameMode = 'coop_endless';
     g.coopRole = 'guest';
-    g.coopSelfTarget = { x: 10, y: 20, tilt: 0.5 };
+    g.coopGuestTick = 5;
+    g.coopInputLog = [
+      { tick: 1, left: true, right: false, up: false, down: false, touchDx: 0, touchDy: 0 },
+    ];
+    g.coopLastGuestTick = 9;
 
     beginCoopRun(g, {
       difficulty: 'normal',
@@ -110,6 +149,8 @@ describe('beginCoopRun', () => {
       guestLoadout: { aircraftId: 'phantom', weaponId: 'standard' },
     });
 
-    expect(g.coopSelfTarget).toBeNull();
+    expect(g.coopGuestTick).toBe(0);
+    expect(g.coopInputLog).toEqual([]);
+    expect(g.coopLastGuestTick).toBe(-1);
   });
 });

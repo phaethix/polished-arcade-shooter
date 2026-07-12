@@ -1,4 +1,4 @@
-import type { GameData, Player } from '../types';
+import type { CoopInputCommand, GameData, Player } from '../types';
 import type { InputState } from '../../app/input';
 import { CANVAS_W, CANVAS_H } from '../core/constants';
 import { addParticles } from '../effects';
@@ -108,34 +108,68 @@ export function updatePlayerFromInput(g: GameData, input: InputState, dt: number
 }
 
 /**
- * Drives the co-op guest ship from its synced input snapshot: movement (keys + pointer
+ * Pure movement step for the co-op guest ship. Shared by the host simulator
+ * (`updateGuestShip`) and the guest's local prediction (and snapshot
+ * reconciliation) so every side computes the identical position from the same
+ * input. Returns the new coordinates instead of mutating, which lets prediction
+ * replay a log of past inputs without disturbing the live `Player`.
+ */
+export function advanceGuestPosition(
+  p: { x: number; y: number; tilt: number; width: number; height: number; speed: number },
+  cmd: CoopInputCommand,
+): { x: number; y: number; tilt: number } {
+  let mx = 0;
+  let my = 0;
+  if (cmd.left) mx--;
+  if (cmd.right) mx++;
+  if (cmd.up) my--;
+  if (cmd.down) my++;
+
+  let x = p.x;
+  let y = p.y;
+  if (mx || my) {
+    const l = Math.sqrt(mx * mx + my * my);
+    x += (mx / l) * p.speed;
+    y += (my / l) * p.speed;
+  }
+
+  x += cmd.touchDx;
+  y += cmd.touchDy;
+
+  x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, x));
+  y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, y));
+  const targetTilt = mx * 0.6;
+  const tilt = p.tilt + (targetTilt - p.tilt) * 0.15;
+  return { x, y, tilt };
+}
+
+/** Host sim: applies a guest movement command to `p` in place. */
+export function stepGuestMovement(p: Player, cmd: CoopInputCommand): void {
+  const moved = advanceGuestPosition(p, cmd);
+  p.x = moved.x;
+  p.y = moved.y;
+  p.tilt = moved.tilt;
+}
+
+/**
+ * Drives the co-op guest ship from its synced input: movement (keys + pointer
  * deltas), firing, and bomb. Active skills stay host-only for now (`tryActivateSkill`
  * hard-codes `g.player`); the guest's `skill` input flag is relayed but has no effect yet.
  */
 function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number): void {
-  let mx = 0;
-  let my = 0;
-  if (input.left || input.padLeft) mx--;
-  if (input.right || input.padRight) mx++;
-  if (input.up || input.padUp) my--;
-  if (input.down || input.padDown) my++;
-
-  if (mx || my) {
-    const l = Math.sqrt(mx * mx + my * my);
-    p.x += (mx / l) * p.speed;
-    p.y += (my / l) * p.speed;
-  }
-
-  if (input.touchDx || input.touchDy) {
-    p.x += input.touchDx;
-    p.y += input.touchDy;
-    input.touchDx = 0;
-    input.touchDy = 0;
-  }
-
-  p.x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, p.x));
-  p.y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, p.y));
-  p.tilt += (mx * 0.6 - p.tilt) * 0.15;
+  const cmd: CoopInputCommand = {
+    left: input.left || input.padLeft,
+    right: input.right || input.padRight,
+    up: input.up || input.padUp,
+    down: input.down || input.padDown,
+    touchDx: input.touchDx,
+    touchDy: input.touchDy,
+  };
+  stepGuestMovement(p, cmd);
+  // Consume the one-shot pointer delta so a stale value is not re-applied on the
+  // next tick before the next input message arrives.
+  input.touchDx = 0;
+  input.touchDy = 0;
 
   // Do not inherit the host's autoFire toggle — guest fire comes only from their input.
   const shooting = input.shoot || input.padShoot;
@@ -175,27 +209,4 @@ function updateGuestShip(g: GameData, p: Player, input: InputState, dt: number):
       [2, 4],
     );
   }
-}
-
-/**
- * Guest-only client-side prediction for the local ship. Mirrors the host's
- * keyboard movement math so the guest's own ship stays responsive between
- * snapshots. Firing, bombs, and skills remain host-authoritative.
- */
-export function predictGuestKeyboard(p: Player, input: InputState): void {
-  let mx = 0;
-  let my = 0;
-  if (input.left || input.padLeft) mx--;
-  if (input.right || input.padRight) mx++;
-  if (input.up || input.padUp) my--;
-  if (input.down || input.padDown) my++;
-  if (mx || my) {
-    const l = Math.sqrt(mx * mx + my * my);
-    p.x += (mx / l) * p.speed;
-    p.y += (my / l) * p.speed;
-  }
-  p.x = Math.max(p.width / 2, Math.min(CANVAS_W - p.width / 2, p.x));
-  p.y = Math.max(p.height / 2, Math.min(CANVAS_H - p.height / 2, p.y));
-  const targetTilt = mx * 0.6;
-  p.tilt += (targetTilt - p.tilt) * 0.15;
 }
