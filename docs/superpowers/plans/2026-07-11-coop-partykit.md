@@ -810,18 +810,18 @@ git commit -m "docs: document coop endless partykit play and deploy"
 
 ## Spec coverage checklist
 
-| Spec item              | Task                             |
-| ---------------------- | -------------------------------- |
-| Solo offline           | Task 4/9 (no socket unless coop) |
-| Room codes             | Task 1, 8                        |
-| PartyKit relay, cap 2  | Task 3                           |
-| Host authority         | Task 9                           |
-| Team wipe              | Task 5                           |
-| Co-op Endless only     | Task 4                           |
+| Spec item                 | Task                             |
+| ------------------------- | -------------------------------- |
+| Solo offline              | Task 4/9 (no socket unless coop) |
+| Room codes                | Task 1, 8                        |
+| PartyKit relay, cap 2     | Task 3                           |
+| Host authority            | Task 9                           |
+| Team wipe                 | Task 5                           |
+| Co-op Endless only        | Task 4                           |
 | Snapshot ~60Hz (per tick) | Task 6, 9                        |
-| Host-only meta         | Task 9                           |
-| Docs / deploy          | Task 10                          |
-| No Cloudflare required | Task 3/10 (partykit.dev)         |
+| Host-only meta            | Task 9                           |
+| Docs / deploy             | Task 10                          |
+| No Cloudflare required    | Task 3/10 (partykit.dev)         |
 
 ---
 

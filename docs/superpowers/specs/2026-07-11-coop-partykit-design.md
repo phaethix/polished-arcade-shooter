@@ -18,20 +18,20 @@ Pages remains a static client. Realtime needs a small room service — **PartyKi
 
 ## Decisions (locked)
 
-| Topic                   | Choice                                                                  |
-| ----------------------- | ----------------------------------------------------------------------- |
-| Mode                    | Cooperative only (not PvP)                                              |
-| Join                    | Room code (host creates, guest enters code)                             |
-| Simulation authority    | **Host browser** runs `update()`; PartyKit is a dumb relay              |
-| Lives / fail            | **Team wipe** — either player's `hp ≤ 0` ends the run                   |
-| Modes in v1             | **Co-op Endless only**; all other modes stay solo                       |
-| Solo                    | Unchanged; no WebSocket unless Co-op path selected                      |
-| Backend                 | PartyKit free Individual deploy (`npx partykit deploy`)                 |
-| Cloudflare              | **Not required** for v1; optional later for own account / custom domain |
-| Matchmaking             | Out of scope                                                            |
-| WebRTC / lockstep       | Out of scope                                                            |
+| Topic                   | Choice                                                                   |
+| ----------------------- | ------------------------------------------------------------------------ |
+| Mode                    | Cooperative only (not PvP)                                               |
+| Join                    | Room code (host creates, guest enters code)                              |
+| Simulation authority    | **Host browser** runs `update()`; PartyKit is a dumb relay               |
+| Lives / fail            | **Team wipe** — either player's `hp ≤ 0` ends the run                    |
+| Modes in v1             | **Co-op Endless only**; all other modes stay solo                        |
+| Solo                    | Unchanged; no WebSocket unless Co-op path selected                       |
+| Backend                 | PartyKit free Individual deploy (`npx partykit deploy`)                  |
+| Cloudflare              | **Not required** for v1; optional later for own account / custom domain  |
+| Matchmaking             | Out of scope                                                             |
+| WebRTC / lockstep       | Out of scope                                                             |
 | Guest client prediction | Implemented — local prediction + reconciliation on host snapshots (60Hz) |
-| Player count            | Hard cap **2**                                                          |
+| Player count            | Hard cap **2**                                                           |
 
 ---
 
@@ -98,11 +98,11 @@ Room assigns the first connection as host if using host-created room id; guest j
 
 ### In run
 
-| Type       | Direction               | Rate / notes                                                     |
-| ---------- | ----------------------- | ---------------------------------------------------------------- |
-| `input`    | guest → host (via room) | Throttled; axes/buttons: move, shoot, bomb, skill, pause request |
+| Type       | Direction               | Rate / notes                                                      |
+| ---------- | ----------------------- | ----------------------------------------------------------------- |
+| `input`    | guest → host (via room) | Throttled; axes/buttons: move, shoot, bomb, skill, pause request  |
 | `snapshot` | host → guest            | ~60 Hz (every logic tick); gameplay state without heavy cosmetics |
-| `gameover` | host → guest            | Team wipe or disconnect reason                                   |
+| `gameover` | host → guest            | Team wipe or disconnect reason                                    |
 
 ### Snapshot contents (v1)
 
