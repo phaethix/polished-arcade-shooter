@@ -49,6 +49,7 @@ describe('snapshot', () => {
     host.player.x = 100;
     host.player2 = createPlayer('phantom');
     host.player2.x = 200;
+    host.player2.hp = 7;
     const snap = buildSnapshot(host);
 
     const guest = createGameData();
@@ -60,8 +61,10 @@ describe('snapshot', () => {
 
     applySnapshot(guest, snap);
 
-    // Guest's own ship (host's player2) stays on g.player so the HUD reflects "me".
-    expect(guest.player.x).toBe(host.player2.x);
+    // Guest's own ship position is buffered as a prediction target, not snapped.
+    expect(guest.coopSelfTarget?.x).toBe(host.player2.x);
+    expect(guest.player.x).toBe(200); // local prediction preserved
+    expect(guest.player.hp).toBe(7); // non-position fields still sync
     // The host's ship (host's player) is mirrored onto g.player2.
     expect(guest.player2?.x).toBe(host.player.x);
   });

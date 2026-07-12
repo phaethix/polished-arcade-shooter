@@ -212,6 +212,12 @@ export interface GameData {
   coopGuestLoadout: CoopLoadout | null;
   /** Last `error` message from the room (e.g. `room_full`, `role_taken`, `game_started`). */
   coopError: string | null;
+  /**
+   * Guest-only render target for "my" ship. The host snapshot carries the
+   * authoritative position; the guest predicts locally each frame and lerps
+   * toward this target so the local ship stays responsive without snapping.
+   */
+  coopSelfTarget: { x: number; y: number; tilt: number } | null;
   bullets: Bullet[];
   enemies: Enemy[];
   particles: Particle[];

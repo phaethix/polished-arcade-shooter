@@ -70,7 +70,21 @@ export function applySnapshot(g: GameData, snap: GameSnapshot): void {
   const selfSnap: Player = isGuest && snap.player2 ? snap.player2 : snap.player;
   const otherSnap: Player | null = isGuest && snap.player2 ? snap.player : snap.player2;
 
-  Object.assign(g.player, selfSnap);
+  // The guest predicts its own ship locally each frame, so don't snap `g.player`
+  // to the authoritative position. Sync every other field, keep the position as
+  // a lerp target (consumed in the game loop), and let prediction own the render.
+  if (isGuest) {
+    g.coopSelfTarget = { x: selfSnap.x, y: selfSnap.y, tilt: selfSnap.tilt };
+    const predictedX = g.player.x;
+    const predictedY = g.player.y;
+    const predictedTilt = g.player.tilt;
+    Object.assign(g.player, selfSnap);
+    g.player.x = predictedX;
+    g.player.y = predictedY;
+    g.player.tilt = predictedTilt;
+  } else {
+    Object.assign(g.player, selfSnap);
+  }
   if (otherSnap) {
     if (g.player2) {
       Object.assign(g.player2, otherSnap);

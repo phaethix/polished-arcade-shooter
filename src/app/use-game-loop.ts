@@ -7,11 +7,20 @@ import { pollGamepadInput, type GamepadButtonPrev } from './gamepad';
 import { isCoopMode } from '../game/coop';
 import type { CoopSession } from '../net/coop-session';
 import { notifyCoopTeamWipe, sendCoopGuestInput, sendCoopHostSnapshot } from './coop-actions';
+import { predictGuestKeyboard } from '../game/systems/player-controller';
 
-/** Host snapshot broadcast rate: every N animation frames (~60fps / 3 ≈ 20Hz). */
-const COOP_SNAPSHOT_INTERVAL_FRAMES = 3;
-/** Guest input send rate: matches the host snapshot cadence (~20Hz). */
-const COOP_INPUT_INTERVAL_FRAMES = 3;
+/** Host snapshot broadcast rate: every N animation frames (~60fps / 2 ≈ 30Hz). */
+const COOP_SNAPSHOT_INTERVAL_FRAMES = 2;
+/** Guest input send rate: matches the host snapshot cadence (~30Hz). */
+const COOP_INPUT_INTERVAL_FRAMES = 2;
+/**
+ * Drift (px) past which the guest snaps its ship to the host's authoritative
+ * position. Plain movement only ever lags the host by the round-trip, which
+ * stays well under this; only real desyncs (run start, extreme latency spikes)
+ * trip it. A per-frame lerp toward the authoritative position is deliberately
+ * avoided — it would cancel the prediction and re-introduce input lag.
+ */
+const COOP_PREDICT_MAX_DRIFT_PX = 128;
 
 export function useGameLoop(
   canvasRef: RefObject<HTMLCanvasElement | null>,
@@ -57,6 +66,22 @@ export function useGameLoop(
           update(game, input, FIXED_TIMESTEP_S);
         } else {
           updateBackground(game, FIXED_TIMESTEP_S);
+        }
+        // Guests predict their own ship locally so it stays responsive between
+        // host snapshots. Prediction runs every frame; the authoritative position
+        // only hard-corrects gross desyncs (run start, extreme latency), never a
+        // per-frame pull — that would cancel the prediction and re-add input lag.
+        if (isGuest && game.state === 'playing') {
+          predictGuestKeyboard(game.player, input);
+          if (game.coopSelfTarget) {
+            const dx = game.coopSelfTarget.x - game.player.x;
+            const dy = game.coopSelfTarget.y - game.player.y;
+            if (dx * dx + dy * dy > COOP_PREDICT_MAX_DRIFT_PX * COOP_PREDICT_MAX_DRIFT_PX) {
+              game.player.x = game.coopSelfTarget.x;
+              game.player.y = game.coopSelfTarget.y;
+              game.player.tilt = game.coopSelfTarget.tilt;
+            }
+          }
         }
         accumulator -= FIXED_TIMESTEP_S;
       }
