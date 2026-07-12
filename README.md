@@ -103,17 +103,17 @@ Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md
 
 ### npm scripts
 
-| Command                           | Description                                 |
-| --------------------------------- | ------------------------------------------- |
-| `npm run dev`                     | Start Vite dev server                       |
-| `npm run build`                   | Production build                            |
-| `npm run build:pages`             | Build for GitHub Pages (single-file output) |
-| `npm run preview`                 | Preview production build                    |
-| `npm run typecheck`               | TypeScript check (`tsc --noEmit`)           |
-| `npm run lint` / `lint:fix`       | ESLint                                      |
-| `npm run format` / `format:check` | Prettier                                    |
-| `npm test` / `test:run`           | Vitest (watch / single run)                 |
-| `npm run party:dev`               | Workers dev server (co-op relay)            |
+| Command                           | Description                                    |
+| --------------------------------- | ---------------------------------------------- |
+| `npm run dev`                     | Start Vite dev server                          |
+| `npm run build`                   | Production build                               |
+| `npm run build:pages`             | Build for GitHub Pages (single-file output)    |
+| `npm run preview`                 | Preview production build                       |
+| `npm run typecheck`               | TypeScript check (`tsc --noEmit`)              |
+| `npm run lint` / `lint:fix`       | ESLint                                         |
+| `npm run format` / `format:check` | Prettier                                       |
+| `npm test` / `test:run`           | Vitest (watch / single run)                    |
+| `npm run party:dev`               | Workers dev server (co-op relay)               |
 | `npm run party:deploy`            | Deploy co-op room server to Cloudflare Workers |
 
 ### Project structure

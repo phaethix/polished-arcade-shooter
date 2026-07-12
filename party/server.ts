@@ -52,7 +52,10 @@ export class CoopRoom extends Server<Env> {
     this.broadcastLobby();
   }
 
-  onMessage(connection: Connection<ConnState>, message: string | ArrayBuffer | ArrayBufferView): void {
+  onMessage(
+    connection: Connection<ConnState>,
+    message: string | ArrayBuffer | ArrayBufferView,
+  ): void {
     if (typeof message !== 'string') return;
     const data = parseNetMessage(message);
     if (!data) return;
@@ -77,7 +80,10 @@ export class CoopRoom extends Server<Env> {
     }
   }
 
-  private handleHello(data: Extract<NetMessage, { type: 'hello' }>, sender: Connection<ConnState>): void {
+  private handleHello(
+    data: Extract<NetMessage, { type: 'hello' }>,
+    sender: Connection<ConnState>,
+  ): void {
     for (const connection of this.getConnections<ConnState>()) {
       if (connection.id === sender.id) continue;
       if (connection.state?.role === data.role) {

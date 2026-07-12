@@ -6,19 +6,19 @@
     "bindings": [
       {
         "name": "CoopRoom",
-        "class_name": "CoopRoom"
-      }
-    ]
+        "class_name": "CoopRoom",
+      },
+    ],
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["CoopRoom"]
-    }
+      "new_sqlite_classes": ["CoopRoom"],
+    },
   ],
   "vars": {
     // Client origin allowed to open co-op WebSockets. Override on deploy:
     //   npx wrangler deploy --var PARTYKIT_HOST:https://phaethix.github.io
-    "PARTYKIT_HOST": "http://localhost:5173"
-  }
+    "PARTYKIT_HOST": "http://localhost:5173",
+  },
 }
