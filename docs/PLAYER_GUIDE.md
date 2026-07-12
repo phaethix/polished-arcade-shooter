@@ -13,7 +13,7 @@ Reference for modes, controls, enemies, and progression in **Sky Blaster**. For 
 | **Boss Rush**       | Fight consecutive bosses with scaling HP — no filler waves                                                                                                                                                                 |
 | **Daily Challenge** | Same modifier for all players each day (double speed, no power-ups, single HP, or kamikaze swarm); spawns, drops, and hazards also use a calendar-date seed so everyone that day shares the same random stream             |
 | **Practice**        | Endless-like waves with invincibility on by default (`I` toggles); choose a start wave (1–20) on the menu; chapter follows Endless rotation with bosses on waves 5, 10, 15, and 20; no coins, achievements, or high scores |
-| **Co-op Endless**   | 2-player online Endless via a room code; same wave/chapter rules as Endless; **team wipe** — if either ship reaches 0 HP, the run ends for both; requires a PartyKit room server (solo modes do not)                       |
+| **Co-op Endless**   | 2-player online Endless via a room code; same wave/chapter rules as Endless; **team wipe** — if either ship reaches 0 HP, the run ends for both; requires the co-op room server on Cloudflare Workers (solo modes do not)                       |
 
 ---
 
@@ -47,7 +47,7 @@ Touch: the lobby row uses the same left/right split as other menu rows — left 
 - **Guest disconnects in lobby:** host returns to waiting for a guest.
 - **Third player** joining a full room is rejected (`room_full`).
 
-PartyKit is a small relay server (cap 2 players per room). Solo play on GitHub Pages never connects to it.
+The co-op room server is a small relay (cap 2 players per room) running on Cloudflare Workers. Solo play on GitHub Pages never connects to it.
 
 ---
 
