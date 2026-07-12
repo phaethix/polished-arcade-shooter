@@ -113,8 +113,8 @@ Full control reference, enemy tables, and scoring rules: **[docs/PLAYER_GUIDE.md
 | `npm run lint` / `lint:fix`       | ESLint                                      |
 | `npm run format` / `format:check` | Prettier                                    |
 | `npm test` / `test:run`           | Vitest (watch / single run)                 |
-| `npm run party:dev`               | PartyKit dev server (co-op relay)           |
-| `npm run party:deploy`            | Deploy PartyKit room server                 |
+| `npm run party:dev`               | Workers dev server (co-op relay)            |
+| `npm run party:deploy`            | Deploy co-op room server to Cloudflare Workers |
 
 ### Project structure
 

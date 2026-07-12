@@ -60,7 +60,6 @@ jobs:
   deploy-coop:
     needs: build
     runs-on: ubuntu-latest
-    environment: coop-server
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,9 +75,11 @@ jobs:
 
       # Deploy the co-op room server to Cloudflare Workers.
       # Requires repository secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
-      # PARTYKIT_HOST is the client origin allowed to open WebSocket handshakes.
+      # PARTYKIT_HOST is the *client origin* (the GitHub Pages site) allowed to
+      # open WebSocket handshakes — NOT the worker URL. The worker URL goes to
+      # the client via the VITE_PARTYKIT_HOST build variable instead.
       - name: Deploy co-op room server
-        run: npx wrangler deploy --var PARTYKIT_HOST:${{ vars.VITE_PARTYKIT_HOST }}
+        run: npx wrangler deploy --var PARTYKIT_HOST:https://phaethix.github.io
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
