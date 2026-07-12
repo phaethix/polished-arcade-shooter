@@ -1,7 +1,7 @@
 {
   "name": "polished-arcade-shooter",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.10.0",
   "description": "Sky Blaster — browser vertical shoot-'em-up with four modes, meta progression, and procedural audio. React, TypeScript, Canvas.",
   "license": "MIT",
   "repository": {
