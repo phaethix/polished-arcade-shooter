@@ -8,8 +8,9 @@ This document describes how the `src/` tree is organized after the v0.7.x archit
 src/
 ├── App.tsx                 React shell — canvas sizing, wires hooks
 ├── app/
-│   ├── input.ts            Mutable input state (keyboard + touch/mouse)
-│   ├── use-game-loop.ts    RAF fixed-timestep loop
+│   ├── input.ts            Mutable input state (keyboard + touch/mouse + pad*)
+│   ├── gamepad.ts          Standard gamepad poll → pad* / bomb / skill / pause
+│   ├── use-game-loop.ts    RAF fixed-timestep loop (+ gamepad poll)
 │   ├── use-keyboard-input.ts
 │   ├── use-pointer-input.ts
 │   └── menu-touch.ts       Title-screen hit targets
@@ -74,7 +75,7 @@ src/
 ```text
 App.tsx
   ├─ useKeyboardInput / usePointerInput → inputRef
-  ├─ useGameLoop → update() / updateBackground() / render()  ← engine.ts
+  ├─ useGameLoop → pollGamepadInput → update() / updateBackground() / render()  ← engine.ts
   └─ canvas
         ├─ chapters / hazards / render/enemies
         └─ render/* (HUD, menu, overlays, game over)
