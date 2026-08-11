@@ -35,7 +35,7 @@
     "party:deploy": "wrangler deploy"
   },
   "dependencies": {
-    "partyserver": "^0.5.8",
+    "partyserver": "^0.5.10",
     "partysocket": "^1.3.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
